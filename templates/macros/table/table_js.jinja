@@ -1242,14 +1242,6 @@
       homeTriggerResources(trigger, serviceId, rowId, tabId, elementId, elementOptions);
     }
 
-    {# WorkshopManager.labconfig.lrz.lrztypes --> #}
-      function homeTriggerFillLRZTypes(trigger, serviceId, rowId, tabId, elementId, elementOptions) {
-        const values = [["default", "Default"], ["quantum", "Quantum"], ["supermuc", "SuperMUC"]];
-        const inputElement = getInputElement(serviceId, rowId, elementId);
-        fillSelect(elementId, inputElement, values);
-      }
-    {# <-- WorkshopManager.labconfig.lrz.lrztypes #}
-
     {# WorkshopManager.default.kube.flavor --> #}
       function homeTriggerFlavor(trigger, serviceId, rowId, tabId, elementId, elementOptions) {
         const systems = val(getInputElement(serviceId, rowId, "system"));
