@@ -1,0 +1,636 @@
+{# Kube Systems --> #}
+  const kubeOutpostFlavors = {{ auth_state.outpost_flavors | default({}, true) | tojson }};
+  function _getKubeSystems() {
+    return Object.keys(systemConfig).filter(system => {
+      const backendService = systemConfig[system].backendService;
+      // Check if the backend service type is "kube"
+      return backendServicesConfig[backendService]?.type === "kube";
+    });
+  }
+
+  const kubeSystems = _getKubeSystems();
+
+  function _getKubeFlavorSystems() {
+    return Object.keys(systemConfig).filter(system => {
+      const backendService = systemConfig[system].backendService;
+      // Check if the backend service type is "kube"
+      return backendServicesConfig[backendService]?.flavorsRequired;
+    });
+  }
+
+  const kubeFlavorSystems = _getKubeFlavorSystems();
+
+  function getAvailableKubeFlavorsS(systems) {
+    let ret = [];
+
+    systems.forEach(system => {
+      const allFlavors = kubeOutpostFlavors[system];
+      if ( allFlavors ) {
+        ret.push(...Object.keys(allFlavors)
+          .filter(key => allFlavors[key].max != 0) // do not use flavor.max == 0
+          .filter(key => allFlavors[key].current < allFlavors[key].max || allFlavors[key].max == -1 ) // must be room for new jupyterlabs
+          .sort((a, b) => allFlavors[a].weight - allFlavors[b].weight) // sort by weight
+          .map(key => [key, allFlavors[key].display_name])); // get keyname + displayname
+      }
+    });
+    return ret;
+  }
+
+  function getUnavailableKubeFlavorsS(systems) {
+    let ret = [];
+
+    systems.forEach(system => {
+      const allFlavors = kubeOutpostFlavors[system];
+
+      if ( allFlavors ) {
+        ret.push(...Object.keys(allFlavors)
+          .filter(key => allFlavors[key].max != 0) // do not use flavor.max == 0
+          .filter(key => allFlavors[key].current >= allFlavors[key].max && allFlavors[key].max != -1)
+          .sort((a, b) => allFlavors[a].weight - allFlavors[b].weight)
+          .map(key => [key, allFlavors[key].display_name]));
+      }
+    });
+    return ret;
+  }
+{# <-- Kube Systems #}
+
+{# Unicore Systems --> #}
+  {# 
+    JavaScript functions to get user specific information for the HPC systems which support UNICORE.
+  #}
+
+  const resPattern = /^urn:(?<namespace>.+?(?=:res:)):res:(?<systempartition>[^:]+):(?<project>[^:]+):act:(?<account>[^:]+):(?<accounttype>[^:]+)$/;
+  const unicoreEntitlements = {{ auth_state.entitlements | list | tojson }};
+  const unicorePreferredUsername = {{ auth_state.preferred_username | default("none", true) | tojson }};
+  const unicoreReservations = {{ reservations | default({}, true) | tojson }};
+  const unicoreMapSystems = {{ custom_config.mapSystems | default({}, true) | tojson }};
+  const unicoreMapPartitions = {{ custom_config.mapPartitions | default({}, true) | tojson }};
+  const unicoreDefaultPartitions = {{ custom_config.defaultPartitions | default({}, true) | tojson }};
+
+  function extractEntitlementResources(entitlement) {
+    const match = resPattern.exec(entitlement);
+    if (match) {
+      // Access named capture groups using match.groups
+      let system_ = unicoreMapSystems[match.groups.systempartition.toLowerCase()];
+      let partition_ = unicoreMapPartitions[match.groups.systempartition.toLowerCase()];
+      if ( Object.keys(resourcesConfig[system_] ?? {}).includes(partition_) ){
+        return {
+          systempartition: match.groups.systempartition,
+          project: match.groups.project,
+          account: match.groups.account,
+          accounttype: match.groups.accounttype
+        };
+      }
+    }
+    return null; // Return null if no match is found
+  }
+
+  function _getUnicoreAccountType() {
+    for (let entitlement of unicoreEntitlements) {
+      const entitlementInfo = extractEntitlementResources(entitlement);
+
+      if (entitlementInfo && entitlementInfo.account === unicorePreferredUsername) {
+        return entitlementInfo.accounttype;
+      }
+    }
+    return null;
+  }
+
+  const unicoreAccountType = _getUnicoreAccountType();
+
+  function _getUnicoreSystemPartitions() {
+    const systemPartitions = unicoreEntitlements
+      .map(extractEntitlementResources)
+      .filter(Boolean)
+      .map(tmp => tmp.systempartition);
+
+    if (unicoreAccountType === "normal") {
+      return [...new Set(systemPartitions)];
+    }
+
+    if (unicoreAccountType === "secondary") {
+      return [...new Set(
+        systemPartitions.filter(systempartition => {
+          return unicoreEntitlements
+            .map(extractEntitlementResources) // Extract entitlement resources
+            .filter(Boolean)
+            .some(tmp => tmp.systempartition === systempartition && tmp.account === unicorePreferredUsername);
+        })
+      )];
+    }
+
+    return [];
+  }
+
+  const unicoreSystemPartitions = _getUnicoreSystemPartitions();
+
+  function _getUnicoreSystems() {
+    // Get all systems corresponding to the system partitions
+    let systems = unicoreSystemPartitions
+      .map(key => unicoreMapSystems[key.toLowerCase()]) // Map system partitions to their respective systems
+      .filter(system => system); // Remove falsy values (null, undefined, etc.)
+
+    // If the unicoreAccountType is "normal", return all systems (no filtering)
+    if (unicoreAccountType === "normal") {
+      return [...new Set(systems)]; // Remove duplicates using Set
+    }
+
+    // If the unicoreAccountType is "secondary", filter systems based on unicorePreferredUsername
+    if (unicoreAccountType === "secondary") {
+      return [...new Set(
+        systems.filter(system => {
+          // Filter systems where the system matches the unicorePreferredUsername in unicoreEntitlements
+          return unicoreEntitlements
+            .map(extractEntitlementResources) // Extract entitlement resources
+            .filter(Boolean) // Remove falsy values (null, undefined, etc.)
+            .some(tmp => tmp.systempartition && unicoreMapSystems[tmp.systempartition.toLowerCase()] === system && tmp.account === unicorePreferredUsername);
+        })
+      )]; // Remove duplicates using Set
+    }
+
+    // Return an empty array if unicoreAccountType is neither "normal" nor "secondary"
+    return [];
+  }
+
+  const unicoreSystems = _getUnicoreSystems();
+
+  function _getAllUnicoreAccountsBySystemPartition() {
+    const accountsBySystemPartition = {};  // The output dictionary where key is systempartition and value is list of accounts
+
+    // Initialize accounts list for each systempartition
+    unicoreSystemPartitions.forEach(function(systempartition) {
+      accountsBySystemPartition[systempartition] = new Set();  // Using Set to store unique accounts for each systempartition
+    });
+
+    // Iterate through all unicoreEntitlements and populate the accounts for the relevant unicoreSystemPartitions
+    unicoreEntitlements.forEach(function(entitlement) {
+      const entitlementInfo = extractEntitlementResources(entitlement);
+
+      if (entitlementInfo && unicoreSystemPartitions.includes(entitlementInfo.systempartition)) {
+        accountsBySystemPartition[entitlementInfo.systempartition].add(entitlementInfo.account);
+      }
+    });
+
+    // Filter accounts based on unicoreAccountType
+    Object.keys(accountsBySystemPartition).forEach(function(systempartition) {
+      // If the unicoreAccountType is "secondary", only keep accounts that match unicorePreferredUsername
+      if (unicoreAccountType === "secondary") {
+        accountsBySystemPartition[systempartition] = [...accountsBySystemPartition[systempartition]]
+          .filter(account => account === unicorePreferredUsername);
+      } else {
+        // For "normal" account type, return all accounts
+        accountsBySystemPartition[systempartition] = [...accountsBySystemPartition[systempartition]];
+      }
+    });
+    return accountsBySystemPartition;
+  }
+
+  const unicoreAccountsBySystemPartition = _getAllUnicoreAccountsBySystemPartition();
+
+  function getUnicoreProjectsBySystemPartition() {
+    const projectsBySystemPartition = {};  // Output dictionary where key is systempartition and value is list of projects
+
+    // Initialize projects list for each systempartition
+    unicoreSystemPartitions.forEach(function(systempartition) {
+      projectsBySystemPartition[systempartition] = new Set();  // Using Set to store unique projects
+    });
+
+    // Iterate through all unicoreEntitlements and populate the projects for the relevant unicoreSystemPartitions
+    unicoreEntitlements.forEach(function(entitlement) {
+      const entitlementInfo = extractEntitlementResources(entitlement);
+
+      // Check if entitlement has valid info and if it matches the system partitions list
+      if (entitlementInfo && unicoreSystemPartitions.includes(entitlementInfo.systempartition)) {
+        // Only add project if account matches the unicorePreferredUsername when unicoreAccountType is secondary
+        if (unicoreAccountType === "normal" || entitlementInfo.account === unicorePreferredUsername) {
+          projectsBySystemPartition[entitlementInfo.systempartition].add(entitlementInfo.project);
+        }
+      }
+    });
+
+    // Convert Set to Array for each systempartition in the output dictionary
+    Object.keys(projectsBySystemPartition).forEach(function(systempartition) {
+      projectsBySystemPartition[systempartition] = [...projectsBySystemPartition[systempartition]];
+    });
+
+    return projectsBySystemPartition;
+  }
+
+  function getUnicorePartitions() {
+    let partitions = new Set();
+
+    // Iterate over unicoreSystemPartitions and add the corresponding partition names to the set
+    unicoreSystemPartitions.forEach((partition) => {
+      const partitionName = unicoreMapPartitions[partition.toLowerCase()];
+      if (partitionName) {
+        partitions.add(partitionName);
+      }
+    });
+
+    // Add default partitions to the set
+    Object.keys(unicoreDefaultPartitions).forEach((partition) => {
+      unicoreDefaultPartitions[partition].forEach((defaultPartition) => {
+        partitions.add(defaultPartition);
+      });
+    });
+
+    // If the unicoreAccountType is "normal", return all partitions (no filtering)
+    if (unicoreAccountType === "normal") {
+      return [...partitions]; // Convert Set to Array (removes duplicates)
+    }
+
+    // If the unicoreAccountType is "secondary", filter the partitions based on unicorePreferredUsername
+    if (unicoreAccountType === "secondary") {
+      return [...new Set(
+        [...partitions].filter(partition => {
+          // Check if the partition matches the preferred username from unicoreEntitlements
+          return unicoreEntitlements
+            .map(extractEntitlementResources) // Extract entitlement resources
+            .filter(Boolean) // Remove falsy values (null, undefined, etc.)
+            .some(tmp => tmp.systempartition && unicoreMapPartitions[tmp.systempartition.toLowerCase()] === partition && tmp.account === unicorePreferredUsername);
+        })
+      )]; // Remove duplicates using Set
+    }
+
+    // Return an empty array if unicoreAccountType is neither "normal" nor "secondary"
+    return [];
+  }
+
+  function getUnicoreAccountsS(systems) {
+    const accounts = new Set();  // A Set to ensure accounts are unique
+
+    // Iterate over the unicoreEntitlements to collect accounts related to the system
+    systems.forEach(system => {
+      unicoreEntitlements.forEach(function(entitlement) {
+        const entitlementInfo = extractEntitlementResources(entitlement);
+
+        // Check if the entitlement is for the provided system
+        if (entitlementInfo && unicoreMapSystems[entitlementInfo.systempartition.toLowerCase()] === system) {
+          if (unicoreAccountType === "normal") {
+            // If unicoreAccountType is "normal", add all accounts for the system
+            accounts.add(entitlementInfo.account);
+          } else if (unicoreAccountType === "secondary") {
+            // If unicoreAccountType is "secondary", only add the account if it matches unicorePreferredUsername
+            if (entitlementInfo.account === unicorePreferredUsername) {
+              accounts.add(entitlementInfo.account);
+            }
+          }
+        }
+      });
+    });
+
+    // Return the accounts as an array, since we're using a Set to avoid duplicates
+    return [...accounts];
+  }
+
+  function getUnicoreProjectsSA(systems, accounts) {
+    const projects = [];  // Initialize an empty array to store the list of projects
+
+    // Iterate through entitlements to find all projects for the system and account
+    systems.forEach(system => {
+      accounts.forEach(account => {
+        unicoreEntitlements.forEach(function(entitlement) {
+          const entitlementInfo = extractEntitlementResources(entitlement);
+
+          // Check if entitlement matches the provided system
+          if (entitlementInfo) {
+            const mappedSystem = unicoreMapSystems[entitlementInfo.systempartition.toLowerCase()];
+            if (mappedSystem === system) {
+              if (unicoreAccountType === "normal") {
+                // If unicoreAccountType is "normal", we check if the account matches
+                if (entitlementInfo.account === account) {
+                  projects.push(entitlementInfo.project);  // Add project to the list
+                }
+              } else if (unicoreAccountType === "secondary") {
+                // If unicoreAccountType is "secondary", only consider the entitlement if the account matches the preferred username
+                if (entitlementInfo.account === unicorePreferredUsername) {
+                  if (entitlementInfo.account === account) {
+                    projects.push(entitlementInfo.project);  // Add project to the list
+                  }
+                }
+              }
+            }
+          }
+        });
+      });
+    });
+    return [...new Set(projects)];
+  }
+
+  function getUnicoreProjectsS(systems) {
+    const projects = [];  // Initialize an empty array to store the list of projects
+
+    // Iterate through entitlements to find all projects for the system and account
+    systems.forEach(system => {
+      unicoreEntitlements.forEach(function(entitlement) {
+        const entitlementInfo = extractEntitlementResources(entitlement);
+
+        // Check if entitlement matches the provided system
+        if (entitlementInfo) {
+          const mappedSystem = unicoreMapSystems[entitlementInfo.systempartition.toLowerCase()];
+          if (mappedSystem === system) {
+            projects.push(entitlementInfo.project);
+          }
+        }
+      });
+    });
+    return [...new Set(projects)];
+  }
+
+  function getUnicorePartitionsSAP(systems, accounts=[], projects=[]) {
+    // Initialize the result list of partitions
+    let partitions = [];
+    let interactivePartitions = [];
+    let allPartitions = [];
+    systems.forEach(system => {
+      accounts.forEach(account => {
+        projects.forEach(project => {
+          // 1. Add interactive partitions for the given system (if any)
+
+          // 2. Get the system partitions for the given system and account/project (with entitlement checking)
+          const allPartitions_ = new Set(); // Using Set to ensure unique entries
+
+          let interactiveAdded = false;
+
+          // Iterate over the entitlements to get partitions for the specified system, account, and project
+          unicoreEntitlements.forEach(function(entitlement) {
+            const entitlementInfo = extractEntitlementResources(entitlement);
+            if (entitlementInfo && unicoreMapSystems[entitlementInfo.systempartition.toLowerCase()] === system && (entitlementInfo.project === project || project === "_all_")) {
+              // Apply unicoreAccountType logic
+              if (unicoreAccountType === "normal" || account === "_all_") {
+                if ( !interactiveAdded ){
+                  interactiveAdded = true;
+                  const interactivePartitions_ = systemConfig[system]?.interactivePartitions || [];
+                  interactivePartitions = [...new Set([...interactivePartitions, ...interactivePartitions_])]; // Start with interactive partitions
+                }
+                // For normal accounts, match the exact account
+                if (entitlementInfo.account === account || account === "_all_") {
+                  allPartitions_.add(unicoreMapPartitions[entitlementInfo.systempartition.toLowerCase()]);
+                }
+              } else if (unicoreAccountType === "secondary") {
+                // For secondary accounts, only match if the account is the preferred username
+                if ( !interactiveAdded ){
+                  interactiveAdded = true;
+                  const interactivePartitions_ = systemConfig[system]?.interactivePartitions || [];
+                  interactivePartitions = [...new Set([...interactivePartitions, ...interactivePartitions_])]; // Start with interactive partitions
+                }
+                if (entitlementInfo.account === unicorePreferredUsername && entitlementInfo.account === account) {
+                  allPartitions_.add(unicoreMapPartitions[entitlementInfo.systempartition.toLowerCase()]);
+                }
+              }
+            }
+            // 3. Add the partitions from entitlements to the list (remove duplicates automatically due to Set)
+            allPartitions = [...new Set([...allPartitions, ...allPartitions_])];
+          });
+
+          // 4. Add default partitions for the given system
+
+          Object.keys(unicoreDefaultPartitions).forEach(function(systempartition) {
+            let system_ = unicoreMapSystems[systempartition];
+            if ( system_ === system ) {
+              // Check if the systempartition matches
+              if (unicoreDefaultPartitions[systempartition]) {
+                // Add the corresponding partition from the unicoreMapPartitions object
+                if (allPartitions.includes(unicoreMapPartitions[systempartition])) {
+                  unicoreDefaultPartitions[systempartition].forEach(function(defaultPartition) {
+                    allPartitions.push(unicoreMapPartitions[defaultPartition.toLowerCase()]);
+                  });
+                }
+              }
+            }
+          });
+        });
+      });
+    });
+
+    // 5. Return the list of partitions (interactive first, then others, with defaults added)
+    return [...new Set([...interactivePartitions, ...allPartitions])];
+  }
+
+  function getAllUnicoreReservations() {
+    // Initialize an empty array to store reservation names
+    let reservations = [];
+
+    // Iterate over each system in the reservations object
+    Object.keys(unicoreReservations).forEach(system => {
+      // For each system, iterate over the reservations array
+      unicoreReservations[system].forEach(reservation => {
+        // Add the entire reservation object to the list (instead of just ReservationName)
+        reservations.push(reservation);
+      });
+    });
+
+    // Return the list of all reservations
+    return reservations;
+  }
+
+  function getUnicoreReservationsS(systems) {
+    // Check if the system exists in the reservations object
+    let reservations = [];
+    systems.forEach(system => {
+      if (unicoreReservations[system]) {
+        // Map the reservations for the system and return an array of ReservationNames
+        reservations.push(unicoreReservations[system].filter(reservation => reservation).map(reservation => reservation));
+      }
+    });
+    return reservations;
+  }
+
+  function getUnicoreReservationsSAPP(systems, accounts, projects, partitions) {
+    // Check if the system exists in the reservations object
+    let reservations = [];
+
+    systems.forEach(system => {
+      accounts.forEach(account => {
+        projects.forEach(project => {
+          partitions.forEach(partition => {
+            if (!unicoreReservations[system]) {
+              return;
+            }
+
+            // Check if the partition is interactive for the given system
+            const isInteractivePartition = systemConfig[system] && systemConfig[system].interactivePartitions.includes(partition);
+
+            // If the partition is interactive, do not return any reservations for it
+            if (isInteractivePartition) {
+              return;
+            }
+
+            // Filter the reservations for the given system based on the provided account, project, and partition
+            reservations.push(
+              ...unicoreReservations[system].filter(reservation => {
+                const partitionMatches = (reservation.PartitionName === "" || reservation.PartitionName === partition || partition === "_all_");
+                const usersMatch = (reservation.Users === "" || reservation.Users.split(",").includes(account) || account === "_all_");
+                const accountsMatch = (reservation.Accounts === "" || reservation.Accounts === project || project === "_all_");
+                return partitionMatches && usersMatch && accountsMatch;
+              })
+            );
+          });
+        });
+      });
+    });
+    return [...new Set(reservations)];
+  }
+
+
+  function getUnicoreValues(serviceId, rowId, elementId) {
+    const inputElement = getInputElement(serviceId, rowId, elementId);
+    const labelElementCB = getLabelCBElement(serviceId, rowId, elementId);
+      //if (inputElement.length == 0 || inputElement.attr("data-collect") === "false" ) {
+      if (inputElement.length == 0 || inputElement.is("[disabled]") ) {
+        // Input does not exist, or is disabled. Use the keyword _all_ instead.
+        return ["_all_"];
+      } else {
+        return val(inputElement);
+      }
+   
+  }
+
+  function getAccountOptions(serviceId, rowId) {
+    const systems = val(getInputElement(serviceId, rowId, "system"));
+    const accounts = getUnicoreAccountsS(systems);
+    if (accounts.includes(unicorePreferredUsername)) {
+      accounts.sort(account => account === unicorePreferredUsername ? -1 : 1);
+    }
+    return accounts.map(item => [item, item]);
+  }
+
+  function getProjectOptions(serviceId, rowId) {
+    const systems = val(getInputElement(serviceId, rowId, "system"));
+    let projects = [];
+    const accountInput = getInputElement(serviceId, rowId, "account");
+    const accounts = val(accountInput);
+    if ( accountInput.length > 0 && accounts.length > 0 && accounts[0] ){
+      // Account Option exists, let's take it into account
+      const accounts = val(accountInput);
+      projects = getUnicoreProjectsSA(systems, accounts);
+    } else {
+      // Acount selection does not exists (e.g. in workshopManager)
+      projects = getUnicoreProjectsS(systems);
+    }
+    return projects.map(item => [item, item]);
+  }
+
+  function getPartitionOptions(serviceId, rowId) {
+    const systems = val(getInputElement(serviceId, rowId, "system"));
+    const accounts = getUnicoreValues(serviceId, rowId, "account");
+    const projects = getUnicoreValues(serviceId, rowId, "project");
+    let partitions = getUnicorePartitionsSAP(systems, accounts, projects);
+    
+    return partitions.map(item => [item, item]);
+  }
+
+  function getPartitionAndInteractivePartition(serviceId, rowId) {
+    const systems = val(getInputElement(serviceId, rowId, "system"));
+    const partitions = getPartitionOptions(serviceId, rowId);
+    let interactivePartitionsLength = 0;
+    let interactivePartitionAdded = [];
+    partitions.forEach(partition => {
+      let partition_ = partition[0];
+      systems.forEach(system => {
+        if ( (systemConfig[system]?.interactivePartitions || []).includes(partition_) ) {
+          if ( !interactivePartitionAdded.includes(partition_) ) {
+            interactivePartitionsLength += 1;
+            interactivePartitionAdded.push(partition_);
+          }
+        }
+      });
+    });
+    return [partitions, interactivePartitionsLength];
+  }
+
+  function getReservationOptions(serviceId, rowId) {
+    const systems = val(getInputElement(serviceId, rowId, "system"));
+    const accounts = getUnicoreValues(serviceId, rowId, "account");
+    const projects = getUnicoreValues(serviceId, rowId, "project");
+    const partitions = getUnicoreValues(serviceId, rowId, "partition");
+
+    return getUnicoreReservationsSAPP(systems, accounts, projects, partitions);
+  }
+{# <-- Unicore Systems #}
+
+{# All Systems --> #}
+  function _getAllSystems() {
+    // Combine both lists and remove duplicates using a Set
+    let allSystems = [...new Set([...unicoreSystems, ...kubeSystems])];
+
+    {%- if pagetype == vars.pagetype_workshop %}
+    const allowedSystems = {{ spawner.user_options.get("workshop", {}).get("system", false) | tojson }};
+    if ( allowedSystems ) {
+      allSystems = allSystems.filter(system => allowedSystems.includes(system));
+    }
+    {%- endif %}
+    allSystems = allSystems.filter(system => !globalMaintenanceSystems.includes(system));
+    return allSystems;
+  }
+
+  function getAvailableSystemOptions(serviceId, options) {
+    let ret = [];
+    options.forEach(option => {
+      if (getServiceConfig(serviceId)?.options && Object.keys(getServiceConfig(serviceId)?.options).includes(option)) {
+        const subSystems1 = getServiceConfig(serviceId).options[option].allowedLists.systems;
+        ret.push(..._getAllSystems().filter(system => subSystems1.includes(system)));
+      } else {
+        // return all systems, if it's not reduced by the option
+        ret.push(..._getAllSystems());
+      }
+    });
+    
+    let uniqueSystems = [...new Set(ret)];
+    uniqueSystems.sort((a, b) => (systemConfig[a].weight || 0) - (systemConfig[b].weight || 0));
+    uniqueSystems = uniqueSystems.filter(system => !globalMaintenanceSystems.includes(system) );
+    return uniqueSystems.map(item => [item, item]);
+  }
+
+  function getMissingSystemOptions(serviceId, rowId, options) {
+    let availableSystems = getAvailableSystemOptions(serviceId, options);
+    let missingSystems = _getAllSystems().filter(system => !availableSystems.map(([key, value]) => key).includes(system));
+
+    {%- if pagetype == vars.pagetype_workshop %}
+    const allowedSystems = {{ spawner.user_options.get("workshop", {}).get("system", false) | tojson }};
+    if ( allowedSystems ) {
+      missingSystems = missingSystems.filter(system => allowedSystems.includes(system));
+    }
+    {%- endif %}
+    return missingSystems.map(item => [item, item]);
+  }
+
+
+  function getSystemValues(serviceId, rowId, element) {
+    let systems = val(getInputElement(serviceId, rowId, "system"));
+    let values = [];
+    if ( element === "system" ){
+      values = systems;
+    } else {
+      let systemTypesChecked = [];
+      systems.forEach(system => {
+        const backendService = systemConfig[system]?.backendService;
+        const systemType = backendServicesConfig[backendService]?.type;
+        if ( !systemTypesChecked.includes(systemType) ) {
+          systemTypesChecked.push(systemType);
+          let value = $(`[id^='${serviceId}-${rowId}-'][id$='-${element}-input']`).val();
+          if ( value ) {
+            if (!Array.isArray(value)) {
+              value = [value];
+            }
+            values.push(...value);
+          }
+        }
+      });
+    }
+    return values;
+  }
+
+
+  function getSystemTypes(serviceId, rowId) {
+    const systems = getSystemValues(serviceId, rowId, "system");
+    let systemTypes = [];
+    systems.forEach(system => {
+      const systemType = mappingDict[serviceId]?.["system"]?.[system] ?? system;
+      if ( !systemTypes.includes(systemType) ){
+        systemTypes.push(systemType);
+      }
+    });
+    return systemTypes;
+  }
+{# <-- All Systems #}

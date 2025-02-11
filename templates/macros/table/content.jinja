@@ -1,0 +1,764 @@
+{%- import "macros/table/elements.jinja" as table_elements with context %}
+{%- import "macros/svgs.jinja" as svg -%}
+
+{% macro workshopmanager_description() %}
+  <h2>Workshop Manager</h2>
+  <p>Select the options users might be able to use during your workshop.</p>
+  <p>Use shift or ctrl to select multiple items. <a style="color:#fff" href="https://jupyterjsc.pages.jsc.fz-juelich.de/docs/jupyterjsc/" target="_">Click here for more information.</a></p>
+{% endmacro %}
+
+{% macro workshopmanager_headerlayout() %}
+  <th scope="col" width="1%"></th>
+  <th scope="col" width="20%">Name</th>
+  <th scope="col">Description</th>
+  <th scope="col" class="text-center" width="10%">Action</th>
+{% endmacro %}
+
+{% macro workshopmanager_defaultheader(service_id, row_id, row_options, service_options) %}
+  <th scope="row" class="name-td">{{ row_id }}</th>
+  <th scope="row" class="description-td text-center">{{ row_options.get("user_options", {}).get("description", "") }}</th>
+  <th scope="row" class="url-td text-center">
+    <button type="button" id="{{ service_id }}-{{row_id}}-open-btn-header" class="btn btn-success open-workshop-btn" data-target="#{{ row_id }}-workshop-link" onclick="window.open('https://{{ hostname }}{{ base_url }}workshops/{{ row_id }}');">{{ svg.open_svg | safe }} Open</button>
+  </th>
+{% endmacro %}
+
+{% macro workshopmanager_firstheader(service_id, row_id, row_options, service_options) %}
+  <th scope="row" class="name-td">New Workshop</th>
+  <th scope="row" class="description-td text-center">Design a simplified set of options for your workshop to make it more accessible for your students.</th>
+  <th scope="row" class="url-td text-center">
+    <button type="button" data-service="{{ service_id }}" data-row="{{ row_id }}" id="{{ service_id }}-{{row_id}}-new-btn-header" class="btn btn-primary" data-target="#{{ row_id }}-workshop-link">{{ svg.plus_svg | safe }} Create</button>
+  </th>
+{% endmacro %}
+
+{% macro workshopmanager_row_content(service_id, service_options, row_id, tab_id) %}
+  {%- for side in service_options.get("tabs", {}).get(tab_id, {}).keys() %}
+    <div class="col-6">
+      {%- for element_id, element_options in service_options.get("tabs", {}).get(tab_id, {}).get(side, {}).items() %}
+        {{ table_elements.create_element(service_id, row_id, tab_id, element_id, element_options) }}
+      {%- endfor %}
+    </div>
+  {%- endfor %}
+{% endmacro %}
+
+{% macro workshop_headerlayout() %}
+  <th scope="col" width="1%"></th>
+  <th scope="col" width="20%">Name</th>
+  <th scope="col">Description</th>
+  <th scope="col" class="text-center" width="10%">Status</th>
+  <th scope="col" class="text-center" width="10%">Action</th>
+{% endmacro %}
+
+{% macro workshop_firstheader(service_id, row_id, row_options, service_options) %}
+  <th scope="row" class="name-td">{{ spawner.user_options.get("workshop", {}).get("name", "Workshop") }}</th>
+  <th scope="row" class="description-td text-center">{{ workshop_options.get("description") }}</th>
+  <th scope="row" class="status-td">
+    <div class="d-flex justify-content-center">
+      <div class="d-flex flex-column">
+        <div class="d-flex justify-content-center progress" style="background-color: #d3e4f4; height: 20px; min-width: 100px;">
+          <div id="{{ service_id }}-{{ row_id }}-progress-bar" data-service="{{ service_id }}"  data-row="{{ row_id }}" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0px; margin-right: auto;"></div>
+          <span id="{{ service_id }}-{{ row_id }}-progress-text" style="position: absolute; width: 100px; text-align: center; line-height: 20px; color: black">0%</span>
+        </div>
+        <span id="{{ service_id }}-{{ row_id }}-progress-info-text" class="progress-info-text text-center text-muted" style="font-size: smaller;"></span>
+      </div>
+    </div>
+  </th>
+  <th scope="row" class="url-td text-center" style="white-space: nowrap">
+    <button type="button"
+      id="{{ service_id }}-{{row_id}}-open-btn-header"
+      class="btn btn-success"
+      data-service="{{ service_id }}"
+      data-row="{{ row_id }}"
+      data-element="open"
+      {%- if not spawner.active %}
+      style="display: none"
+      {%- endif %}
+      >
+      {{ svg.open_svg | safe }} Open
+    </button>
+    <button type="button"
+      id="{{ service_id }}-{{row_id}}-stop-btn-header"
+      class="btn btn-danger"
+      data-service="{{ service_id }}"
+      data-row="{{ row_id }}"
+      data-element="stop"
+      {%- if not spawner.ready %}
+      style="display: none"
+      {%- endif %}
+      >
+      {{ svg.stop_svg | safe }} Stop
+    </button>
+    <button type="button"
+      id="{{ service_id }}-{{row_id}}-cancel-btn-header"
+      class="btn btn-danger"
+      data-service="{{ service_id }}"
+      data-row="{{ row_id }}"
+      data-element="cancel"
+      {%- if spawner.ready or not spawner.active %}
+      style="display: none"
+      {%- endif %}
+      >
+      {{ svg.stop_svg | safe }} Cancel
+    </button>
+    <button type="button"
+      id="{{ service_id }}-{{row_id}}-start-btn-header"
+      class="btn btn-primary"
+      data-service="{{ service_id }}"
+      data-row="{{ row_id }}"
+      data-element="start"
+      {%- if spawner.active %}
+      style="display: none"
+      {%- endif %}
+      >
+      {{ svg.start_svg | safe }} Start
+    </button>
+  </th>
+{% endmacro %}
+
+{% macro workshop_description() %}
+{% endmacro %}
+
+{% macro home_description() %}
+  <p>You can configure your existing JupyterLabs by expanding the corresponding table row.</p>
+{% endmacro %}
+
+
+{% macro home_headerlayout() %}
+  <th scope="col" width="1%"></th>
+  <th scope="col" width="20%">Name</th>
+  <th scope="col">Configuration</th>
+  <th scope="col" class="text-center" width="10%">Status</th>
+  <th scope="col" class="text-center" width="10%">Action</th>
+{% endmacro %}
+
+{% macro home_firstheader(service_id, row_id, row_options, service_options) %}
+  <th scope="row" colspan="100%" class="text-center">New JupyterLab</th>
+{% endmacro %}
+
+
+{% macro home_defaultheaderTypeNormal(spawner, service_id, row_id, row_options, service_options) %}
+      {%- set ready = spawner.ready %}
+      {%- set active = spawner.active %}
+      {%- set failed = spawner.failed %}
+      {%- set progress = 0 %}
+      {%- set events = spawner.events if spawner.events is iterable and spawner.events is not string else [] %}
+      {%- set last_event = events | last %}
+      {%- if ready %}
+        {%- set progress = 100 %}
+      {%- elif active %}
+        {%- set progress = last_event.get("progress", 0) if last_event is mapping else 0 %}
+      {%- elif spawner.events %}
+        {%- set progress = 0 %}
+      {%- endif %}
+      {%- set default_option = service_options.get("default", {}).get("options", {}).get("option", false) %}
+      {%- set option = spawner.user_options.get("option", default_option)  %}
+      {%- set default_system = service_options.get("default", {}).get("options", {}).get("system", false) %}
+      {%- set system = spawner.user_options.get("system", default_system) %}
+      <th scope="row" class="name-td">{{ spawner.user_options.get("name", "Unnamed") }}</th>
+      <td scope="row" class="config-td">
+        <div style="max-height: 152px; overflow: auto;">
+          <div class="row mx-3 mb-1 justify-content-between g-0">
+            <div id="{{ service_id }}-{{ row_id }}-config-td-div" class="row col-12 col-md-6 col-lg-12 d-flex align-items-center">            
+              <div id="{{ service_id }}-{{ row_id }}-config-td-system-div" class="col text-lg-center col-12 col-lg-3">
+                <span class="text-muted" style="font-size: smaller;">System</span><br>
+                <span id="{{ service_id }}-{{ row_id }}-config-td-system">{{ system }}</span>
+              </div>
+              <div id="{{ service_id }}-{{ row_id }}-config-td-option-div" class="col text-lg-center col-12 col-lg-3">
+                <span class="text-muted" style="font-size: smaller;">Option</span><br>
+                <span id="{{ service_id }}-{{ row_id }}-config-td-option">{{ option }}</span>
+              </div>
+              <div id="{{ service_id }}-{{ row_id }}-config-td-project-div" class="col text-lg-center col-12 col-lg-3" {% if not spawner.user_options.get("hpc", {}).get("project", false) -%} style="display: none" {%- endif %}>
+                <span class="text-muted" style="font-size: smaller;">Project</span><br>
+                <span id="{{ service_id }}-{{ row_id }}-config-td-project">{{ spawner.user_options.get("hpc", {}).get("project", "") }}</span>
+              </div>
+              <div id="{{ service_id }}-{{ row_id }}-config-td-partition-div" class="col text-lg-center col-12 col-lg-3"{% if not spawner.user_options.get("hpc", {}).get("partition", false) -%} style="display: none" {%- endif %}>
+                <span class="text-muted" style="font-size: smaller;">Partition</span><br>
+                <span id="{{ service_id }}-{{ row_id }}-config-td-partition">{{ spawner.user_options.get("hpc", {}).get("partition", "") }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </td>
+
+      <th scope="row" class="status-td">
+        <div class="d-flex justify-content-center">
+          <div class="d-flex flex-column">
+            <div class="d-flex justify-content-center progress" style="background-color: #d3e4f4; height: 20px; min-width: 100px;">
+              <div id="{{ service_id }}-{{ row_id }}-progress-bar"
+                data-service="{{ service_id }}"
+                data-row="{{ row_id }}"
+                class="
+                {%- if ready %}
+                bg-success
+                {%- endif %}
+                progress-bar progress-bar-striped progress-bar-animated
+                "
+                role="progressbar"
+                style="width: {{ progress }}px; margin-right: auto;"
+              ></div>
+              <span id="{{ service_id }}-{{ row_id }}-progress-text"
+                style="position: absolute;
+                  width: 100px;
+                  text-align: center;
+                  line-height: 20px;
+                  {% if progress >= 60 %}
+                  color: white
+                  {% else %}
+                  color: black
+                  {% endif -%}
+                  "
+              >{{ progress }}%</span>
+            </div>
+            <span id="{{ service_id }}-{{ row_id }}-progress-info-text" class="progress-info-text text-center text-muted" style="font-size: smaller;">
+              {%- if ready %}
+              running
+              {%- elif active %}
+              starting
+              {%- elif progress == 99 %}
+              cancelling
+              {%- endif %}
+            </span>
+          </div>
+        </div>
+      </th>
+      <th scope="row" class="url-td text-center" style="white-space: nowrap">
+        <button type="button"
+          id="{{ service_id }}-{{row_id}}-open-btn-header"
+          class="btn btn-success"
+          data-service="{{ service_id }}"
+          data-row="{{ row_id }}"
+          data-element="open"
+          {%- if not spawner.active %}
+          style="display: none"
+          {%- endif %}>
+          {{ svg.open_svg | safe }} Open
+        </button>
+        <button type="button"
+          id="{{ service_id }}-{{row_id}}-stop-btn-header"
+          class="btn btn-danger"
+          data-service="{{ service_id }}"
+          data-row="{{ row_id }}"
+          data-element="stop"
+          {%- if not spawner.ready %}
+          style="display: none"
+          {%- endif %}
+          >
+          {{ svg.stop_svg | safe }} Stop
+        </button>
+        <button type="button"
+          id="{{ service_id }}-{{row_id}}-cancel-btn-header"
+          class="btn btn-danger"
+          data-service="{{ service_id }}"
+          data-row="{{ row_id }}"
+          data-element="cancel"
+          {%- if spawner.ready or not spawner.active %}
+          style="display: none"
+          {%- endif %}
+          >
+          {{ svg.stop_svg | safe }} Cancel
+        </button>
+        <button type="button"
+          id="{{ service_id }}-{{row_id}}-start-btn-header"
+          class="btn btn-primary"
+          data-service="{{ service_id }}"
+          data-row="{{ row_id }}"
+          data-element="start"
+          {%- if spawner.active %}
+          style="display: none"
+          {%- endif %}
+          >
+          {{ svg.start_svg | safe }} Start
+        </button>
+        <button type="button"
+          id="{{ service_id }}-{{row_id}}-na-btn-header"
+          class="btn btn-secondary btn-na-lab disabled"
+          data-service="{{ service_id }}"
+          data-row="{{ row_id }}"
+          data-element="na"
+          style="display: none"
+          >
+          {{ svg.na_svg | safe }} N/A
+        </button>
+        <button type="button"
+          id="{{ service_id }}-{{row_id}}-del-btn-header"
+          class="btn btn-danger"
+          data-service="{{ service_id }}"
+          data-row="{{ row_id }}"
+          data-element="del"
+          style="display: none"
+          >
+          {{ svg.delete_svg | safe }}
+        </button>
+      </th>
+      
+{%- endmacro %}
+
+{% macro home_defaultheaderTypeWorkshop(spawner, service_id, row_id, row_options, service_options) %}
+      {%- set ready = spawner.ready %}
+      {%- set active = spawner.active %}
+      {%- set failed = spawner.failed %}
+      {%- set progress = 0 %}
+      {%- set events = spawner.events if spawner.events is iterable and spawner.events is not string else [] %}
+      {%- set last_event = events | last %}
+      {%- if ready %}
+        {%- set progress = 100 %}
+      {%- elif active %}
+        {%- set progress = last_event.get("progress", 0) if last_event is mapping else 0 %}
+      {%- elif spawner.events %}
+        {%- set progress = 0 %}
+      {%- endif %}
+      <th scope="row" class="name-td">{{ spawner.user_options.get("name", "Unnamed") }}</th>
+      <td scope="row" class="config-td">
+        <div style="max-height: 152px; overflow: auto;">
+          <div class="row mx-3 mb-1 justify-content-between">
+            <div id="{{ service_id }}-{{ row_id }}-config-td-div" class="row col-12 col-md-6 col-lg-12 d-flex align-items-center">
+              {%- if spawner.user_options.get("system", false) %}
+                <div id="{{ service_id }}-{{ row_id }}-config-td-system-div" class="col text-lg-center col-12 col-lg-3">
+                  <span class="text-muted" style="font-size: smaller;">System</span><br>
+                  <span id="{{ service_id }}-{{ row_id }}-config-td-system">{{ spawner.user_options.get("system", "unknown") }}</span>
+                </div>
+                <div id="{{ service_id }}-{{ row_id }}-config-td-info-div" class="col text-lg-center col-12 col-lg-9">
+                  <span class="text-muted" style="font-size: smaller;">Workshop {{ service_id }}</span><br>
+                  <span id="{{ service_id }}-{{ row_id }}-config-td-info">Click "Configure" to use this Configuration.</span>
+                </div>
+              {%- else %}
+              <div id="{{ service_id }}-{{ row_id }}-config-td-info-div" class="col text-lg-center col-12 col-lg-12">
+                <span class="text-muted" style="font-size: smaller;">Workshop {{ service_id }}</span><br>
+                <span id="{{ service_id }}-{{ row_id }}-config-td-info">Click "Configure" to use this Configuration.</span>
+              </div>
+              {%- endif %}
+
+            </div>
+          </div>
+        </div>
+      </td>
+
+      <th scope="row" class="status-td">
+        <div class="d-flex justify-content-center">
+          <div class="d-flex flex-column">
+            <div class="d-flex justify-content-center progress" style="background-color: #d3e4f4; height: 20px; min-width: 100px;">
+              <div id="{{ service_id }}-{{ row_id }}-progress-bar"
+                data-service="{{ service_id }}"
+                data-row="{{ row_id }}"
+                class="
+                {%- if ready %}
+                bg-success
+                {%- endif %}
+                progress-bar progress-bar-striped progress-bar-animated
+                "
+                role="progressbar"
+                style="width: {{ progress }}px; margin-right: auto;"
+              ></div>
+              <span id="{{ service_id }}-{{ row_id }}-progress-text"
+                style="position: absolute;
+                  width: 100px;
+                  text-align: center;
+                  line-height: 20px;
+                  {% if progress >= 60 %}
+                  color: white
+                  {% else %}
+                  color: black
+                  {% endif -%}
+                  "
+              >{{ progress }}%</span>
+            </div>
+            <span id="{{ service_id }}-{{ row_id }}-progress-info-text" class="progress-info-text text-center text-muted" style="font-size: smaller;">
+              {%- if ready %}
+              running
+              {%- elif active %}
+              starting
+              {%- elif progress == 99 %}
+              cancelling
+              {%- endif %}
+            </span>
+          </div>
+        </div>
+      </th>
+      <th scope="row" class="url-td text-center" style="white-space: nowrap">
+        <button type="button"
+          id="{{ service_id }}-{{row_id}}-manage-btn-header"
+          class="btn btn-primary"
+          data-service="{{ service_id }}"
+          data-row="{{ row_id }}"
+          data-element="manage"
+          >
+          {{ svg.settings_svg | safe }} Configure
+        </button>
+        <button type="button"
+          id="{{ service_id }}-{{row_id}}-open-btn-header"
+          class="btn btn-success"
+          data-service="{{ service_id }}"
+          data-row="{{ row_id }}"
+          data-element="open"
+          {%- if not ready %}
+          disabled
+          {%- endif %}
+          {%- if not spawner.active %}
+          style="display: none"
+          {%- endif %}>
+          {{ svg.open_svg | safe }} Open
+        </button>
+        <button type="button"
+          id="{{ service_id }}-{{row_id}}-stop-btn-header"
+          class="btn btn-danger"
+          data-service="{{ service_id }}"
+          data-row="{{ row_id }}"
+          data-element="stop"
+          {%- if not spawner.ready %}
+          style="display: none"
+          {%- endif %}
+          >
+          {{ svg.stop_svg | safe }} Stop
+        </button>
+        <button type="button"
+          id="{{ service_id }}-{{row_id}}-cancel-btn-header"
+          class="btn btn-danger"
+          data-service="{{ service_id }}"
+          data-row="{{ row_id }}"
+          data-element="cancel"
+          {%- if spawner.ready or not spawner.active %}
+          style="display: none"
+          {%- endif %}
+          >
+          {{ svg.stop_svg | safe }} Cancel
+        </button>
+        <button type="button"
+          id="{{ service_id }}-{{row_id}}-del-btn-header"
+          class="btn btn-danger"
+          data-service="{{ service_id }}"
+          data-row="{{ row_id }}"
+          data-element="del"
+          >
+          {{ svg.delete_svg | safe }}
+        </button>
+      </th>
+      
+{%- endmacro %}
+
+{% macro home_defaultheaderTypeShare(spawner, service_id, row_id, row_options, service_options) %}
+      {%- set ready = spawner.ready %}
+      {%- set active = spawner.active %}
+      {%- set failed = spawner.failed %}
+      {%- set progress = 0 %}
+      {%- set events = spawner.events if spawner.events is iterable and spawner.events is not string else [] %}
+      {%- set last_event = events | last %}
+      {%- if ready %}
+        {%- set progress = 100 %}
+      {%- elif active %}
+        {%- set progress = last_event.get("progress", 0) if last_event is mapping else 0 %}
+      {%- elif spawner.events %}
+        {%- set progress = 0 %}
+      {%- endif %}
+      <th scope="row" class="name-td">{{ spawner.user_options.get("name", "Unnamed") }}</th>
+      <td scope="row" class="config-td">
+        <div style="max-height: 152px; overflow: auto;">
+          <div class="row mx-3 mb-1 justify-content-between">
+            <div id="{{ service_id }}-{{ row_id }}-config-td-div" class="row col-12 col-md-6 col-lg-12 d-flex align-items-center">
+              {%- if spawner.user_options.get("system", false) %}
+                <div id="{{ service_id }}-{{ row_id }}-config-td-system-div" class="col text-lg-center col-12 col-lg-3">
+                  <span class="text-muted" style="font-size: smaller;">System</span><br>
+                  <span id="{{ service_id }}-{{ row_id }}-config-td-system">{{ spawner.user_options.get("system", "unknown") }}</span>
+                </div>
+                <div id="{{ service_id }}-{{ row_id }}-config-td-info-div" class="col text-lg-center col-12 col-lg-9">
+                  <span class="text-muted" style="font-size: smaller;">Shared {{ service_id }}</span><br>
+                  <span id="{{ service_id }}-{{ row_id }}-config-td-info">Shared configuration ({{ spawner.user_options.get("share_id", "unknown")}}).</span>
+                </div>
+              {%- else %}
+                <div id="{{ service_id }}-{{ row_id }}-config-td-info-div" class="col text-lg-center col-12 col-lg-12">
+                  <span class="text-muted" style="font-size: smaller;">Shared {{ service_id }}</span><br>
+                  <span id="{{ service_id }}-{{ row_id }}-config-td-info">Shared configuration ({{ spawner.user_options.get("share_id", "unknown")}}).</span>
+                </div>
+              {%- endif %}
+            </div>
+          </div>
+        </div>
+      </td>
+
+      <th scope="row" class="status-td">
+        <div class="d-flex justify-content-center">
+          <div class="d-flex flex-column">
+            <div class="d-flex justify-content-center progress" style="background-color: #d3e4f4; height: 20px; min-width: 100px;">
+              <div id="{{ service_id }}-{{ row_id }}-progress-bar"
+                data-service="{{ service_id }}"
+                data-row="{{ row_id }}"
+                class="
+                {%- if ready %}
+                bg-success
+                {%- endif %}
+                progress-bar progress-bar-striped progress-bar-animated
+                "
+                role="progressbar"
+                style="width: {{ progress }}px; margin-right: auto;"
+              ></div>
+              <span id="{{ service_id }}-{{ row_id }}-progress-text"
+                style="position: absolute;
+                  width: 100px;
+                  text-align: center;
+                  line-height: 20px;
+                  {% if progress >= 60 %}
+                  color: white
+                  {% else %}
+                  color: black
+                  {% endif -%}
+                  "
+              >{{ progress }}%</span>
+            </div>
+            <span id="{{ service_id }}-{{ row_id }}-progress-info-text" class="progress-info-text text-center text-muted" style="font-size: smaller;">
+              {%- if ready %}
+              running
+              {%- elif active %}
+              starting
+              {%- elif progress == 99 %}
+              cancelling
+              {%- endif %}
+            </span>
+          </div>
+        </div>
+      </th>
+      <th scope="row" class="url-td text-center" style="white-space: nowrap">
+        <button type="button"
+          id="{{ service_id }}-{{row_id}}-open-btn-header"
+          class="btn btn-success"
+          data-service="{{ service_id }}"
+          data-row="{{ row_id }}"
+          data-element="open"
+          {%- if not spawner.active %}
+          style="display: none"
+          {%- endif %}>
+          {{ svg.open_svg | safe }} Open
+        </button>
+        <button type="button"
+          id="{{ service_id }}-{{row_id}}-stop-btn-header"
+          class="btn btn-danger"
+          data-service="{{ service_id }}"
+          data-row="{{ row_id }}"
+          data-element="stop"
+          {%- if not spawner.ready %}
+          style="display: none"
+          {%- endif %}
+          >
+          {{ svg.stop_svg | safe }} Stop
+        </button>
+        <button type="button"
+          id="{{ service_id }}-{{row_id}}-cancel-btn-header"
+          class="btn btn-danger"
+          data-service="{{ service_id }}"
+          data-row="{{ row_id }}"
+          data-element="cancel"
+          {%- if spawner.ready or not spawner.active %}
+          style="display: none"
+          {%- endif %}
+          >
+          {{ svg.stop_svg | safe }} Cancel
+        </button>
+        <button type="button"
+          id="{{ service_id }}-{{row_id}}-start-btn-header"
+          class="btn btn-primary"
+          data-service="{{ service_id }}"
+          data-row="{{ row_id }}"
+          data-element="start"
+          {%- if spawner.active %}
+          style="display: none"
+          {%- endif %}
+          >
+          {{ svg.start_svg | safe }} Start
+        </button>
+        <button type="button"
+          id="{{ service_id }}-{{row_id}}-na-btn-header"
+          class="btn btn-secondary btn-na-lab disabled"
+          data-service="{{ service_id }}"
+          data-row="{{ row_id }}"
+          data-element="na"
+          style="display: none"
+          >
+          {{ svg.na_svg | safe }} N/A
+        </button>
+        <button type="button"
+          id="{{ service_id }}-{{row_id}}-del-btn-header"
+          class="btn btn-danger"
+          data-service="{{ service_id }}"
+          data-row="{{ row_id }}"
+          data-element="del"
+          style="display: none"
+          >
+          {{ svg.delete_svg | safe }}
+        </button>
+      </th>
+      
+{%- endmacro %}
+
+{% macro home_defaultheaderTypeR2D(spawner, service_id, row_id, row_options, service_options) %}
+      {%- set ready = spawner.ready %}
+      {%- set active = spawner.active %}
+      {%- set failed = spawner.failed %}
+      {%- set progress = 0 %}
+      {%- set events = spawner.events if spawner.events is iterable and spawner.events is not string else [] %}
+      {%- set last_event = events | last %}
+      {%- if ready %}
+        {%- set progress = 100 %}
+      {%- elif active %}
+        {%- set progress = last_event.get("progress", 0) if last_event is mapping else 0 %}
+      {%- elif spawner.events %}
+        {%- set progress = 0 %}
+      {%- endif %}
+      <th scope="row" class="name-td">{{ spawner.user_options.get("name", "Unnamed") }}</th>
+      <td scope="row" class="config-td">
+        <div style="max-height: 152px; overflow: auto;">
+          <div class="row mx-3 mb-1 justify-content-between">
+            <div id="{{ service_id }}-{{ row_id }}-config-td-div" class="row col-12 col-md-6 col-lg-12 d-flex align-items-center">
+              {%- if spawner.user_options.get("system", false) %}
+                <div id="{{ service_id }}-{{ row_id }}-config-td-system-div" class="col text-lg-center col-12 col-lg-3">
+                  <span class="text-muted" style="font-size: smaller;">System</span><br>
+                  <span id="{{ service_id }}-{{ row_id }}-config-td-system">{{ spawner.user_options.get("system", "unknown") }}</span>
+                </div>
+                <div id="{{ service_id }}-{{ row_id }}-config-td-info-div" class="col text-lg-center col-12 col-lg-9">
+                  <span class="text-muted" style="font-size: smaller;">Binder Configuration</span><br>
+                  <span id="{{ service_id }}-{{ row_id }}-config-td-info">Direct Link via Repo2Docker.</span>
+                </div>
+              {%- else %}
+                <div id="{{ service_id }}-{{ row_id }}-config-td-info-div" class="col text-lg-center col-12 col-lg-12">
+                  <span class="text-muted" style="font-size: smaller;">Binder Configuration</span><br>
+                  <span id="{{ service_id }}-{{ row_id }}-config-td-info">Direct Link via Repo2Docker.</span>
+                </div>
+              {%- endif %}
+            </div>
+          </div>
+        </div>
+      </td>
+
+      <th scope="row" class="status-td">
+        <div class="d-flex justify-content-center">
+          <div class="d-flex flex-column">
+            <div class="d-flex justify-content-center progress" style="background-color: #d3e4f4; height: 20px; min-width: 100px;">
+              <div id="{{ service_id }}-{{ row_id }}-progress-bar"
+                data-service="{{ service_id }}"
+                data-row="{{ row_id }}"
+                class="
+                {%- if ready %}
+                bg-success
+                {%- endif %}
+                progress-bar progress-bar-striped progress-bar-animated
+                "
+                role="progressbar"
+                style="width: {{ progress }}px; margin-right: auto;"
+              ></div>
+              <span id="{{ service_id }}-{{ row_id }}-progress-text"
+                style="position: absolute;
+                  width: 100px;
+                  text-align: center;
+                  line-height: 20px;
+                  {% if progress >= 60 %}
+                  color: white
+                  {% else %}
+                  color: black
+                  {% endif -%}
+                  "
+              >{{ progress }}%</span>
+            </div>
+            <span id="{{ service_id }}-{{ row_id }}-progress-info-text" class="progress-info-text text-center text-muted" style="font-size: smaller;">
+              {%- if ready %}
+              running
+              {%- elif active %}
+              starting
+              {%- elif progress == 99 %}
+              cancelling
+              {%- endif %}
+            </span>
+          </div>
+        </div>
+      </th>
+      <th scope="row" class="url-td text-center" style="white-space: nowrap">
+        <button type="button"
+          id="{{ service_id }}-{{row_id}}-open-btn-header"
+          class="btn btn-success"
+          data-service="{{ service_id }}"
+          data-row="{{ row_id }}"
+          data-element="open"
+          {%- if not spawner.active %}
+          style="display: none"
+          {%- endif %}>
+          {{ svg.open_svg | safe }} Open
+        </button>
+        <button type="button"
+          id="{{ service_id }}-{{row_id}}-stop-btn-header"
+          class="btn btn-danger"
+          data-service="{{ service_id }}"
+          data-row="{{ row_id }}"
+          data-element="stop"
+          {%- if not spawner.ready %}
+          style="display: none"
+          {%- endif %}
+          >
+          {{ svg.stop_svg | safe }} Stop
+        </button>
+        <button type="button"
+          id="{{ service_id }}-{{row_id}}-cancel-btn-header"
+          class="btn btn-danger"
+          data-service="{{ service_id }}"
+          data-row="{{ row_id }}"
+          data-element="cancel"
+          {%- if spawner.ready or not spawner.active %}
+          style="display: none"
+          {%- endif %}
+          >
+          {{ svg.stop_svg | safe }} Cancel
+        </button>
+        <button type="button"
+          id="{{ service_id }}-{{row_id}}-start-btn-header"
+          class="btn btn-primary"
+          data-service="{{ service_id }}"
+          data-row="{{ row_id }}"
+          data-element="start"
+          {%- if spawner.active %}
+          style="display: none"
+          {%- endif %}
+          >
+          {{ svg.start_svg | safe }} Start
+        </button>
+        <button type="button"
+          id="{{ service_id }}-{{row_id}}-na-btn-header"
+          class="btn btn-secondary btn-na-lab disabled"
+          data-service="{{ service_id }}"
+          data-row="{{ row_id }}"
+          data-element="na"
+          style="display: none"
+          >
+          {{ svg.na_svg | safe }} N/A
+        </button>
+        <button type="button"
+          id="{{ service_id }}-{{row_id}}-del-btn-header"
+          class="btn btn-danger"
+          data-service="{{ service_id }}"
+          data-row="{{ row_id }}"
+          data-element="del"
+          style="display: none"
+          >
+          {{ svg.delete_svg | safe }}
+        </button>
+      </th>
+      
+{%- endmacro %}
+
+{% macro home_defaultheader(service_id, row_id, row_options, service_options) %}
+  {%- for s in spawners %}
+    {%- if s.name == row_id %}
+      {%- set spawner = user.spawners.get(s.name, s) %}
+      {%- if spawner.user_options.get("workshop_id", false) %}
+        {{ home_defaultheaderTypeWorkshop(spawner, service_id, row_id, row_options, service_options) }}
+      {%- elif spawner.user_options.get("share_id", false) %}
+        {{ home_defaultheaderTypeShare(spawner, service_id, row_id, row_options, service_options) }}
+      {%- elif spawner.user_options.get("r2d_id", false) %}
+        {{ home_defaultheaderTypeR2D(spawner, service_id, row_id, row_options, service_options) }}
+      {%- else %}
+        {{ home_defaultheaderTypeNormal(spawner, service_id, row_id, row_options, service_options) }}
+      {%- endif %}
+    {%- endif %}
+  {%- endfor %}
+{%- endmacro %}
+
+{% macro row_content(service_id, service_options, row_id, tab_id) %}
+  <div class="col-12">
+    {%- for element_id, element_options in service_options.get("tabs", {}).get(tab_id, {}).get("center", {}).items() %}
+      {{ table_elements.create_element(service_id, row_id, tab_id, element_id, element_options) }}
+    {%- endfor %}
+  </div>
+{% endmacro %}

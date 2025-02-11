@@ -1,0 +1,8 @@
+{%- extends "page.html" -%}
+
+{%- block meta -%}
+{% set service = spawner.user_options.get("service", "jupyterlab") | lower %}
+<meta http-equiv="refresh" content="0; url=https://{{hostname}}{{ base_url }}home?service={{ service }}&row={{ spawner.name }}&showlogs" />
+{%- endblock %}
+
+{%- block title -%}Jupyter-JSC redirect{%- endblock %}

@@ -1,0 +1,834 @@
+{%- import "macros/svgs.jinja" as svg -%}
+{%- include "macros/table/table_js.jinja" %}
+
+
+{%- macro create_button(
+  service_id,
+  row_id,
+  button,
+  button_options
+)%}
+  {%- set clazz = "" %}
+  {%- set svgicon = "" %}
+  {%- set buttontext = "" %}
+  {%- if button == "share" %}
+    {%- set clazz = "" %}
+    {%- set svgicon = svg.share_svg | safe %}
+    {%- set buttontext = button_options.get("text", "Share") %}
+  {%- elif button == "reset" %}
+    {%- set clazz = "btn-danger" %}
+    {%- set svgicon = svg.reset_svg | safe %}
+    {%- set buttontext = button_options.get("text", "Reset") %}
+  {%- elif button == "delete" %}
+    {%- set clazz = "btn-danger" %}
+    {%- set svgicon = svg.delete_svg | safe %}
+    {%- set buttontext = button_options.get("text", "Delete") %}
+  {%- elif button == "save" %}
+    {%- set clazz = "btn-success" %}
+    {%- set svgicon = svg.save_svg | safe %}
+    {%- set buttontext = button_options.get("text", "Save") %}
+  {%- elif button == "create" %}
+    {%- set clazz = "btn-primary" %}
+    {%- set svgicon = svg.plus_svg | safe %}
+    {%- set buttontext = button_options.get("text", "Create") %}
+  {%- elif button == "start" %}
+    {%- set clazz = "btn-success" %}
+    {%- set svgicon = svg.start_svg | safe %}
+    {%- set buttontext = button_options.get("text", "Start") %}
+  {%- elif button == "startblue" %}
+    {%- set clazz = "btn-primary" %}
+    {%- set svgicon = svg.start_svg | safe %}
+    {%- set buttontext = button_options.get("text", "Start") %}
+  {%- elif button == "startgreen" %}
+    {%- set clazz = "btn-success" %}
+    {%- set svgicon = svg.start_svg | safe %}
+    {%- set buttontext = button_options.get("text", "Start") %}
+  {%- elif button == "new" %}
+    {%- set clazz = "btn-primary" %}
+    {%- set svgicon = svg.plus_svg | safe %}
+    {%- set buttontext = button_options.get("text", "New") %}
+  {%- elif button == "open" %}
+    {%- set clazz = "btn-success" %}
+    {%- set svgicon = svg.open_svg | safe %}
+    {%- set buttontext = button_options.get("text", "Open") %}
+  {%- elif button == "retry" %}
+    {%- set clazz = "btn-success" %}
+    {%- set svgicon = svg.retry_svg | safe %}
+    {%- set buttontext = button_options.get("text", "Retry") %}
+  {%- elif button == "cancel" %}
+    {%- set clazz = "btn-danger" %}
+    {%- set svgicon = svg.stop_svg | safe %}
+    {%- set buttontext = button_options.get("text", "Cancel") %}
+  {%- elif button == "stop" %}
+    {%- set clazz = "btn-success" %}
+    {%- set svgicon = svg.stop_svg | safe %}
+    {%- set buttontext = button_options.get("text", "Stop") %}
+  {%- endif %}
+    <button 
+      type="button"       
+      data-service="{{ service_id }}"
+      data-row="{{ row_id }}"
+      id="{{ service_id }}-{{ row_id }}-{{ button }}-btn" 
+      class="btn {{ clazz }}
+      {% if button_options.get("alignRight", false) -%} ms-auto {%- else -%} me-2 {%- endif %}"
+      {%- for specific_key, specific_values in button_options.get("dependency", {}).items() %}
+        data-dependency-{{ specific_key }}="true"
+        {%- for specific_value in specific_values %}
+          data-dependency-{{ specific_key }}-{{ specific_value }}="true"
+        {%- endfor %}
+      {%- endfor %}
+    >
+      {%- if button_options.get("textFirst", false ) %}
+        {{ buttontext }}
+        {{ svgicon | safe }}
+      {%- else %}
+        {{ svgicon | safe }}
+        {{ buttontext }}
+      {%- endif %}
+    </button>
+{%- endmacro %}
+
+
+
+{%- macro create_modal(
+  service_id,
+  row_id,
+  suffix_id)
+%}
+  <div class="modal fade" id="{{ service_id }}-{{ row_id }}-modal" role="dialog" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+
+      <!-- Modal content-->
+      <div class="modal-content">
+        <div class="modal-header">
+          <h4 class="modal-title" style="color: black">Share Workshop</h4>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+        </div>
+        <div class="modal-body">
+          <p style="color: black">Share your configuration</p>
+          <a href="" target="_blank"></a>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-bs-dismiss="modal">Close</button>
+          <button type="button" data-service="{{ service_id }}" data-row="{{ row_id }}" id="{{ service_id }}-{{ row_id }}-modal-copy-btn" class="btn btn-outline-primary" data-bs-toggle="tooltip" data-service="{{ service_id }}" data-row="{{ row_id }}" data-bs-placement="top" title="Copy to clipboard">Copy</button>
+        </div>
+      </div>
+    </div>
+  </div>
+{%- endmacro %}
+
+{%- macro create_buttons(
+  service_id, 
+  row_id,
+  element_options
+)%}
+  <hr>
+  <div class="d-flex" id="{{ service_id }}-{{ row_id }}-buttons-div" role="dialog" tabindex="-1">
+    {%- for button in element_options.get("input", {}).get("options", {}).get("buttons",[] ) %}
+      {%- set button_options = element_options.get("input", {}).get("options", {}).get(button, {}) %}
+      {%- if ( row_id == vars.first_row_id and button_options.get("firstRow", true) ) or 
+          ( row_id != vars.first_row_id and button_options.get("defaultRow", true) ) %}
+        {{ create_button(service_id, row_id, button, button_options) }}
+      {%- endif %}
+    {%- endfor %}
+  </div>
+  {{ create_modal(service_id, row_id) }}
+{%- endmacro %}
+
+{%- macro create_trigger(
+  id_prefix,
+  service_id,
+  row_id,
+  tab_id,
+  element_id,
+  element_options,
+  full_id
+) %}
+{%- endmacro %}
+
+{%- macro create_label(
+  id_prefix,
+  service_id,
+  row_id,
+  tab_id,
+  element_id,
+  element_options
+)%}
+  {#
+    <label class="col-{{ label.get("width", "4") }} col-form-label" for="{{ id_prefix }}-{{ element_id }}-input">
+  #}
+  {%- set label = element_options.get("label", {}) %}
+  <div class="col-{{ label.get("width", "4") }} col-form-label d-flex align-items-start justify-content-between"> 
+    <label for="{{ id_prefix }}-{{ element_id }}-input" class="d-flex align-items-center w-100"> 
+      {%- if label.type in ["text", "texticon", "texticonclick", "texticonclickcheckbox", "textcheckbox", "texticoncheckbox"] %}
+        {%- if label.value is string %}
+          {{ label.value }}
+        {%- endif %}
+      {%- endif %}
+      {%- if label.type in ["texticon", "texticoncheckbox"] %}
+        <a class="lh-1 ms-3" style="padding-top: 1px;" 
+          data-bs-toggle="tooltip" data-bs-placement="right" data-bs-html="true"
+          title="{{ label.icontext }}">
+          {{ svg.info_svg | safe }}
+        </a>
+      {%- endif %}
+      {%- if label.type == "texticonclick" %}
+        <button type="button" class="btn"
+          data-bs-toggle="tooltip" data-bs-placement="right" data-bs-html="true"
+          title="{{ label.icontext }}">
+          {{ svg.info_svg | safe }}
+          <span class="text-muted" style="font-size: smaller">(click me)</span>
+        </button>
+      {%- endif %}
+      {%- if label.type == "textdropdown" %}
+      {%- endif %}
+      {%- if label.type in ["textcheckbox", "texticoncheckbox", "texticonclickcheckbox"] %}
+        <input type="checkbox" 
+          {%- if label.get('options', {}).get("align-right", true ) %}
+          style="margin-left: auto;"
+          {%- else %}
+          style="margin-left: .5em;"
+          {%- endif %}
+          class="form-check-input"
+          id="{{ id_prefix }}-{{ element_id }}-input-cb"
+          data-service="{{ service_id }}"
+          data-row="{{ row_id }}"
+          data-tab="{{ tab_id }}"
+          data-element="{{ element_id }}"
+          {%- for specific_key, specific_values in element_options.get("dependency", {}).items() %}
+            data-dependency-{{ specific_key }}="true"
+            {%- for specific_value in specific_values %}
+              data-dependency-{{ specific_key }}-{{ specific_value }}="true"
+            {%- endfor %}
+          {%- endfor %}
+
+          {%- set ignore_keys = ["name", "value", "show", "align-right", "placeholder", "pattern", "warning", "required"] %}
+          {%- for key, value in label.get('options', {}).items() %}
+            {%- if key not in ignore_keys %}
+              {%- if value is string or value is boolean %}
+                data-{{key}}="{{ value | lower }}"
+              {%- endif %}
+            {%- endif %}
+          {%- endfor %}
+
+          {# add default group #}
+          {%- if "group" not in label.get('options', {}).keys() %}
+            data-group="default"
+          {%- endif %}
+
+          {%- set checked = label.get('options', {}).get('default', false) %}
+          data-enabled="{{ label.get('options', {}).get('enabled', true) | lower }}"
+          {%- if not label.get('options', {}).get('enabled', true) %}
+          disabled="true"
+          {%- endif %}
+          data-label-input="true"
+          data-checked={{ checked | lower }}
+          {%- if checked %}
+            checked
+          {%- endif -%}
+          {%- if label.get('options', {}).get('name', false) %}
+          name="{{ label.get('options', {}).get('name', false) }}"
+          {%- endif %}
+          />
+      {%- endif %}
+      {%- if label.type == "dropdown" %}
+      {%- endif %}
+      {%- if label.type == "function" %}
+      {%- endif %}
+      {%- if label.type == "header" %}
+        <h4>{{ label.value }}</h4>
+      {%- endif %}
+    </label>
+  </div>
+  {# 
+  #}
+{%- endmacro %}
+
+
+{%- macro create_multiple_checkboxes(
+  id_prefix,
+  service_id,
+  row_id,
+  tab_id,
+  element_id,
+  element_options
+) -%}
+  {#- User-selected Modules #}
+  <div id="{{ id_prefix }}-{{ element_id }}-input-div"
+    {{ element_parameters(service_id, row_id, tab_id, element_id, element_options, define_show=true) }}
+  >
+    {{ create_label(id_prefix, service_id, row_id, tab_id, element_id, element_options) }}
+    <div id="{{ id_prefix }}-{{ element_id }}-checkboxes-div" class="row g-0"
+    {{ element_parameters(service_id, row_id, tab_id, element_id, element_options) }}
+    >
+    </div>
+  </div>
+  {# create_trigger suffix: checkboxes-div #}
+{%- endmacro %}
+
+{%- macro create_label_input(
+  id_prefix,
+  service_id,
+  row_id,
+  tab_id,
+  element_id,
+  element_options
+) %}
+  <div id="{{ id_prefix }}-{{ element_id }}-input-div"
+    class="row mb-1"
+    {{ element_parameters(service_id, row_id, tab_id, element_id, element_options, define_show=true) }}
+  >
+    {{ create_label(id_prefix, service_id, row_id, tab_id, element_id, element_options) }}
+  </div>
+{%- endmacro %}
+
+
+{%- macro element_parameters(
+  service_id,
+  row_id,
+  tab_id,
+  element_id,
+  element_options,
+  define_show=false,
+  collect=true
+) %}
+  {# data parameter for all elements #}
+  data-service="{{ service_id }}"
+  data-row="{{ row_id }}"
+  data-tab="{{ tab_id }}"
+  data-type="{{ element_options.get('input', {}).get('type', 'default') }}"
+  data-element="{{ element_id }}"
+
+  {%- set ignore_keys = ["name", "value", "show", "align-right", "placeholder", "pattern", "warning", "required", "collect-static"] %}
+  {%- for key, value in element_options.get('input', {}).get('options', {}).items() %}
+    {%- if key not in ignore_keys %}
+      {%- if value is string or value is boolean %}
+        data-{{key}}="{{ value | lower }}"
+      {%- endif %}
+    {%- endif %}
+  {%- endfor %}
+
+  {# add default group #}
+  {%- if "group" not in element_options.get('input', {}).get('options', {}).keys() %}
+    data-group="default"
+  {%- endif %}
+  {%- if collect %}
+    {%- if "collect" not in element_options.get('input', {}).get('options', {}).keys() %}
+      data-collect=false
+    {%- endif %}
+  {%- endif %}
+  {%- if element_options.get('input', {}).get('options', {}).get('collectstatic', false) %}
+    data-collect-static
+  {%- endif %}
+    
+
+  {# data parameter for input elements #}
+  {%- if element_options.get("input", {}).get("options", {}).get("size", false) %} 
+    size={{ element_options.get("input", {}).get("options", {}).get("size", 1) }} 
+  {%- endif %}
+  {%- if element_options.get("input", {}).get("options", {}).get("multiple", false) %} 
+    multiple 
+  {%- endif %}
+  {%- if not element_options.get('input', {}).get('options', {}).get('enabled', true) and 
+      not ( is_instructor and element_options.get("input", {}).get("options", {}).get("instructor", "") == "enabled" )
+  %}
+    disabled
+  {%- endif %}
+  {%- if element_options.get("input", {}).get("options", {}).get("required", false) %}
+    required
+  {%- endif %}
+  {%- if element_options.get("input", {}).get("options", {}).get("pattern", "") %}
+    pattern="{{ element_options.get("input", {}).get("options", {}).get("pattern", "") }}"
+  {%- endif %}
+  {%- if element_options.get("input", {}).get("options", {}).get("placeholder", "") %}
+    placeholder="{{ element_options.get("input", {}).get("options", {}).get("placeholder", "") }}"
+  {%- endif %}
+  {%- if element_options.get("input", {}).get("options", {}).get("value", "") %}
+    value="{{ element_options.get("input", {}).get("options", {}).get("value", "") }}"
+  {%- endif %}
+
+  {# If it's only available in a specific environment, hide it always by default #}
+  
+  {%- for specific_key, specific_values in element_options.get("dependency", {}).items() %}
+    data-dependency-{{ specific_key }}="true"
+    {%- for specific_value in specific_values %}
+      data-dependency-{{ specific_key }}-{{ specific_value }}="true"
+    {%- endfor %}
+  {%- endfor %}
+  {%- if define_show %}
+    {%- if element_options.get("input", {}).get("options", {}).get("show", true) or 
+        ( is_instructor and element_options.get("input", {}).get("options", {}).get("instructor", "") == "show" )
+    %}
+      data-show="true"
+    {%- else %}      
+      data-show="false"
+    {%- endif %}
+    {%- if not element_options.get("input", {}).get("options", {}).get("show", false) and
+        not ( is_instructor and element_options.get("input", {}).get("options", {}).get("instructor", "") == "show" )
+    %}
+      style="display: none"
+    {%- endif %}
+  {%- endif %}
+{%- endmacro %}
+
+{%- macro create_text_input(
+  id_prefix,
+  service_id,
+  row_id,
+  tab_id,
+  element_id,
+  element_options
+) %}
+  <div id="{{ id_prefix }}-{{ element_id }}-input-div" class="row mb-1"
+    {{ element_parameters(service_id, row_id, tab_id, element_id, element_options, define_show=true) }}
+  >
+    {{ create_label(id_prefix, service_id, row_id, tab_id, element_id, element_options) }}
+    <div class="col-{{ 12 - element_options.get("label", {}).get("width", "4") | int }} d-flex flex-column justify-content-center">
+      {%- if element_options.get("input", {}).get("options", {}).get("secret", false) %}
+        <div class="input-group">
+      {%- endif %}
+      <input type="{%- if element_options.get("input", {}).get("options", {}).get("secret", false) -%}password{%- else -%}text{%- endif -%}" 
+        class="form-control"
+        {{ element_parameters(service_id, row_id, tab_id, element_id, element_options) }}
+        name="{{ element_options.get('input', {}).get('options', {}).get('name', element_id) }}"
+        id="{{ id_prefix }}-{{ element_id }}-input"
+      />
+      {%- if element_options.get("input", {}).get("options", {}).get("secret", false) %}
+        <span class="input-group-append">
+          <button class="btn btn-light" type="button" 
+            data-service="{{ service_id }}"
+            data-row="{{ row_id }}"
+            data-element="{{ element_id }}"
+            id="{{ id_prefix }}-{{ element_id }}-view-password"
+          >
+            <i id="{{ id_prefix }}-{{ element_id }}-password-eye" class="fa fa-eye" aria-hidden="true"></i>
+          </button>
+        </span>
+      {%- endif %}
+      <div class="invalid-feedback">{{ element_options.get("input", {}).get("options", {}).get("warning", "") }}</div>
+      {%- if element_options.get("input", {}).get("options", {}).get("secret", false) %}
+        </div>
+      {%- endif %}
+    </div>
+  </div>
+{%- endmacro %}
+
+{%- macro create_textgrower_input(
+  id_prefix,
+  service_id,
+  row_id,
+  tab_id,
+  element_id,
+  element_options
+) %}
+  <div id="{{ id_prefix }}-{{ element_id }}-input-div" class="row mb-1"
+    {{ element_parameters(service_id, row_id, tab_id, element_id, element_options, define_show=true) }}
+  >
+    {{ create_label(id_prefix, service_id, row_id, tab_id, element_id, element_options) }}
+    <div data-count=1 class="container col-{{ 12 - element_options.get("label", {}).get("width", "4") | int }} d-flex flex-column justify-content-center">
+      
+      <div class="input-group" style="display: flex; align-items: center; margin-bottom: 10px;">
+        <input id="{{ id_prefix }}-1-{{ element_id }}-input" type="{%- if element_options.get("input", {}).get("options", {}).get("secret", false) -%}password{%- else -%}text{%- endif -%}" 
+          class="form-control"
+          {{ element_parameters(service_id, row_id, tab_id, element_id, element_options) }}
+          name="{{ element_options.get('input', {}).get('options', {}).get('name', element_id) }}"          
+        />
+        <button data-service="{{ service_id }}" data-row="{{ row_id }}" data-tab="{{ tab_id }}" data-collect-static data-element="{{ element_id }}" data-textgrower-btn-type="add" data-collect="false" {% if not element_options.get('input', {}).get('options', {}).get('enabled', true) -%} disabled {% endif -%} type="button" id="{{ id_prefix }}-1-addbtn-{{ element_id }}-input" data-btn-type="add" style="margin-left: 8px;" class="btn btn-primary">{{ svg.plus_svg | safe }}</button>
+      </div>
+      <div class="invalid-feedback">{{ element_options.get("input", {}).get("options", {}).get("warning", "") }}</div>
+    </div>
+  </div>
+{%- endmacro %}
+
+{%- macro create_date_input(
+  id_prefix,
+  service_id,
+  row_id,
+  tab_id,
+  element_id,
+  element_options
+) %}
+  <div id="{{ id_prefix }}-{{ element_id }}-input-div"
+    class="row mb-1"
+    {{ element_parameters(service_id, row_id, tab_id, element_id, element_options, define_show=true) }}
+  >
+    {{ create_label(id_prefix, service_id, row_id, tab_id, element_id, element_options) }}
+    <div class="col-{{ 12 - element_options.get("label", {}).get("width", "4") | int }} d-flex flex-column justify-content-center">
+      <input type="date" 
+        {{ element_parameters(service_id, row_id, tab_id, element_id, element_options) }}
+        class="form-control"
+        name="{{ element_options.get('input', {}).get('options', {}).get('name', element_id) }}"
+        id="{{ id_prefix }}-{{ element_id }}-input"
+        value="{{ today_plus_half_year }}"
+        min="{{ today }}"
+        max="{{ today_plus_one_year }}"
+      />
+      <div class="invalid-feedback">{{ element_options.get("input", {}).get("options", {}).get("warning", "") }}</div>
+    </div>
+  </div>
+{%- endmacro %}
+
+
+{%- macro create_number_input(
+  id_prefix,
+  service_id,
+  row_id,
+  tab_id,
+  element_id,
+  element_options
+) %}
+  {% set name_ = element_options.get('input', {}).get('options', {}).get('name', element_id) %}
+  <div id="{{ id_prefix }}-{{ element_id }}-input-div" class="row mb-2"
+    {{ element_parameters(service_id, row_id, tab_id, element_id, element_options, define_show=true) }}
+  >
+    {{ create_label(id_prefix, service_id, row_id, tab_id, element_id, element_options) }}
+    <div class="col-{{ 12 - element_options.get("label", {}).get("width", "4") | int }} d-flex flex-column justify-content-center">
+      <input type="number"
+        {{ element_parameters(service_id, row_id, tab_id, element_id, element_options) }}
+        name="{{ name_ }}"
+        class="form-control"
+        id="{{ id_prefix }}-{{ element_id }}-input"
+        {%- if element_options.get("input", {}).get("options", {}).get("required", false) %}
+        required
+        {%- endif %}
+        {%- if element_options.get("input", {}).get("options", {}).get("pattern", "") %}
+        pattern="{{ element_options.get("input", {}).get("options", {}).get("pattern", "") }}"
+        {%- endif %}
+        {%- if element_options.get("input", {}).get("options", {}).get("placeholder", "") %}
+        placeholder="{{ element_options.get("input", {}).get("options", {}).get("placeholder", "") }}"
+        {%- endif %}
+        {%- if element_options.get("input", {}).get("options", {}).get("value", "") %}
+        value="{{ element_options.get("input", {}).get("options", {}).get("value", "") }}"
+        {%- endif %}
+        {%- if not element_options.get("input", {}).get("options", {}).get("enabled", true) %}
+        disabled
+        {%- endif %}
+      />
+      <div class="invalid-feedback">{{ element_options.get("input", {}).get("options", {}).get("warning", "") }}</div>
+    </div>
+  </div>
+{%- endmacro %}
+
+{%- macro create_checkbox_input(
+  id_prefix,
+  service_id,
+  row_id,
+  tab_id,
+  element_id,
+  element_options
+) %}
+  <div id="{{ id_prefix }}-{{ element_id }}-input-div" class="row mb-2"
+    {{ element_parameters(service_id, row_id, tab_id, element_id, element_options, define_show=true) }}
+  >
+    {{ create_label(id_prefix, service_id, row_id, tab_id, element_id, element_options) }}
+    <div class="col-{{ 12 - element_options.get("label", {}).get("width", "4") | int }} d-flex flex-column justify-content-center">
+      <input type="checkbox"
+        name="{{ element_options.get('input', {}).get('options', {}).get('name', element_id) }}"
+        {{ element_parameters(service_id, row_id, tab_id, element_id, element_options) }}
+        class="form-check-input"
+        id="{{ id_prefix }}-{{ element_id }}-input"
+        {%- if element_options.get("input", {}).get("options", {}).get("required", false) %}
+        required
+        {%- endif %}
+        {%- if element_options.get("input", {}).get("options", {}).get("pattern", "") %}
+        pattern="{{ element_options.get("input", {}).get("options", {}).get("pattern", "") }}"
+        {%- endif %}
+        {%- if element_options.get("input", {}).get("options", {}).get("placeholder", "") %}
+        placeholder="{{ element_options.get("input", {}).get("options", {}).get("placeholder", "") }}"
+        {%- endif %}
+        {%- if element_options.get("input", {}).get("options", {}).get("value", "") %}
+        value="{{ element_options.get("input", {}).get("options", {}).get("value", "") }}"
+        {%- endif %}
+        {%- if not element_options.get("input", {}).get("options", {}).get("enabled", true) %}
+        disabled
+        {%- endif %}
+        {% if element_options.get('input', {}).get('options', {}).get('default', false) %}
+        checked
+        {%- endif %}
+      />
+      <div class="invalid-feedback">{{ element_options.get("input", {}).get("options", {}).get("warning", "") }}</div>
+    </div>
+  </div>
+{%- endmacro %}
+
+{%- macro create_select_input(
+  id_prefix,
+  service_id,
+  row_id,
+  tab_id,
+  element_id,
+  element_options
+) %}
+  {# Versions #}
+  <div id="{{ id_prefix }}-{{ element_id }}-input-div" class="row mb-1"
+  {{ element_parameters(service_id, row_id, tab_id, element_id, element_options, define_show=true) }}
+  >
+    {{ create_label(id_prefix, service_id, row_id, tab_id, element_id, element_options) }}
+    <div class="col-{{ 12 - element_options.get("label", {}).get("width", "4") | int }} d-flex flex-column justify-content-center">
+      <select 
+        name="{{ element_options.get('input', {}).get('options', {}).get('name', element_id) }}"
+        id="{{ id_prefix }}-{{ element_id }}-input"
+        class="form-select"
+        {{ element_parameters(service_id, row_id, tab_id, element_id, element_options) }}
+      >
+      </select>
+      <div class="invalid-feedback">{{ element_options.get("input", {}).get("options", {}).get("warning", "You have to select at least one item.") }}</div>
+    </div>
+  </div>
+{%- endmacro %}
+
+{%- macro create_reservation_info(
+  id_prefix,
+  service_id,
+  row_id,
+  tab_id,
+  element_id,
+  element_options
+)%}
+  <div id="{{ id_prefix }}-{{ element_id }}-input-div" class="row mb-3"
+    {{ element_parameters(service_id, row_id, tab_id, element_id, element_options, define_show=true) }}
+  >
+    {%- set reservation_info_classes = "col-4 fw-bold"%}
+    <div id="{{ id_prefix }}-{{ element_id }}-info" class="col-8 offset-4">
+      <div class="row">
+        <span class="{{ reservation_info_classes }}">Start Time:</span>
+        <span id="{{ id_prefix }}-{{ element_id }}-start" class="col-auto"></span>
+      </div>
+      <div class="row">
+        <span class="{{ reservation_info_classes }}">End Time:</span>
+        <span id="{{ id_prefix }}-{{ element_id }}-end" class="col-auto"></span>
+      </div>
+      <div class="row">
+        <span class="{{ reservation_info_classes }}">State:</span>
+        <span id="{{ id_prefix }}-{{ element_id }}-state" class="col-auto"></span>
+      </div>
+      <div class="mt-1">
+        <details>
+          <summary class="fw-bold">Detailed reservation information:</summary>
+          <pre id="{{ id_prefix }}-{{ element_id }}-details"></pre>
+        </details>
+      </div>
+    </div>
+  </div>
+  {# create_trigger suffix: input-div #}
+{%- endmacro %}
+
+{%- macro create_flavor_legend(
+  id_prefix,
+  service_id,
+  row_id,
+  tab_id,
+  element_id,
+  element_options
+)%}
+  <div id="{{ id_prefix }}-{{ element_id }}-input-div" class="row align-items-center g-0 mt-4"
+    {{ element_parameters(service_id, row_id, tab_id, element_id, element_options, define_show=true) }}    
+  >
+    <span class="col-4 fw-bold">Available Flavors</span>
+    <div class="col d-flex align-items-center ms-2">
+      {%- set box_style = "height: 15px; width: 15px; border-radius: 0.25rem;"%}
+      <div style="{{box_style}} background-color: #198754;"></div>
+      <span class="ms-1">= Free</span>
+      <span class="mx-2"></span>
+      <div style="{{box_style}} background-color: #023d6b;"></div>
+      <span class="ms-1">= Used</span>
+      <span class="mx-2"></span>
+      <div style="{{box_style}} background-color: #dc3545;"></div>
+      <span class="ms-1">= Limit exceeded</span>
+    </div>
+  </div>
+  {# create_trigger suffix: input-div #}
+{%- endmacro %}
+
+{%- macro create_flavor_info(
+  id_prefix,
+  service_id,
+  row_id,
+  tab_id,
+  element_id,
+  element_options
+)%}
+  <div id="{{ id_prefix }}-{{ element_id }}-input-div" data-sse-flavors class="mb-3"
+    {{ element_parameters(service_id, row_id, tab_id, element_id, element_options, define_show=true) }}
+    ></div>
+{# create_trigger suffix: input-div #}
+{%- endmacro %}
+
+{%- macro create_selecthelper(
+  id_prefix,
+  service_id,
+  row_id,
+  tab_id,
+  element_id,
+  element_options
+)%}
+  <hr>
+  <div id="{{ id_prefix }}-{{ element_id }}-input-div" class="row g-0"
+    {{ element_parameters(service_id, row_id, tab_id, element_id, element_options, define_show=true) }}
+  >
+    <div class="form-check col-sm-6 col-md-4 col-lg-3">
+      <input class="form-check-input module-selector" data-service="{{ service_id }}" data-row="{{ row_id }}" data-tab="{{ tab_id }}" type="checkbox" id="{{ id_prefix }}-{{ element_id }}-select-all">
+      <label class="form-check-label" for="{{ id_prefix }}-{{ element_id }}-select-all">Select all</label>
+    </div>
+    <div class="form-check col-sm-6 col-md-4 col-lg-3">
+      <input class="form-check-input module-selector" data-service="{{ service_id }}" data-row="{{ row_id }}" data-tab="{{ tab_id }}" type="checkbox" id="{{ id_prefix }}-{{ element_id }}-select-none">
+      <label class="form-check-label" for="{{ id_prefix }}-{{ element_id }}-select-none">Deselect all</label>
+    </div>
+  </div>
+{# create_trigger suffix: input-div #}
+{%- endmacro %}
+
+{%- macro create_logcontainer(
+  id_prefix,
+  service_id,
+  row_id,
+  tab_id,
+  element_id,
+  element_options
+)%}
+  <div id="{{ id_prefix }}-{{ element_id }}-input" class="card card-body text-black row g-0"
+    {{ element_parameters(service_id, row_id, tab_id, element_id, element_options) }}
+  >
+    <div class="log-div">
+      Logs collected during the Start process will be shown here.
+    </div>
+  </div>
+{# create_trigger suffix: input-div #}
+{%- endmacro %}
+
+{%- macro create_element(
+  service_id,
+  row_id,
+  tab_id,
+  element_id,
+  element_options
+) %}
+  {% set id_prefix = service_id ~ '-' ~ row_id ~ '-' ~ tab_id %}
+  {%- if element_options.get("input", {}).get("type", "") == "text" %}
+    {{ create_text_input(
+      id_prefix,
+      service_id,
+      row_id,
+      tab_id,
+      element_id,
+      element_options
+    )}}
+  {%- elif element_options.get("input", {}).get("type", "") == "textgrower" %}
+    {{ create_textgrower_input(
+      id_prefix,
+      service_id,
+      row_id,
+      tab_id,
+      element_id,
+      element_options
+    )}}
+  {%- elif element_options.get("input", {}).get("type", "") == "label" %}
+    {{ create_label_input(
+      id_prefix,
+      service_id,
+      row_id,
+      tab_id,
+      element_id,
+      element_options
+    )}}  
+  {%- elif element_options.get("input", {}).get("type", "") == "date" %}
+    {{ create_date_input(
+      id_prefix,
+      service_id,
+      row_id,
+      tab_id,
+      element_id,
+      element_options
+    )}}
+  {%- elif element_options.get("input", {}).get("type", "") == "number" %}
+    {{ create_number_input(
+      id_prefix,
+      service_id,
+      row_id,
+      tab_id,
+      element_id,
+      element_options
+    )}}
+  {%- elif element_options.get("input", {}).get("type", "") == "checkbox" %}
+    {{ create_checkbox_input(
+      id_prefix,
+      service_id,
+      row_id,
+      tab_id,
+      element_id,
+      element_options
+    )}}
+  {%- elif element_options.get("input", {}).get("type", "") == "buttons" %}
+    {{ create_buttons(
+      service_id, 
+      row_id,
+      element_options
+    )}}
+  {%- elif element_options.get("input", {}).get("type", "") == "select" %}
+    {{ create_select_input(
+      id_prefix,
+      service_id,
+      row_id,
+      tab_id,
+      element_id,
+      element_options
+    )}}
+  {%- elif element_options.get("input", {}).get("type", "") == "reservationinfo" %}
+    {{ create_reservation_info(
+      id_prefix,
+      service_id,
+      row_id,
+      tab_id,
+      element_id,
+      element_options
+    )}}
+  {%- elif element_options.get("input", {}).get("type", "") == "flavorlegend" %}
+    {{ create_flavor_legend(
+      id_prefix,
+      service_id,
+      row_id,
+      tab_id,
+      element_id,
+      element_options
+    )}}
+  {%- elif element_options.get("input", {}).get("type", "") == "flavorinfo" %}
+    {{ create_flavor_info(
+      id_prefix,
+      service_id,
+      row_id,
+      tab_id,
+      element_id,
+      element_options
+    )}}
+  {%- elif element_options.get("input", {}).get("type", "") == "multiple_checkboxes" %}
+    {{ create_multiple_checkboxes(
+      id_prefix,
+      service_id,
+      row_id,
+      tab_id,
+      element_id,
+      element_options
+    )}}
+  {%- elif element_options.get("input", {}).get("type", "") == "selecthelper" %}
+    {{ create_selecthelper(
+      id_prefix,
+      service_id,
+      row_id,
+      tab_id,
+      element_id,
+      element_options
+    )}}
+  {%- elif element_options.get("input", {}).get("type", "") == "logcontainer" %}
+    {{ create_logcontainer(
+      id_prefix,
+      service_id,
+      row_id,
+      tab_id,
+      element_id,
+      element_options
+    )}}
+  {%- elif element_options.get("input", {}).get("type", "") == "hr" %}
+  <hr>
+  {%- endif %}
+{%- endmacro %}
+

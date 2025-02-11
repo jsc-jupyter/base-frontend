@@ -1,0 +1,57 @@
+{%- extends "page.html" -%}
+
+{%- block stylesheet -%}
+<link rel="stylesheet" href='{{static_url("css/login.css")}}' type="text/css" />
+{%- endblock -%}
+
+{%- macro link_list(header, link_dict) -%}
+<div class="col" style="max-width: 300px;">
+  {# <h6>{{header}}</h6> #}
+  <h4>{{header}}</h4>
+  <ul class="ps-0">
+  {%- for label, href in link_dict.items() %}
+    <li><a href="{{href}}" target="_blank">{{ label }}</a></li>
+  {%- endfor %}
+  </ul>
+</div>
+{%- endmacro -%}
+
+
+{%- block main -%}
+<div class="container">
+  <div id="link-div" class="col-auto my-4 p-4">
+    <div class="row">
+      {{ link_list("Jupyter", {
+          "Home": "https://www.jupyter.org",
+          "Newsletter": "https://newsletter.jupyter.org",
+          "Introduction Video": "https://www.youtube.com/watch?v=HW29067qVWk",
+          "Blog": "https://blog.jupyter.org",
+          "Documentation": "https://jupyter.org/documentation.html",
+          "Twitter": "https://twitter.com/projectjupyter",
+          "Jupyter-Notebooks": "https://github.com/trending/jupyter-notebook",
+          "Jupyter Gitter": "https://gitter.im/jupyter/jupyter",
+          "JupyterLab Gitter": "https://gitter.im/jupyterlab/jupyterlab"
+        })
+      }}
+      {{ link_list("JSC", { 
+          "Home": "https://www.jupyter.org",
+          "JUWELS": "https://www.fz-juelich.de/ias/jsc/EN/Expertise/Supercomputers/JUWELS/JUWELS_node.html",
+          "JURECA": "https://www.fz-juelich.de/ias/jsc/EN/Expertise/Supercomputers/JURECA/JURECA_node.html",
+          "JUSUF": "https://fz-juelich.de/ias/jsc/EN/Expertise/Supercomputers/JUSUF/JUSUF_node.html",
+          "DEEP": "https://fz-juelich.de/ias/jsc/EN/Expertise/Supercomputers/DEEP-EST/_node.html",
+          "Newsletter": "https://www.fz-juelich.de/ias/jsc/EN/News/Newsletter/newsletter_node.html",
+          "Events": "https://www.fz-juelich.de/ias/jsc/EN/News/Events/events_node.html",
+          "Twitter": "https://twitter.com/fzj_jsc"
+        })
+      }}
+    </div>
+  </div>
+</div>
+{%- endblock -%}
+
+{%- block script -%}
+<script>
+$("nav [id$=nav-item]").removeClass("active");
+$("#links-nav-item, #collapse-links-nav-item").addClass("active");
+</script>
+{%- endblock -%}

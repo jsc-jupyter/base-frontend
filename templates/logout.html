@@ -1,0 +1,14 @@
+{%- extends "page.html" -%}
+
+{%- block stylesheet -%}
+<link rel="stylesheet" href='{{ static_url("css/pages/logout.css", include_version=True) }}'
+  type="text/css" />
+{%- endblock -%}
+
+{%- block main -%}
+<div id="logout-page" class="d-flex text-center">
+  <div class="m-auto w-50">
+    <p class="p-4">Successfully logged out.</p>
+  </div>
+</div>
+{%- endblock -%}

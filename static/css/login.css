@@ -1,0 +1,138 @@
+/* Login div */
+
+#title > h1 {
+  font-size: 5em;
+  color: black;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+#lbutton-login-div {
+  border: none;
+}
+
+.list-group.list-with-bullets .list-group-item {
+  list-style-type: disc;
+  display: list-item;
+}
+
+#button-login-div a,
+#button-login-div a:hover {
+  text-decoration: none;
+}
+
+#button-login-div img {
+  border-radius: 50%;
+  border: 0.25vh solid white;
+  margin: .3em !important;
+  height: 50px;
+}
+
+.white-line {
+  border-bottom: 0.25vh solid white;
+  margin-bottom: -0.15vh;
+  width: 100%;
+}
+
+.logo {
+  max-height: 40px;
+}
+
+/* Links */
+
+#link-div ul {
+  list-style-type: none;
+}
+
+#link-div li {
+	margin: .3em 0;
+}
+ 
+#link-div a {
+  display: block;
+  color: #023d6b;
+  padding: 15px 20px 15px 30px;
+  background: url("/hub/static/images/sprite.png") #adbde3 no-repeat 12px -5139px;
+  /* background-color: #adbde3; */
+}
+
+#link-div a:hover {
+  color: #333333;
+  background-color: #fff;
+}
+
+
+/* Carousel */
+
+#login-background {
+  background: url("/hub/static/images/pages/login/background.jpg") center center
+  no-repeat;
+  background-size: cover;
+  min-height: 500px;
+}
+
+main #login-background .container {
+  max-width: 960px;
+}
+
+main #login-background .container-sm {
+  max-width: 960px;
+}
+
+main #login-background .container-md {
+  max-width: 960px;
+}
+
+main #login-background .container-lg {
+  max-width: 960px;
+}
+
+main #login-background .container-xl {
+  max-width: 960px;
+}
+
+main .carousel-inner {
+  background-color: rgb(255, 255, 255, 0.7);
+  /* background-color: rgb(255, 255, 255, 1); */
+  color: black;
+  padding: 1.5rem 1.5rem 2rem 1.5rem;
+  margin: 5% 7% 0 7%;
+  max-width: 900px;
+  width: auto;
+}
+
+main .carousel-item a {
+  color: #023d6b;
+}
+
+main .carousel-item h3 {
+  background: url("/hub/static/images/pages/login/blue_line.png") no-repeat 0 100%;
+  padding-bottom: 15px;
+}
+
+main .carousel-item div.text-small ul {
+  list-style-position: inside;
+  padding-left: 0px;
+}
+
+main .carousel-indicators button {
+  border: 2px solid white !important;
+  background-color: #adbde3 !important;
+  border-radius: 50%;
+  height: 14px !important;
+  width: 14px !important;
+  margin: 0 0.5rem;
+}
+
+main .carousel-indicators button:hover {
+  background-color: #002036 !important;
+}
+
+main .carousel-indicators button.active {
+  background-color: #023d6b !important;
+}
+
+main .carousel-control-prev,
+main .carousel-control-next {
+  width: 5%;
+  opacity: 1;
+}

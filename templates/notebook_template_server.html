@@ -1,0 +1,71 @@
+{%- extends "page.html" -%}
+
+{%- block main -%}
+<div class="container p-4">
+  <div class="row">
+    <div class="card mx-auto col-lg-6">
+      <div class="card-body text-black">
+        {%- if active_servers %}
+        <h5 class="card-title">Choose a running server to open Jupyter Notebook</h5>
+        <p class="card-text">
+          <select id="template-server-select" class="form-select" aria-label="Default select example">
+            {%- for server in active_servers -%}
+            {%- set server_name = server[1] -%}
+            {%- if not server_name -%} {%- set server_name = "Unnamed JupyterLab" -%} {%- endif %}
+            <option value="{{ server[0] }}">{{ server_name }}</option>
+            {%- endfor %}
+          </select>
+          <br> 
+          Do you want to create a new Jupyter Notebook at <span>{{ template }}</span> using this template?</p>
+        <div class="text-center">
+          <button id="template-btn" class="btn btn-primary">Create Notebook</button>
+        </div>
+        {%- else %}
+        <h5 class="card-title">No running servers found. </h5>
+        <p class="card-text">
+          Please start a Jupyter Notebook server first.
+        </p>
+        <div class="text-center">
+          <a href="{{ base_url }}home" class="btn btn-primary">Return to home</a>
+        </div>
+        {%- endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{%- endblock -%}
+
+{%- block script -%}
+<script>
+require(["jquery", "jhapi", "utils"], function (
+  $,
+  JHAPI,
+  utils,
+) {
+  "use strict";
+  
+  var base_url = window.jhdata.base_url;
+  var user = window.jhdata.user;
+  var api = new JHAPI(base_url);
+
+  $("#template-btn").click(function() {
+    var data = {
+      "template": "{{ template }}",
+      "params": {{ template_params | tojson }}
+    }
+    var server_id = $("#template-server-select").val();
+
+    api.create_template(user, server_id, {
+      data: JSON.stringify(data),
+      success: function (data) {
+        window.location.href = data.redirect;
+      },
+      error: function (xhr, textStatus, errorThrown) {
+        alert(`Could not create template. Error: ${xhr.status} ${errorThrown}`);
+      }
+    });
+  })
+
+})
+</script>
+{%- endblock -%}

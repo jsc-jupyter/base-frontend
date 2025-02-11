@@ -1,0 +1,36 @@
+{%- extends "page.html" -%}
+
+{%- block stylesheet -%}
+  <link rel="stylesheet" href='{{static_url("css/home.css")}}' type="text/css"/>
+{%- endblock -%}
+
+{%- block main -%}
+{%- import "macros/table/config/workshop.jinja" as config %}
+{%- import "macros/svgs.jinja" as svg -%}
+{%- import "macros/table/variables.jinja" as vars with context %}
+
+{%- set pagetype = vars.pagetype_workshop %}
+
+{%- set table_rows = { spawner.name: spawner.user_options } %}
+
+{%- from "macros/table/table.jinja" import tables with context %}
+{%- import "macros/table/content.jinja" as functions with context %}
+<div id="workshopnotusable"></div>
+{{ tables(
+  config.frontend_config,
+  functions.workshop_description,
+  functions.workshop_headerlayout,
+  false,
+  functions.workshop_firstheader,
+  functions.row_content
+) }}
+
+{%- endblock -%}
+
+
+{%- block script -%}
+{%- import "macros/table/variables.jinja" as vars with context %}
+{%- set pagetype = vars.pagetype_workshop %}
+{%- import "macros/table/config/workshop.jinja" as config with context %}
+{%- include "macros/table/elements_js.jinja" with context %}
+{%- endblock %}

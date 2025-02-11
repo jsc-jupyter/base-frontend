@@ -1,0 +1,58 @@
+{%- extends "page.html" -%}
+
+{%- block stylesheet -%}
+<link rel="stylesheet" href='{{static_url("css/error.css")}}' type="text/css" />
+{%- endblock -%}
+
+{%- block main -%}
+<div class="d-flex text-center h-100 p-4">
+  <div class="m-auto">
+    {%- block h1_error %}
+    <h1>{{status_code}} : {{status_message}}</h1>
+    {%- endblock h1_error -%}
+    
+    {%- block error_detail -%}
+      {%- if message %}
+      <p>{{message}}</p>
+      {%- endif -%}
+      {%- if message_html %}
+      <p>{{message_html | safe}}</p>
+      {%- endif -%}
+      {%- if extra_error_html %}
+      <p>{{extra_error_html | safe}}</p>
+      {%- endif -%}
+    {%- endblock error_detail -%}
+
+    <a href="{{ base_url }}home" class="btn btn-light" role="button">Return to Home</a>
+  </div>
+</div>
+{%- endblock -%}
+
+{%- block script -%}
+<script type="text/javascript">
+  function _remove_redirects_from_url() {
+    if (window.location.search.length <= 1) {
+      return;
+    }
+    var search_parameters = window.location.search.slice(1).split("&");
+    for (var i = 0; i < search_parameters.length; i++) {
+      if (search_parameters[i].split("=")[0] === "redirects") {
+        // remote redirects from search parameters
+        search_parameters.splice(i, 1);
+        var new_search = "";
+        if (search_parameters.length) {
+          new_search = "?" + search_parameters.join("&");
+        }
+        var new_url =
+          window.location.origin +
+          window.location.pathname +
+          new_search +
+          window.location.hash;
+        window.history.replaceState({}, "", new_url);
+        return;
+      }
+    }
+  }
+  _remove_redirects_from_url();
+</script>
+{%- endblock -%}

@@ -1,0 +1,570 @@
+{%- import "macros/svgs.jinja" as svg -%}
+
+{%- include "macros/table/table_js.jinja" with context %}
+{%- import "macros/table/variables.jinja" as vars with context %}
+
+<script>
+  $(document).ready(function() {
+    require(["jquery", "jhapi", "utils"], function (
+      $,
+      JHAPI,
+      utils
+    ) {
+      var base_url = window.jhdata.base_url;
+      var api = new JHAPI(base_url);
+      var user = window.jhdata.user;
+      const logDebug = false;
+
+      let optionElement;
+
+      {%- for service_id, service_options in config.frontend_config.get("services", {}).get("options", {}).items() %}
+        // Configure element specific elements:
+        {%- for tab_id, tab_options in service_options.get("tabs", {}).items() %}
+          {%- for side in tab_options.keys() %}
+            {%- for element_id, element_options in tab_options.get(side, {}).items() %}
+              {%- if element_options.get("input", {}).get("type", "") == "buttons" %}
+                {%- for button in element_options.get("input", {}).get("options", {}).get("buttons", []) %}
+                  {% set trigger = element_options.get("input", {}).get("options", {}).get(button, {}).get("trigger", false) %}
+                  {%- if trigger %}
+                    {%- set button_options = element_options.get("input", {}).get("options", {}).get(button, {}) %}
+                    $(`[id^='{{ service_id }}-'][id$='-{{ button }}-btn']`).on("click", function() {
+                      logDebug && console.log("Button click {{ button }}");
+                      const $this = $(this);
+                      const serviceId = $this.attr("data-service");
+                      const rowId = $this.attr("data-row");
+                      {{ button_options.get("trigger", "") }}(serviceId, rowId, "{{ button }}", {{ button_options | tojson }}, user, api, base_url, utils);
+                      logDebug && console.log("Button click {{ button }} done");
+                    });
+                  {%- endif %}
+                {%- endfor %}
+              {%- else %}
+                {%- set trigger_suffix = element_options.get("triggerSuffix", "input") %}
+                {%- for trigger_key, trigger_func in element_options.get("trigger", {}).items() %}
+                  $(`[id^='{{ service_id }}-'][id$='-{{ element_id }}-{{ trigger_suffix}}']`).on("trigger_{{ trigger_key }}", function (event) {
+                    if (event.target !== this) {
+                      return; // Ignore events bubbling up from child elements
+                    }
+                    logDebug && console.log("update {{ element_id }}. Triggered by: ({{ trigger_key }})");
+                    const $this = $(this);
+                    const serviceId = $this.attr("data-service");
+                    const rowId = $this.attr("data-row");
+                    const preValue = $this.val();
+                    const dependencies = {{ element_options.get("dependency", {}) | tojson }};
+                    let trigger = true;
+                    {%- if trigger_key != "init" %}
+                      for (const [key, allowedValues] of Object.entries(dependencies)) {
+                        const currentValues = val(getInputElement(serviceId, rowId, key));
+                        trigger = currentValues.some(value => {
+                          const mappedValue = mappingDict?.[serviceId]?.[key]?.[value] ?? value;
+                          return allowedValues.includes(mappedValue);
+                        });
+                        if ( !trigger ) {
+                          break;
+                        }
+                      }
+                    {%- endif %}
+                    if ( trigger ) {
+                      {{ trigger_func }}("{{ trigger_key }}", serviceId, rowId, "{{ tab_id }}", "{{ element_id }}", {{ element_options | tojson }});
+                      $this.trigger("change");
+                      logDebug && console.log("update {{ element_id }}. Triggered by: ({{ trigger_key }}) done");
+                    } else {
+                      logDebug && console.log("update {{ element_id }}. Triggered by: ({{ trigger_key }}) no function call");
+                    }
+                  });
+                {%- endfor %}
+                {%- if element_options.get("triggerOnChange", "") %}
+                  $(`[id^='{{ service_id }}-'][id$='-{{ tab_id }}-{{ element_id }}-{{ trigger_suffix}}']`).on("change", function () {
+                    const $this = $(this);
+                    const serviceId = $this.attr("data-service");
+                    const rowId = $this.attr("data-row");
+                    {{ element_options["triggerOnChange"] }}("onChange", serviceId, rowId, "{{ tab_id }}", "{{ element_id }}", {{ element_options | tojson }});
+                  });
+                {%- endif %}
+                {%- set label_options = element_options.get("label", {}) %}
+                {%- if label_options.get("type", "text") in ["textcheckbox", "texticoncheckbox", "texticonclickcheckbox"] %}
+                  {%- for trigger_key, trigger_func in label_options.get("trigger", {}).items() %}
+                    $(`[id^='{{ service_id }}-'][id$='-{{ tab_id }}-{{ element_id }}-input-cb']`).on("trigger_{{ trigger_key }}", function (event) {
+                      if (event.target !== this) {
+                        return; // Ignore events bubbling up from child elements
+                      }
+                      const $this = $(this);
+                      const serviceId = $this.attr("data-service");
+                      const rowId = $this.attr("data-row");
+                      logDebug && console.log("update {{ element_id }}. Triggered by: ({{ trigger_key }})");
+                      {{ trigger_func }}("{{ trigger_key }}", serviceId, rowId, "{{ tab_id }}", "{{ element_id }}", {{ label_options.get("options", {}) | tojson }});
+                      logDebug && console.log("update {{ element_id }}. Triggered by: ({{ trigger_key }}) done");
+                    });
+                  {%- endfor %}
+                  $(`[id^='{{ service_id }}-'][id$='-{{ tab_id }}-{{ element_id }}-input-cb']`).on("change", function() {
+                    const $this = $(this);
+                    const serviceId = $this.attr("data-service");
+                    const rowId = $this.attr("data-row");
+                    const checked = $this.prop("checked");
+                    $(`[id^='${serviceId}-${rowId}-'][id$='-{{ element_id }}-input']`).prop("disabled", !checked);
+                    $(`[id^='${serviceId}-${rowId}-'][id$='-{{ element_id }}-input']:not([data-collect-static])`).attr("data-collect", checked);
+                    if ( !checked ) {
+                      $(`[id^='${serviceId}-${rowId}-'][id$='-{{ element_id }}-input']`).removeClass("is-invalid");
+                    }
+                    
+                    {%- if label_options.get("triggerOnChange", "") %}
+                      {{ label_options["triggerOnChange"] }}("change", serviceId, rowId, "{{ tab_id }}", "{{ element_id }}", {{ label_options.get("options", {}) | tojson }});
+                    {%- endif %}
+                    $(`[id^='${serviceId}-${rowId}-']`).trigger(`trigger_{{ element_id }}`);
+                    logDebug && console.log("update {{ element_id }}. Trigger Change by: {{ trigger_key }}");
+                    $(`[id^='${serviceId}-${rowId}-'][id$='-{{ element_id }}-input']`).trigger("change");
+                    logDebug && console.log("update {{ element_id }}. Trigger Change by: {{ trigger_key }} done");
+                  });
+                {%- endif %}
+              {%- endif %}
+            {%- endfor %}
+          {%- endfor %}
+        {%- endfor %}
+        {%- for button_id, button_options in service_options.navbar.items() %}
+          $(`button[id^='{{ service_id }}-'][id$='-{{ button_id }}-navbar-button']`).on("show", function (event) {
+            const $this = $(this);
+            const rowId = $this.attr("data-row");
+            const serviceId = $this.attr("data-service");
+            let show = true;
+            if ( !$this.data('show') ) {
+              const dependencies = {{ button_options.get("dependency", {}) | tojson }};
+              for (const [key, allowedValues] of Object.entries(dependencies)) {
+                const currentValues = val(getInputElement(serviceId, rowId, key));
+                show = currentValues.some(value => {
+                  const mappedValue = mappingDict[serviceId]?.[key]?.[value] ?? value;
+                  return allowedValues.includes(mappedValue);
+                });
+                if ( !show ) {
+                  break;
+                }
+              }
+            }
+            if ( show ) {
+              $this.addClass("show");
+              $this.attr("style", "");
+              $this.show();
+              $(`#${serviceId}-${rowId}-{{ button_id }}-tab-input-warning`).addClass("invisible");
+            }
+          });
+          $(`button[id^='{{ service_id }}-'][id$='-{{ button_id }}-navbar-button']`).on("hide", function (event) {
+            const $this = $(this);
+            const rowId = $this.attr("data-row");
+            const serviceId = $this.attr("data-service");
+            $this.removeClass("show");
+            $this.attr("style", "{{ style_hide }}");
+            $this.hide();
+            $(`[id^='${serviceId}-'][id$='-${rowId}-{{ button_id }}-tab-input-warning']`).addClass("invisible");
+          });
+          $(`button[id^='{{ service_id }}-'][id$='-{{ button_id }}-navbar-button']`).on("activate", function (event) {
+            const $this = $(this);
+            const rowId = $this.attr("data-row");
+            const serviceId = $this.attr("data-service");
+            $(`div[id^='${serviceId}-${rowId}-'][id$='-{{ button_id }}-contenttab-div']`).addClass("show");
+            $(`div[id^='${serviceId}-${rowId}-'][id$='-{{ button_id }}-contenttab-div']`).show();
+            $(`[id^='${serviceId}-${rowId}-'][id$='-{{ button_id }}-tab-input-warning']`).addClass("invisible");
+          });
+          $(`button[id^='{{ service_id }}-'][id$='-{{ button_id }}-navbar-button']`).on("deactivate", function (event) {
+            const $this = $(this);
+            const rowId = $this.attr("data-row");
+            const serviceId = $this.attr("data-service");
+            $(`div[id^='${serviceId}-${rowId}-'][id$='-{{ button_id }}-contenttab-div']`).removeClass("show");
+            $(`div[id^='${serviceId}-${rowId}-'][id$='-{{ button_id }}-contenttab-div']`).hide();
+          });
+          $(`button[id^='{{ service_id }}-'][id$='-{{ button_id }}-navbar-button']`).on("click", function (event) {
+            $this = $(this);
+            const rowId = $this.attr("data-row");
+            const serviceId = $this.attr("data-service");
+            $(`button[id^='${serviceId}-${rowId}-'][id$='-navbar-button']:not([data-tab='{{ button_id }}'])`).trigger("deactivate");
+            $this.trigger("activate");
+          });
+          {%- for trigger_key, trigger_func in button_options.get("trigger", {}).items() %}
+            $(`button[id^='{{ service_id }}-'][id$='-{{ button_id }}-navbar-button']`).on("trigger_{{ trigger_key }}", function (event) {
+              if (event.target !== this) {
+                return; // Ignore events bubbling up from child elements
+              }
+              $this = $(this);
+              const rowId = $this.attr("data-row");
+              const serviceId = $this.attr("data-service");
+              let trigger = true;
+              const dependencies = {{ button_options.get("dependency", {}) | tojson }};
+              for (const [key, allowedValues] of Object.entries(dependencies)) {
+                const currentValues = val(getInputElement(serviceId, rowId, key));
+                trigger = currentValues.some(value => {
+                  const mappedValue = mappingDict[serviceId]?.[key]?.[value] ?? value;
+                  return allowedValues.includes(mappedValue);
+                });
+                if ( !trigger ) {
+                  break;
+                }
+              }
+              if ( trigger ) {
+                {{ trigger_func }}("{{ button_id }}", serviceId, rowId);
+              }
+            })
+          {%- endfor %}
+
+        {%- endfor %}
+        {%- if pagetype == vars.pagetype_workshopmanager %}
+          let modalWasVisible = false;
+          new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+              if (entry.isIntersecting) {
+                modalWasVisible = true;
+              } else if (modalWasVisible) {
+                let serviceId = $('#service-input').val();
+                const newId = $('#rowid-reload').val();
+                window.location.href = window.location.origin + window.location.pathname + "?service=" + serviceId + "&row=" + newId;
+              }
+            });
+          }).observe(document.getElementById('{{ service_id }}-{{ vars.first_row_id }}-modal'));
+        {%- endif %}
+      {%- endfor %}
+
+
+      // show / hide dependent elements
+      $(`select[id$='-input']`).change(function (event) {
+        const $this = $(this);
+        const serviceId = $this.attr("data-service");
+        const rowId = $this.attr("data-row");
+        const elementId = $this.attr("data-element");
+        logDebug && console.log(`${elementId} changed ... `);
+        $(`[id^='${serviceId}-${rowId}-']`).trigger(`trigger_${elementId}`);
+
+        const isDisabled = $this.prop("disabled");
+        let newValues = $this.val();
+        if ( !isDisabled && !(!newValues || (Array.isArray(newValues) && newValues.length === 0)) ) {
+          if ( !Array.isArray(newValues) ){
+            newValues = [newValues];
+          }
+          // const mappedValues = newValues.map(newValue => mappingDict[serviceId]?.[elementId]?.[newValue] ?? newValue);
+          const mappedValues = [...new Set(newValues.map(newValue => mappingDict[serviceId]?.[elementId]?.[newValue] ?? newValue))];
+          const excludes = `:not(${mappedValues.map(value => `[data-dependency-${elementId}-${value}]`).join(',')})`;
+          let prefixSelector = "";
+          let selector = "";
+
+          // Show + set to Active (add collect)
+          prefixSelector = `div[id^='${serviceId}-${rowId}-'][id$='-input-div'][data-show='true']`;
+          selector = mappedValues.map(value => `${prefixSelector}[data-dependency-${elementId}-${value}]`).join(',');
+          $(`${selector}`).show();
+          
+          prefixSelector = `[id^='${serviceId}-${rowId}-'][id$='-input']:not([data-collect-static])`;
+          selector = mappedValues.map(value => `${prefixSelector}[data-dependency-${elementId}-${value}]`).join(',');
+          $(`${selector}`).attr("data-collect", true);
+          
+          // trigger all new activated label cb, to ensure normally hidden inputs are shown
+          prefixSelector = `[id^='${serviceId}-${rowId}-'][id$='-input-cb']`;
+          selector = mappedValues.map(value => `${prefixSelector}[data-dependency-${elementId}-${value}]`).join(',');
+          $(`${selector}`).trigger("change");
+
+          // show navbar buttons
+          prefixSelector = `button[id^='${serviceId}-${rowId}-'][id$='-navbar-button'][data-show="true"]`;
+          selector = mappedValues.map(value => `${prefixSelector}[data-dependency-${elementId}-${value}]`).join(',');
+          $(`${selector}`).trigger("show");
+          $(`${selector}`).trigger("change");
+
+          // show buttons
+          prefixSelector = `button[id^='${serviceId}-${rowId}-'][id$='-btn']`;
+          selector = mappedValues.map(value => `${prefixSelector}[data-dependency-${elementId}-${value}]`).join(',');
+          $(`${selector}`).show();
+
+        {# Show / Hide dependency values #}
+          // hide + ignore
+          $(`div[id^='${serviceId}-${rowId}-'][id$='input-div'][data-dependency-${elementId}]${excludes}`).hide();
+          $(`[id^='${serviceId}-${rowId}-'][id$='-input'][data-dependency-${elementId}]${excludes}`).attr("data-collect", false);
+
+          // hide navbar buttons
+          selector = `button[id^='${serviceId}-${rowId}-'][id$='-navbar-button'][data-dependency-${elementId}]${excludes}`;
+          $(`${selector}`).trigger("hide");
+
+          // hide buttons
+          selector = `button[id^='${serviceId}-${rowId}-'][id$='-btn'][data-dependency-${elementId}]${excludes}`;
+          $(`${selector}`).hide();
+        } else {
+          // hide + ignore all specific inputs
+          $(`div[id^='${serviceId}-${rowId}-'][id$='input-div'][data-dependency-${elementId}]`).hide();
+          $(`[id^='${serviceId}-${rowId}-'][id$='input'][data-dependency-${elementId}]`).attr("data-collect", false);
+        }
+      });
+
+
+        $(`[id$='-modal-copy-btn']`).on("click", function (){
+          const $this = $(this);
+          const serviceId = $this.attr("data-service");
+          const rowId = $this.attr("data-row");
+          const workshopUrl = $(`#${serviceId}-${rowId}-modal .modal-body a`).attr('href');
+          navigator.clipboard.writeText(workshopUrl).then(function() {
+            $(`#${serviceId}-${rowId}-modal-copy-btn`).tooltip('dispose').attr('title', 'Copied');
+            $(`#${serviceId}-${rowId}-modal-copy-btn`).tooltip('show');
+          }, function(err) {
+            console.error('Could not copy text: ', err);
+          });
+        });
+
+        window.showModal = function (serviceId, rowId, url, header, text1, text2) {
+          $(`#${serviceId}-${rowId}-modal .modal-title`).text(header);
+          $(`#${serviceId}-${rowId}-modal .modal-body p`).text(`${text1}`);
+          $(`#${serviceId}-${rowId}-modal .modal-body a`).text(`${text2}`);
+          $(`#${serviceId}-${rowId}-modal .modal-body a`).attr('href', url);
+          $(`#${serviceId}-${rowId}-modal`).modal('show');
+        }
+
+      // secret input text fields -->
+        $(`button[id$='-view-password']`).on("click", function (event) {
+          const $this = $(this);
+          const serviceId = $this.attr("data-service");
+          const rowId = $this.attr("data-row");
+          const elementId = $this.attr("data-element");
+          const passInput = $(`input[id^='${serviceId}-${rowId}-'][id$='-${elementId}-input']`);
+          const eye = $(`i[id^='${serviceId}-${rowId}-'][id$='-${elementId}-password-eye']`);
+          {#
+          const passInput = $('input[id*={{ id_prefix }}-{{ element_id }}-input]')[0];
+          const eye = $('i[id*={{ id_prefix }}-{{ element_id }}-password-eye]')[0];
+          #}
+          if (passInput.prop("type") === "password") {
+            passInput.prop("type", "text");
+            eye.removeClass("fa-eye");
+            eye.addClass("fa-eye-slash");
+          } else {
+            passInput.prop("type", "password");
+            eye.addClass("fa-eye");
+            eye.removeClass("fa-eye-slash");
+          }
+        });
+      // <-- secret input text fields
+
+      $(document).on("click", `button[data-textgrower-btn-type='add'][id$='-input']`, function (event) {
+        const $this = $(this);
+        const serviceId = $this.attr("data-service");
+        const rowId = $this.attr("data-row");
+        const tabId = $this.attr("data-tab");
+        const elementId = $this.attr("data-element");
+        
+        const parentContainer = $this.closest('.container');
+        const countElements = parseInt(parentContainer.attr("data-count")) + 1;
+        parentContainer.attr("data-count", countElements);
+        const firstInputElement = $(`[id^='${serviceId}-${rowId}-${tabId}'][id$='-1-${elementId}-input']`);
+        const dataType = firstInputElement.attr("data-type");
+        const group = firstInputElement.attr("data-group") ?? "default";
+        const name = firstInputElement.attr("name") ?? elementId;
+        const type = firstInputElement.attr("type") ?? "text";
+        let pattern = firstInputElement.attr("pattern");
+        if ( !pattern ) {
+          pattern = "";
+        }
+        let placeholder = firstInputElement.attr("placeholder");
+        if ( !placeholder ) {
+          placeholder = "";
+        }
+
+        const newInputGroup = `
+          <div class="input-group" style="display: flex; align-items: center; margin-bottom: 10px;">
+          <input id="${serviceId}-${rowId}-${tabId}-${countElements}-${elementId}-input" type="${type}"
+            class="form-control"
+            data-service="${serviceId}"
+            data-row="${rowId}"
+            data-tab="${tabId}"
+            data-type="${dataType}"
+            data-element="${elementId}"
+            data-group="${group}"
+            data-collect="true"
+            data-collect-static
+            name="${name}"
+            type="${type}"
+            pattern="${pattern}"
+            placeholder="${placeholder}"
+          />
+          <button data-collect-static data-textgrower-btn-type="del" data-element="${elementId}" data-service="${serviceId}" data-row="${rowId}" data-tab="${tabId}" data-collect="false" type="button" id="${serviceId}-${rowId}-${tabId}-${countElements}-delbtn-${elementId}-input" style="margin-left: 8px;" class="btn btn-danger">{{ svg.delete_svg | safe }}</button>
+          <button data-collect-static data-textgrower-btn-type="add" data-element="${elementId}" data-service="${serviceId}" data-row="${rowId}" data-tab="${tabId}" data-collect="false" type="button" id="${serviceId}-${rowId}-${tabId}-${countElements}-addbtn-${elementId}-input" style="margin-left: 8px;" class="btn btn-primary">{{ svg.plus_svg | safe }}</button>
+        </div>
+        `;
+        parentContainer.append(newInputGroup);
+      });
+      $(document).on("click", `button[data-textgrower-btn-type='del'][id$='-input']`, function (event) {
+        $(this).closest('.input-group').remove();              
+      });
+
+
+      $(`[data-sse-flavors]`).on("sse", function (event, data) { 
+        const $this = $(this);
+        const serviceId = $this.attr("data-service");
+        const rowId = $this.attr("data-row");
+        for ( const [system, systemFlavors] of Object.entries(data) ) {
+          kubeOutpostFlavors[system] = systemFlavors;
+        }
+        const currentSystem = $(`[id^='${serviceId}-${rowId}-'][id$='-system-input']`);
+        if ( currentSystem.length && currentSystem.attr("data-collect") == "true" ) {
+          if ( Object.keys(data).includes(currentSystem.val()) ){
+            setFlavorInfo(serviceId, rowId, currentSystem.val(), kubeOutpostFlavors[currentSystem.val()]);
+          }
+        }
+      });
+
+      $(`input[id$='-select-all']`).on("click", function () {
+        const $this = $(this);
+        const serviceId = $this.attr("data-service");
+        const rowId = $this.attr("data-row");
+        const tabId = $this.attr("data-tab");
+        if ( $this.prop("checked") ) {
+          $(`input[id^='${serviceId}-${rowId}-${tabId}-'][id$='-input']`).prop("checked", true);
+          $(`[id^='${serviceId}-${rowId}-${tabId}-'][id$='-select-none']`).prop("checked", false);
+        }
+      })
+      $(`input[id$='-select-none']`).on("click", function () {
+        const $this = $(this);
+        const serviceId = $this.attr("data-service");
+        const rowId = $this.attr("data-row");
+        const tabId = $this.attr("data-tab");
+        if ( $this.prop("checked") ) {
+          $(`input[id^='${serviceId}-${rowId}-${tabId}-'][id$='-input']`).prop("checked", false);
+          $(`[id^='${serviceId}-${rowId}-${tabId}-'][id$='-select-all']`).prop("checked", false);
+        }
+      })
+
+      $(".summary-tr").on("click", function (event) {
+        if (![event.target, event.target.parentElement, event.target.parentElement?.parentElement]
+          .some(el => el?.tagName === "BUTTON")) {
+          const $this = $(this);
+          const id = $this.data("server-id");
+          let accordionIcon = $(this).find(".accordion-icon");
+          let collapse = $(`.collapse[id^=${id}]`);
+          if ( collapse.length > 0 ) {
+            let shown = collapse.hasClass("show");
+            if (shown) accordionIcon.addClass("collapsed");
+            else accordionIcon.removeClass("collapsed");
+            new bootstrap.Collapse(collapse);
+          }
+        }
+      });
+
+
+      logDebug && console.log(`Fill elements ...`);
+      $(`[id$='-input']`).trigger("trigger_init");
+      logDebug && console.log(`Fill elements ... done`);
+
+      // Set Defaults, as configured in config file
+      {%- for service_id, service_options in config.frontend_config.get("services", {}).get("options", {}).items() %}
+        logDebug && console.log("Set default values ( {{ service_id }} ) ...");
+        {%- set default_tab_id = service_options.get("default", {}).get("tab", "default") %}
+        {%- for option_key, option_value in service_options.get("default", {}).get("options", {}).items() %}
+          optionElement = $(`[id^='{{ service_id }}-'][id$='-{{ default_tab_id }}-{{ option_key }}-input']`);
+          if ( optionElement.is("select") && optionElement.find(`option[value="{{ option_value }}"]:not(:disabled)`).length ){
+            optionElement.val("{{ option_value }}");
+            optionElement.trigger("change");
+          } else if ( optionElement.is("input") ){
+            optionElement.val("{{ option_value }}");
+            optionElement.trigger("change");
+          }
+        {%- endfor %}
+        {%- if pagetype == vars.pagetype_workshopmanager %}
+          {%- for row_id, values in db_workshops.items() %}
+            workshopManagerFillExistingRow("{{ service_id }}", "{{ row_id }}", {{ values | tojson }});
+          {%- endfor %}
+        {%- elif pagetype == vars.pagetype_workshop %}
+          workshopFillExistingRow("{{ service_id }}", "{{ spawner.name }}", {{ workshop_options | tojson }});
+          {%- if spawner.events %}
+            {%- for event in spawner.events %}
+              appendToLog("{{ service_id }}", "{{ spawner.name }}", {{ event | tojson }});
+            {%- endfor %}
+          {%- endif %}
+        {%- elif pagetype == vars.pagetype_home %}
+          {%- for s in spawners %}
+            {%- set spawner = user.spawners.get(s.name, s) %}
+            {%- if spawner.user_options and spawner.user_options.get("name", false) %}
+              homeFillExistingRow("{{ service_id }}", "{{ spawner.name }}", {{ decrypted_user_options.get(spawner.name, spawner.user_options) | tojson }}, {{ service_options.get("fillingOrder", []) | tojson }});
+              {%- if spawner.events %}
+                {%- for event in spawner.events %}
+                  appendToLog("{{ service_id }}", "{{ spawner.name }}", {{ event | tojson }});
+                {%- endfor %}
+              {%- endif %}
+            {%- endif %}
+          {%- endfor %}
+        {%- endif %}
+        logDebug && console.log("Set default values ( {{ service_id }} ) done");
+        
+      {%- endfor %}
+
+      {%- if pagetype == vars.pagetype_workshop %}
+        let name = "";
+        let lastEvent = false;
+        let updateProgressBar = false;
+        let serviceId = "{{ spawner.user_options.get("service", "jupyterlab") | lower }}";
+        let rowId = "{{ spawner.name }}";
+        name = "{{ spawner.name }}";
+        events = [];
+        {%- if spawner and spawner.events %}
+        events = {{ spawner.events | tojson }};
+        {%- endif %}
+        lastEvent = events.length > 0 ? events[events.length - 1] : false;
+        clearLogs(serviceId, name);
+        if ( lastEvent ) {
+          {%- if spawner.cancel_pending or spawner.active %}
+          updateProgressBar = true;
+          {%- else %}
+          updateProgressBar = lastEvent.progress != 100;
+          {%- endif %}
+        }
+        events.forEach( event => {
+          if ( updateProgressBar ) {
+            let ready = event.ready ?? false;
+            let failed = event.failed ?? false;
+            let progress = event.progress ?? 0;
+            let status = "starting";
+            if ( ready ) status = "running";
+            else if ( failed ) status = "stopped";
+            else if ( progress == 99 ) status = "cancelling";
+            else if ( progress == 0 ) status = "";
+            progressBarUpdate(serviceId, rowId, status, progress);
+          }
+          appendToLog(serviceId, name, event);
+        });
+        if ( updateProgressBar ) {
+          $(`#${serviceId}-${name}-logs-navbar-button`).trigger("click");
+        }
+        {# Set Buttons in correct state #}
+        let status = "stopped";
+        {%- if spawner.cancel_pending %}
+        status = "cancelling";
+        {%- elif not spawner.ready and spawner.active %}
+        status = "starting";
+        {%- elif spawner.ready %}
+        status = "running";
+        {% endif %}
+        updateHeaderButtons(serviceId, name, status);        
+
+        {%- if spawner and spawner.events %}
+          fillLogContainer(serviceId, "{{ spawner.name }}", {{ spawner.events | tojson }});
+        {%- else %}
+          defaultLogs(serviceId, "{{ spawner.name }}");
+        {%- endif %}
+      {%- endif %}
+
+      const queryString = window.location.search;
+      const urlParams = new URLSearchParams(queryString);
+      if (urlParams.has('row') && urlParams.has('service')) {
+        // Get the value of the "row" parameter
+        const serviceValue = urlParams.get('service');
+        let rowValue = urlParams.get('row');
+        
+        $(`div[id$='-table-div']:not([id^='${serviceValue}-'])`).hide();
+        $(`div[id$='-table-div'][id^='${serviceValue}-']`).show();
+
+        $(`div[id$='-collapse']:not([id^='${serviceValue}-${rowValue}-collapse'])`).removeClass("show");
+        $(`div[id^='${serviceValue}-${rowValue}-collapse']`).addClass("show");
+        let x = document.getElementById(`${serviceValue}-${rowValue}-summary-tr`)
+        if ( x ) x.scrollIntoView();
+        if ( urlParams.has('start') ) {
+          const ready = $(`#${serviceValue}-${rowValue}-summary-tr`).attr("data-ready");
+          const active = $(`#${serviceValue}-${rowValue}-summary-tr`).attr("data-active");
+          if ( ready ) {
+            window.open(`/user/{{ user.name}}/${rowId}`, "_blank");
+          } else if ( !active ) {
+            $(`[id^='${serviceValue}-${rowValue}-'][id$='-start-btn-header']`).trigger("click");
+          } else {
+            $(`[id^='${serviceValue}-${rowValue}-'][id$='-logs-navbar-button']`).trigger("click");
+          }
+        }
+          
+        if ( urlParams.has('showlogs') ) $(`[id^='${serviceValue}-${rowValue}-'][id$='-logs-navbar-button']`).trigger("click");
+      }
+    });
+  });
+</script>

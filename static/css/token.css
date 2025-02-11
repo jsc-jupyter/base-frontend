@@ -1,0 +1,14 @@
+/* body {
+  background: #fff;
+}
+
+main {
+  background: #fff;
+  color: black;
+} */
+
+
+ #request-token-form,
+ #token-area {
+   width: max-content;
+ }

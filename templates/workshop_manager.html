@@ -1,0 +1,38 @@
+{%- extends "page.html" -%}
+
+{%- block stylesheet -%}
+  <link rel="stylesheet" href='{{static_url("css/home.css")}}' type="text/css"/>
+{%- endblock -%}
+
+{%- block main -%}
+{%- import "macros/table/config/workshop_manager.jinja" as config %}
+{%- import "macros/svgs.jinja" as svg %}
+{%- import "macros/table/variables.jinja" as vars with context %}
+
+{%- set pagetype = vars.pagetype_workshopmanager %}
+
+{%- set table_rows = {vars.first_row_id: {}} %}
+{%- set _ = table_rows.update(db_workshops) %}
+
+
+{%- from "macros/table/table.jinja" import tables with context %}
+{%- import "macros/table/content.jinja" as functions with context %}
+<input id="rowid-reload" data-collect="false" data-collect-static="true" style="display: none"/>
+{{ tables(
+  config.frontend_config,
+  functions.workshopmanager_description,
+  functions.workshopmanager_headerlayout,
+  functions.workshopmanager_defaultheader,
+  functions.workshopmanager_firstheader,
+  functions.workshopmanager_row_content
+) }}
+
+{%- endblock -%}
+
+
+{%- block script -%}
+{%- import "macros/table/variables.jinja" as vars with context %}
+{%- set pagetype = vars.pagetype_workshopmanager %}
+{%- import "macros/table/config/workshop_manager.jinja" as config with context %}
+{%- include "macros/table/elements_js.jinja" with context %}
+{%- endblock %}

@@ -1,0 +1,161 @@
+html,
+body {
+  background-color: #023d6b;
+  /* background: #fefefe; */
+  font-family: "Weissenhof_Grotesk", Arial, Helvetica, sans-serif;
+  height: 100%;
+}
+
+main {
+  color: #fff;
+  flex-grow: 1;
+}
+
+.bg-primary {
+  background: #023d6b !important;
+  color: #fff; 
+}
+
+.bg-secondary {
+  background: #eee !important;
+  color: #000;
+}
+
+.bg-info {
+  background: #adbde3 !important;
+  /* color: #023d6b; */
+}
+
+.text-secondary {
+  color: #eee !important;
+}
+
+
+/* Align icons */
+.bi {
+  vertical-align: -.125em;
+  width: 1em;
+  height: 1em;
+}
+
+
+/* Links and nav links */
+
+a {
+  text-decoration: none;
+  color: #023d6b;
+}
+
+a:hover {
+  text-decoration: underline;
+  text-decoration-skip-ink: none;
+  color: #002036;
+}
+
+a.nav-link {
+  color: #023d6b;
+}
+
+a.nav-link:hover {
+  color: #002036;
+}
+
+
+/* Buttons */
+
+.btn-primary {
+  background-color: #023d6b;
+  border-color: #023d6b;
+}
+
+.btn-primary:hover,
+.btn-primary:focus,
+.btn-primary:active {
+  background-color: #225f8d;
+  border-color: #225f8d;
+}
+
+.btn-outline-primary {
+  border-color: #023d6b;
+  color: #023d6b;
+}
+
+.btn-outline-primary:hover,
+.btn-outline-primary:focus,
+.btn-outline-primary:active {
+  background-color: #023d6b;
+  border-color: #023d6b;
+  color: #fff;
+}
+
+
+/* Progress bar */
+
+.progress-bar {
+  background-color: #023d6b;
+}
+
+
+/* Visually disabled select dropdowns */
+
+.form-select.disabled {
+  pointer-events: none;
+  background-color: #e9ecef;
+  background-image: none;
+}
+
+
+/* Log divs */
+
+details summary::-webkit-details-marker {
+  display: none;
+}
+
+details summary {
+  position: relative;
+  list-style: none;
+  color: black;
+}
+
+.log-div {
+  padding: 0.5rem;
+  border-top: 1px solid #dfe0e1;
+  color: #6c757d;
+}
+
+.log-div:first-child {
+    border-top: none;
+}
+
+details summary:after {
+  content: "+";
+  color: black;
+  position: absolute;
+  font-size: 1.5rem;
+  line-height: 0;
+  margin-top: 0.75rem;
+  padding-right: 0.5rem;
+  right: 0;
+  transform-origin: center;
+  transition: 200ms linear;
+}
+
+details[open] summary ~ * {
+  animation: open 0.3s ease-in-out;
+}
+
+details[open] summary:after {
+  transform: rotate(45deg);
+  font-size: 1.75rem;
+}
+
+
+/* JQuery confirm boxes */
+
+.jconfirm-box .checkbox {
+  margin-top: 10px;
+}
+
+input[type='checkbox'] {
+  margin-right: 0.5rem;
+}

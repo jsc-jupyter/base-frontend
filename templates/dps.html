@@ -1,0 +1,214 @@
+{%- extends "page.html" -%}
+
+{%- block stylesheet -%}
+  <link rel="stylesheet" href='{{static_url("css/legal.css")}}' type="text/css" />
+  <style>
+    p { margin-bottom: 0; }
+    th, td { padding: 1rem 0.5rem !important; }
+  </style>
+{%- endblock -%}
+
+{%- block main -%}
+
+<div class="container">
+  <h1>Privacy Policy</h1>
+  <div class="text-container table-responsive">
+    <table class="table table-bordered">
+      <tr>
+        <th style="width: 35%; font-weight: normal">Name of the Service</th>
+        <th style="width: 65%; font-weight: normal">
+          <p>Jupyter-Juelich Supercomputing Centre (Jupyter-JSC)</p>
+        </th>
+      </tr>
+      <tr>
+        <td>Description of the Service</td>
+        <td>
+          <p>Instance for Jupyter application provided by the Juelich Supercomputing Centre (JSC).</p>
+        </td>
+      </tr>
+      <tr>
+        <td>Data controller and a contact person</td>
+        <td>
+          <p>Federated Systems and Data<br />Juelich Supercomputing Centre (JSC)<br />Forschungszentrum
+            Juelich GmbH<br />Wilhelm-Johnen-Strasse<br />52428 Juelich<br />Germany</p>
+          <p>Service Administrator Team<br />E-Mail: <a
+              href="mailto:ds-support@fz-juelich.de">ds-support@fz-juelich.de</a>
+          </p>
+        </td>
+      </tr>
+      <tr>
+        <td>Data controller’s data protection officer</td>
+        <td>
+          <p>Frank Rinkens<br /> Forschungszentrum Juelich GmbH<br />Wilhelm-Johnen-Strasse<br />52428
+            Juelich<br />Germany<br />Tel.: +49-2461-61-9005<br />E-Mail: <a
+              href="mailto:DSB@fz-juelich.de">DSB@fz-juelich.de</a></p>
+        </td>
+      </tr>
+      <tr>
+        <td>Jurisdiction and supervisory authority</td>
+        <td>
+          <p>DE-NW Germany North Rhine-Westphalia</p>
+          <p>A complaint can be lodged at:<br />Landesbeauftragte für Datenschutz und Informationsfreiheit
+            Nordrhein-Westfalen<br />Kavalleriestr. 2-4<br />40213 Duesseldorf<br />Germany<br />E-Mail:
+            <a href="mailto:poststelle@ldi.nrw.de">poststelle@ldi.nrw.de</a>
+          </p>
+        </td>
+      </tr>
+      <tr>
+        <td>Cookies</td>
+        <td>
+          <p>
+            The Jupyter-JSC Service uses cookies. Cookies are text files that are stored in
+            a computer system via a web browser.
+          </p>
+          <p>
+            Many websites and servers use cookies. Many cookies contain a
+            so-called cookie ID. A cookie ID is a unique identifier of the cookie. It
+            consists of a character string through which Internet pages and servers
+            can be assigned to the specific web browser in which the cookie was
+            stored. This allows visited websites and servers to differentiate
+            the individual browser of the data subject from other Internet browsers
+            that contain other cookies. A specific web browser can be recognized
+            and identified using the unique cookie ID.
+          </p>
+          <p>
+            The Jupyter-JSC Service needs cookies for its functionality. It would not be
+            possible to determine whether a user is logged in or not without the use
+            of cookies.
+          </p>
+          <p>
+            By means of a cookie, the information and offers on our service can be
+            optimized with the user in mind. Cookies allow us, as previously
+            mentioned, to recognize our service users. The purpose of this recognition
+            is to make it easier for users to utilize our service. The service user
+            that uses cookies e.g. does not have to enter access data each time the
+            service is accessed, because this is taken over by the service, and the
+            cookie is thus stored on the user's computer system.
+          </p>
+          <p>
+            You may, at any time, prevent the setting of cookies through our service
+            using a corresponding setting of the web browser used, and may
+            thus permanently deny the setting of cookies. Furthermore, already set
+            cookies may be deleted at any time via a web browser or other
+            software programs. This is possible in all popular web browsers. If
+            you deactivate the setting of cookies in the web browser used, not
+            all functions of our service may be entirely usable.
+          </p>
+        </td>
+      </tr>
+      <tr>
+        <td>Personal data processed and the legal basis</td>
+        <td>
+          <p>The set and format of personal data depends on the selected remote identity provider.</p>
+          <ol type="A">
+            <li>
+              Personal data retrieved from the JSC WebLDAP:<br />
+              <ul>
+                <li>your email address</li>
+              </ul>
+              Personal data retrieved from your remote identity provider:<br />
+              <ul>
+                <li>your unique user identifier (eduPersonPrincipalName)*</li>
+                <li>your email address (mail)*</li>
+                <li>your name (givenName + sn)*</li>
+                <li>your role in your Home Organisation (eduPersonScopedAffiliation)*</li>
+              </ul>
+            </li>
+            <li>
+              Personal data gathered from yourself:<br />
+              <ul>
+                <li>logfiles on the service activity*</li>
+              </ul>
+            </li>
+          </ol>
+          <p>* the personal data is necessary for providing the Service. Other personal data is processed
+            because you have consented to it.</p>
+        </td>
+      </tr>
+      <tr>
+        <td>Purpose of the processing of personal data</td>
+        <td>
+          <p>The personal data retrieved from your Home Organisation is needed to map you to the local
+            account, contact you and provide a comfortable interface. The logfiles are needed to provide
+            support in case you had problems with the service.</p>
+        </td>
+      </tr>
+      <tr>
+        <td>Third parties to whom personal data is disclosed</td>
+        <td>
+          <p>Personal data are disclosed to services within the JSC. Before the data is release to a
+            service provider, you have to give your consent.</p>
+        </td>
+      </tr>
+      <tr>
+        <td>How to access, rectify and delete the personal data and object its processing.</td>
+        <td>
+          <p>Personal data can be accessed and reviewed in <a href="https://unity-jsc.fz-juelich.de/home/">user
+              home</a>. The account deletion can be
+            done there too.</p>
+        </td>
+      </tr>
+      <tr>
+        <td>Withdrawal of consent</td>
+        <td>
+          <p>Given consents of attribute releases to service providers within the Jupyter-JSC Service can
+            be withdrawn in <a href="https://unity-jsc.fz-juelich.de/home/">user home</a>. To withdraw
+            the consent to the Privacy Policy or Terms of Service delete the account in <a
+              href="https://unity-jsc.fz-juelich.de/home/">user home</a>.</p>
+        </td>
+      </tr>
+      <tr>
+        <td>Data portability</td>
+        <td>
+          <p>Your profile can be exported and provided in a json file. This file can be used to create an
+            account by other services. To retrieve the json file contact the contact person above.</p>
+        </td>
+      </tr>
+      <tr>
+        <td>Data retention</td>
+        <td>
+          <p>Personal data is deleted on request of the user or if the user hasn't used the Service for 18
+            months.</p>
+        </td>
+      </tr>
+      <tr>
+        <td>Data Protection Code of Conduct</td>
+        <td>
+          <p>Your personal data will be protected according to the <a
+              href="http://www.geant.net/uri/dataprotection-code-of-conduct/v1">Code of Conduct for
+              Service Providers</a>, a common standard for the research and higher education sector to
+            protect your privacy.</p>
+        </td>
+      </tr>
+      <tr>
+        <td>Update of this privacy statement</td>
+        <td>
+          <p>We may update our Privacy Statement from time to time. Updates of our Privacy Statement will
+            be published at this location. Any amendments become effective upon publication. We
+            therefore recommend that you regularly visit the site to keep yourself informed on possible
+            updates.</p>
+        </td>
+      </tr>
+    </table>
+
+    <br>
+    Version: 1.0<br>Date: 04.09.2018
+  </div>
+</div>
+{%- endblock -%}
+
+{%- block script -%}
+{{ super() }}
+<script>
+  function setTextContainerHeight() {
+    let headerHeight = $("#header").outerHeight();
+    let footerHeight = $("#footer").outerHeight();
+    let h1Height = $("#dps-page>h1").outerHeight()
+    let h = headerHeight + footerHeight + h1Height;
+    $(".text-container").css({ height: 'calc(92vh - ' + h + 'px' });
+  }
+
+  $(document).ready(setTextContainerHeight);
+  $(window).resize(setTextContainerHeight);
+</script>
+{%- endblock -%}
