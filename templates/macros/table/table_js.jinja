@@ -490,6 +490,7 @@
         if ( dataType == "select" ) {
           if (inputElement.find(`option[value="${newValue}"]`).length > 0) {
             inputElement.val(newValue);
+            $(`[id^='${serviceId}-${rowId}-'][id$='-input']`).trigger("trigger_${key}");
             inputElement.trigger("change");
           } else {
             if ( inputElement.attr("data-element") === "system" && globalMaintenanceSystems.includes(newValue) ) {
