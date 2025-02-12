@@ -242,6 +242,7 @@
           return; // Ignore events bubbling up from child elements
         }
         setReservations(data);
+        $(`[id$='-reservation-input']`).trigger("change");
       });
 
 
