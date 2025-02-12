@@ -504,6 +504,7 @@
           const max = inputElement.attr("max");
           if (newValue && newValue >= min && newValue <= max) {
             inputElement.val(newValue);
+            $(`[id^='${serviceId}-${rowId}-'][id$='-input']`).trigger("trigger_${key}");
             inputElement.trigger("change");
           } else {
             availableDescription = `${key} ${newValue} is not in allowed range [${min}, ${max}].`;
@@ -511,13 +512,16 @@
           }
         } else if (dataType == "checkbox" ) {
           inputElement.prop("checked", true);
+          $(`[id^='${serviceId}-${rowId}-'][id$='-input']`).trigger("trigger_${key}");
           inputElement.trigger("change");
         } else {
           inputElement.val(newValue);
+          $(`[id^='${serviceId}-${rowId}-'][id$='-input']`).trigger("trigger_${key}");
           inputElement.trigger("change");
         }
       } else if (inputElement.is("input[type='checkbox']") ) {
         inputElement.prop("checked", false);
+        $(`[id^='${serviceId}-${rowId}-'][id$='-input']`).trigger("trigger_${key}");
         inputElement.trigger("change");
       }
 
@@ -655,12 +659,15 @@
           console.log(key);
         } else if ( dataType == "select" ) {
           inputElement.val(newValue);
+          $(`[id^='${serviceId}-${rowId}-'][id$='-input']`).trigger("trigger_${key}");
           inputElement.trigger("change");
         } else if (dataType == "checkbox" ) {
           inputElement.prop("checked", true);
+          $(`[id^='${serviceId}-${rowId}-'][id$='-input']`).trigger("trigger_${key}");
           inputElement.trigger("change");
         } else {
           inputElement.val(newValue);
+          $(`[id^='${serviceId}-${rowId}-'][id$='-input']`).trigger("trigger_${key}");
           inputElement.trigger("change");
         }
         const labelElement = $(`[id^='${serviceId}-${rowId}-'][id$='-${key}-input-cb']`);
@@ -675,6 +682,7 @@
         }
       } else if (inputElement.is("input[type='checkbox']") ) {
         inputElement.prop("checked", false);
+        $(`[id^='${serviceId}-${rowId}-'][id$='-input']`).trigger("trigger_${key}");
         inputElement.trigger("change");
       }
     }
