@@ -5,9 +5,9 @@
 {#- Get all systems configured for this hub,
     sort them by weight and assign status ids -#}
 {#- Jupyter should always be first -#}
-{%- set incident_services = custom_config.get("incidentCheck", {}).get("services", {}) -%}
+{%- set incident_services = frontendCollection.get("incidentCheck", {}).get("services", {}) -%}
 {%- set systems_default_order = [["JUPYTER", incident_services.get("JUPYTER", 40)]] -%}
-{%- for system in custom_config.get("systems", {}) | sort(attribute='weight') -%}
+{%- for system in frontendCollection.get("systemConfig", {}) | sort(attribute='weight') -%}
   {%- set system = system.upper().replace("-", '') -%}
   {%- set status_id = incident_services.get(system, 0) -%}
   {%- do systems_default_order.append([system, status_id]) -%}
@@ -284,7 +284,7 @@ require(["jquery"], function (
     createCarouselPages();
   })
 
-  const incidentsThresholdInteractiveFooter = {{ custom_config.get("incidentCheck", {}).get("healthThreshold", {}).get("interactive", 50) | tojson }};
+  const incidentsThresholdInteractiveFooter = {{ frontendCollection.get("incidentCheck", {}).get("healthThreshold", {}).get("interactive", 50) | tojson }};
 
   $(`[data-sse-incidents]`).on("sse", function (event, incidents) {
     $(`[id^='ampel-'][id$='-tooltip']`).tooltip("dispose");

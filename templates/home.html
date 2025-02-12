@@ -15,7 +15,7 @@
 
 {%- for spawner in spawners %}
   {%- if ( spawner != None and spawner.user_options != None and spawner.user_options.get("name", false) ) %}
-    {%- set _ = table_rows.update({spawner.name: decrypted_user_options.get(spawner.name, spawner.user_options)}) %}
+    {%- set _ = table_rows.update({spawner.name: frontendCollection.get("decrypted_user_options").get(spawner.name, spawner.user_options)}) %}
   {%- endif %}
 {%- endfor %}
 

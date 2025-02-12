@@ -12,21 +12,21 @@
   
 
   // Define the regex pattern with named capture groups
-  const serviceConfig = {{ custom_config.services | tojson }};
-  const userModulesConfig = {{ custom_config.userModules | default({}, true) | tojson }};
-  const systemConfig = {{ custom_config.systems | tojson }};
-  const resourcesConfig = {{ custom_config.resources | default({}, true) | tojson }};
-  const backendServicesConfig = {{ custom_config.backendServices | tojson }};
+  const serviceConfig = {{ frontendCollection.get("serviceConfig", {}) | tojson }};
+  const userModulesConfig = {{ frontendCollection.get("userModules", {}) | tojson }};
+  const systemConfig = {{ frontendCollection.get("systemConfig", {}) | tojson }};
+  const resourcesConfig = {{ frontendCollection.get("resourcesConfig", {}) | tojson }};
+  const backendServicesConfig = {{ frontendCollection.get("backendServices", {}) | tojson }};
 
   const notAllowedKeys = ["secret_keys", "defaultvalues", "attachvalues"];
   const mappingDict = {};
   const globalUserOptions = {};
   const globalFillingOrder = {};
-  const initIncidents = {{ incidents | tojson }};
+  const initIncidents = {{ frontendCollection.get("incidents", {}) | tojson }};
   const incidentsmapping = {
     "JSCCLOUD": "JSC-Cloud"
   };
-  const incidentsThresholdInteractive = {{ custom_config.get("incidentCheck", {}).get("healthThreshold", {}).get("interactive", 50) | tojson }};
+  const incidentsThresholdInteractive = {{ frontendCollection.get("incidentCheck", {}).get("healthThreshold", {}).get("interactive", 50) | tojson }};
   Object.entries(initIncidents).forEach(([system, incident]) =>{
     const health = incident?.health ?? 0;
     if ( health >= incidentsThresholdInteractive ) {
@@ -47,7 +47,7 @@
           if ( !Object.keys(globalUserOptions).includes("{{ service_id }}") ) {
             globalUserOptions["{{ service_id }}"] = {};
           }
-          globalUserOptions["{{ service_id }}"]["{{ spawner.name }}"] = {{ decrypted_user_options.get(spawner.name, spawner.user_options) | tojson }};
+          globalUserOptions["{{ service_id }}"]["{{ spawner.name }}"] = {{ frontendCollection.get("decrypted_user_options").get(spawner.name, spawner.user_options) | tojson }};
         {%- endif %}
       {%- endfor %}
     {%- elif pagetype == vars.pagetype_workshop %}
@@ -1386,7 +1386,8 @@
 
     {# WorkshopManager.default.repo2docker.repopathtype --> #}
       function R2DgetRepoPathType(serviceId, rowId, tabId, elementId) {
-        return {{ custom_config.get("binderRepos", {}).get("notebookTypes", ["File", "URL"]) | tojson }}.map(item => [item, item]);
+        const values = ["File", "URL"];
+        return values.map(item => [item, item]);
       }
 
       function homeTriggerRepoPathTypeInit(trigger, serviceId, rowId, tabId, elementId, elementOptions) {
@@ -1432,7 +1433,8 @@
 
     {# WorkshopManager.default.repo2docker.repotype --> #}  
       function R2DgetRepoType() {
-        return {{ custom_config.get("binderRepos", {}).get("repos", ["GitHub"]) | tojson }}.map(item => [item, item]);
+        const values = ["GitHub"];
+        return values.map(item => [item, item]);
       }
 
       function homeTriggerRepoType(trigger, serviceId, rowId, tabId, elementId, elementOptions) {

@@ -9,7 +9,7 @@
   macro_firstheader,
   macro_row_content
 )%}
-  <div id="global-content-div" class="container-fluid p-4">
+  <div id="global-content-div" class="container-fluid p-4" data-sse-reservations>
     {%- if announcement_all.show_announcement %}
       {{ announcement_all.announcement() }}
     {%- endif %}
@@ -200,6 +200,9 @@
       {%- endfor %}      
       
       $(`[data-sse-progress][id$='-summary-tr']`).on("sse", function (event, data) {
+        if (event.target !== this) {
+          return; // Ignore events bubbling up from child elements
+        }
         const $this = $(this);
         const serviceId = $this.attr("data-service");
         const rowId = $this.attr("data-row");
@@ -234,8 +237,18 @@
         }
       });
 
+      $(`[data-sse-reservations]`).on("sse", function (event, data) {
+        if (event.target !== this) {
+          return; // Ignore events bubbling up from child elements
+        }
+        setReservations(data);
+      });
+
 
       $(`[data-sse-servers][id$='-summary-tr']`).on("sse", function (event, data) {
+        if (event.target !== this) {
+          return; // Ignore events bubbling up from child elements
+        }
         const $this = $(this);
         const serviceId = $this.attr("data-service");
         const rowId = $this.attr("data-row");

@@ -470,7 +470,7 @@
           {%- for s in spawners %}
             {%- set spawner = user.spawners.get(s.name, s) %}
             {%- if spawner.user_options and spawner.user_options.get("name", false) %}
-              homeFillExistingRow("{{ service_id }}", "{{ spawner.name }}", {{ decrypted_user_options.get(spawner.name, spawner.user_options) | tojson }}, {{ service_options.get("fillingOrder", []) | tojson }});
+              homeFillExistingRow("{{ service_id }}", "{{ spawner.name }}", {{ frontendCollection.get("decrypted_user_options").get(spawner.name, spawner.user_options) | tojson }}, {{ service_options.get("fillingOrder", []) | tojson }});
               {%- if spawner.events %}
                 {%- for event in spawner.events %}
                   appendToLog("{{ service_id }}", "{{ spawner.name }}", {{ event | tojson }});

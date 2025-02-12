@@ -62,10 +62,18 @@
   const resPattern = /^urn:(?<namespace>.+?(?=:res:)):res:(?<systempartition>[^:]+):(?<project>[^:]+):act:(?<account>[^:]+):(?<accounttype>[^:]+)$/;
   const unicoreEntitlements = {{ auth_state.entitlements | list | tojson }};
   const unicorePreferredUsername = {{ auth_state.preferred_username | default("none", true) | tojson }};
-  const unicoreReservations = {{ reservations | default({}, true) | tojson }};
-  const unicoreMapSystems = {{ custom_config.mapSystems | default({}, true) | tojson }};
-  const unicoreMapPartitions = {{ custom_config.mapPartitions | default({}, true) | tojson }};
-  const unicoreDefaultPartitions = {{ custom_config.defaultPartitions | default({}, true) | tojson }};
+  let unicoreReservations = {{ frontendCollection.get("reservations", {}) | tojson }};
+  const unicoreMapSystems = {{ frontendCollection.get("mapSystems", {}) | tojson }};
+  const unicoreMapPartitions = {{ frontendCollection.get("mapPartitions", {}) | tojson }};
+  const unicoreDefaultPartitions = {{ frontendCollection.get("defaultPartitions", {}) | tojson }};
+
+  function setReservations(data) {
+    if (data) {
+      unicoreReservations = data;
+    } else {
+      unicoreReservations = {};
+    }
+  }
 
   function extractEntitlementResources(entitlement) {
     const match = resPattern.exec(entitlement);
