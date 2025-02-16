@@ -153,6 +153,17 @@
       {%- set option = spawner.user_options.get("option", default_option)  %}
       {%- set default_system = service_options.get("default", {}).get("options", {}).get("system", false) %}
       {%- set system = spawner.user_options.get("system", default_system) %}
+      {%- set repotypeMapping = {
+          "gh": "GitHub",
+          "git": "Git repository",
+          "gl": "GitLab",
+          "gist": "GitHub Gist",
+          "zenodo": "Zenodo DOI",
+          "figshare": "FigShare DOI",
+          "hydroshare": "Hydroshare resource",
+          "dataverse": "Dataverse DOI",
+          "ckan": "CKAN dataset"
+      } %}
       <th scope="row" class="name-td">{{ spawner.user_options.get("name", "Unnamed") }}</th>
       <td scope="row" class="config-td">
         <div style="max-height: 152px; overflow: auto;">
@@ -173,6 +184,17 @@
               <div id="{{ service_id }}-{{ row_id }}-config-td-partition-div" class="col text-lg-center col-12 col-lg-3"{% if not spawner.user_options.get("hpc", {}).get("partition", false) -%} style="display: none" {%- endif %}>
                 <span class="text-muted" style="font-size: smaller;">Partition</span><br>
                 <span id="{{ service_id }}-{{ row_id }}-config-td-partition">{{ spawner.user_options.get("hpc", {}).get("partition", "") }}</span>
+              </div>
+              <div id="{{ service_id }}-{{ row_id }}-config-td-repotype-div" class="col text-lg-center col-12 col-lg-3"{% if not spawner.user_options.get("repo2docker", {}).get("repotype", false) -%} style="display: none" {%- endif %}>
+                {%- set repotype = spawner.user_options.get("repo2docker", {}).get("repotype", "") %}
+                <span class="text-muted" style="font-size: smaller;">Repository Type</span><br>
+                <span id="{{ service_id }}-{{ row_id }}-config-td-repotype">{{ repotypeMapping.get(repotype, repotype) }}</span>
+              </div>
+              <div id="{{ service_id }}-{{ row_id }}-config-td-repourl-div" class="col text-lg-center col-12 col-lg-3"{% if not spawner.user_options.get("repo2docker", {}).get("repourl", false) -%} style="display: none" {%- endif %}>
+                {%- set repourl = spawner.user_options.get("repo2docker", {}).get("repourl", "") %}
+                {%- set repourlVal = repourl.split('/') | select('string') | list | last %}
+                <span class="text-muted" style="font-size: smaller;">Value</span><br>
+                <span id="{{ service_id }}-{{ row_id }}-config-td-repourl">{{ repourlVal }}</span>
               </div>
             </div>
           </div>

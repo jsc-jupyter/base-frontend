@@ -385,12 +385,15 @@
   >
     {{ create_label(id_prefix, service_id, row_id, tab_id, element_id, element_options) }}
     <div class="col-{{ 12 - element_options.get("label", {}).get("width", "4") | int }} d-flex flex-column justify-content-center">
-      {%- if element_options.get("input", {}).get("options", {}).get("secret", false) %}
+      {%- if element_options.get("input", {}).get("options", {}).get("secret", false) or element_options.get("input", {}).get("options", {}).get("copy", false) %}
         <div class="input-group">
       {%- endif %}
       <input type="{%- if element_options.get("input", {}).get("options", {}).get("secret", false) -%}password{%- else -%}text{%- endif -%}" 
         class="form-control"
         {{ element_parameters(service_id, row_id, tab_id, element_id, element_options) }}
+        {%- if element_options.get("input", {}).get("options", {}).get("copy", false) %}
+        data-copy-key="{{ element_id }}"
+        {%- endif %}
         name="{{ element_options.get('input', {}).get('options', {}).get('name', element_id) }}"
         id="{{ id_prefix }}-{{ element_id }}-input"
       />
@@ -405,9 +408,22 @@
             <i id="{{ id_prefix }}-{{ element_id }}-password-eye" class="fa fa-eye" aria-hidden="true"></i>
           </button>
         </span>
+      {%- elif element_options.get("input", {}).get("options", {}).get("copy", false) %}
+        <button 
+            id="{{ id_prefix }}-text-copybutton" 
+            data-service="{{ service_id }}"
+            data-row="{{ row_id }}"
+            data-copy-key="{{ element_id }}"
+            type="button"
+            data-bs-toggle="tooltip"
+            data-bs-placement="top"
+            title="Copy to clipboard"
+            class="absolute right-2 top-1/2 transform -translate-y-1/2 p-2 bg-white rounded-md border border-gray-300 hover:bg-gray-100 active:bg-gray-200"
+        >{{ svg.copy_svg | safe }}</button>
       {%- endif %}
       <div class="invalid-feedback">{{ element_options.get("input", {}).get("options", {}).get("warning", "") }}</div>
-      {%- if element_options.get("input", {}).get("options", {}).get("secret", false) %}
+      {%- if element_options.get("input", {}).get("options", {}).get("secret", false) or element_options.get("input", {}).get("options", {}).get("copy", false) %}
+
         </div>
       {%- endif %}
     </div>
@@ -572,7 +588,10 @@
         class="form-select"
         {{ element_parameters(service_id, row_id, tab_id, element_id, element_options) }}
       >
-      </select>
+        {%- for key, value in element_options.get('input', {}).get('values', {}).items() %}
+        <option value="{{key}}">{{ value }}</option>
+        {%- endfor %}
+      </select>      
       <div class="invalid-feedback">{{ element_options.get("input", {}).get("options", {}).get("warning", "You have to select at least one item.") }}</div>
     </div>
   </div>
@@ -687,6 +706,13 @@
   element_id,
   element_options
 )%}
+  <div id="{{ id_prefix }}-terminal-container-div" >{# style="display: none">#}
+    <div id="{{ id_prefix }}-terminal-container-flex" style="display: flex; justify-content: center; align-items: center; margin-bottom: 10px">
+      <div id="{{ id_prefix }}-terminal-container"
+      style="width: 60%; max-height: 50%; background-color: black; overflow: auto">
+      </div>
+    </div>
+  </div>
   <div id="{{ id_prefix }}-{{ element_id }}-input" class="card card-body text-black row g-0"
     {{ element_parameters(service_id, row_id, tab_id, element_id, element_options) }}
   >

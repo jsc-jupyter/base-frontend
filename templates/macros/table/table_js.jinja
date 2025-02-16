@@ -518,7 +518,12 @@
         } else {
           inputElement.val(newValue);
           $(`[id^='${serviceId}-${rowId}-'][id$='-input']`).trigger(`trigger_${key}`);
-          inputElement.trigger("change");
+          if (dataType == "text" ) {
+            inputElement.trigger("input");
+          } else {
+            inputElement.trigger("change");
+          }
+
         }
       } else if (inputElement.is("input[type='checkbox']") ) {
         inputElement.prop("checked", false);
@@ -905,6 +910,144 @@
     {# <-- WorkshopManager.default.option #}
 
     {# WorkshopManager.default.system --> #}
+
+      function shortenRepoUrl(repotype, repourl) {
+        const wwwPrefix = ["www.", ""];
+        const protocols = ["https://", "http://", ""];
+        let domain = "";
+        let url = repourl;
+        if ( repotype == "gh" ) {
+          domain = "github.com";
+        } else if ( repotype == "gist" ) {
+          domain = "gist.github.com";
+        } else if ( repotype == "gitlab" ) {
+          domain = "gitlab.com";
+        }
+        let suffix = "";
+        if ( domain ) {
+          protocols.forEach(protocol => {
+            wwwPrefix.forEach(www => {
+              suffix = `${protocol}${www}${domain}/`;
+              if ( url.startsWith(suffix) ) url = url.slice(suffix.length);
+            })
+          });
+        }
+        return url;
+      }
+
+      function getRepo2DockerDirectLink(serviceId, rowId) {
+        const repotype = $(`[id^='${serviceId}-${rowId}-'][id$='-repotype-input']`).val();
+
+        let urlpath = `/v2/${repotype}`
+        let repourl = $(`[id^='${serviceId}-${rowId}-'][id$='-repourl-input']`).val();
+
+        if ( ["git", "gl", "hydroshare", "ckan"].includes(repotype) ) {
+          repourl = encodeURIComponent(repourl);
+        }
+        repourl = shortenRepoUrl(repotype, repourl);
+        urlpath = `${urlpath}/${repourl}/`;
+
+        let reporefElement = $(`[id^='${serviceId}-${rowId}-'][id$='-reporef-input']`);
+
+        if ( ["git", "gl", "gh", "gist"].includes(repotype) ) {
+          reporef = reporefElement.val() || "HEAD";
+          urlpath = `${urlpath}${reporef}`;
+        }
+
+        let queryArgs = [];
+        
+        const repopathElement = $(`[id^='${serviceId}-${rowId}-'][id$='-repopath-input']`);
+        if ( repopathElement.attr("data-collect") == "true" ) {
+          const repopathtype = $(`[id^='${serviceId}-${rowId}-'][id$='-repopathtype-input']`).val();
+          if ( repopathtype == "file" ) {
+            let labpath = $(`[id^='${serviceId}-${rowId}-'][id$='-repopath-input']`).val();
+            labpath = encodeURIComponent(labpath);
+            queryArgs.push(`labpath=${labpath}`);
+          } else if ( repopathtype == "url" ) {
+            let urlpath = $(`[id^='${serviceId}-${rowId}-'][id$='-repopath-input']`).val();
+            urlpath = encodeURIComponent(urlpath);
+            queryArgs.push(`urlpath=${urlpath}`);
+          }
+        }
+
+        const system = $(`[id^='${serviceId}-${rowId}-'][id$='-system-input']`).val();
+        queryArgs.push(`system=${system}`);
+
+        const flavorElement = $(`[id^='${serviceId}-${rowId}-'][id$='-flavor-input']`);
+        if ( flavorElement.attr("data-collect") == "true" ) {
+          queryArgs.push(`flavor=${flavorElement.val()}`);
+        }
+
+        const localstoragepathElement = $(`[id^='${serviceId}-${rowId}-'][id$='-localstoragepath-input']`);
+        if ( localstoragepathElement.attr("data-collect") == "true" ) {
+          let localstoragepath = encodeURIComponent(localstoragepathElement.val());
+          queryArgs.push(`localstoragepath=${localstoragepath}`);
+        }
+
+        let queryString = queryArgs.join("&");
+        urlpath = window.origin + `${urlpath}?${queryString}`;
+        urlpath = urlpath.replace(/([^:]\/)\/+/g, "$1");
+        return urlpath;
+      }
+
+      function homeTriggerUpdateDirectLinks(trigger, serviceId, rowId, tabId, elementId, elementOptions) {
+        const directUrl = getRepo2DockerDirectLink(serviceId, rowId);
+        const inputElement = $(`[id^='${serviceId}-${rowId}-'][id$='-${elementId}-input']`);
+        inputElement.val(directUrl);
+      }
+
+      function homeTriggerUpdateRepoUrlForType(trigger, serviceId, rowId, tabId, elementId, elementOptions) {
+        const repoUrlElement = $(`[id^='${serviceId}-${rowId}-'][id$='-${elementId}-input']`);
+        const repoUrlLabelElement = getLabel(repoUrlElement);
+        const repoType = $(`[id^='${serviceId}-${rowId}-'][id$='-repotype-input']`).val();
+
+        let label = "";
+        let placeholder = "";
+        let regex = "";
+        if ( repoType === "gh" ) {
+          label = "GitHub repository name or URL";
+          placeholder = "example: yuvipanda/requirements or https://github.com/yuvipanda/requirements";
+          regex = "^(https?:\\/\\/github\\.com\\/)?([^\\/]+\\/[^\\/]+)\\/?$";
+        } else if ( repoType === "gist" ) {
+          label = "Gist ID (username/gistId) or URL";
+          placeholder = "example: kreuzert/1ce821fe9ba45a636a504a32a87bb49c or https://gist.github.com/kreuzert/1ce821fe9ba45a636a504a32a87bb49c";
+          regex = "^(https?:\\/\\/gist\\.github\\.com\\/)?([^\\/]+)\\/?$";
+        } else if ( repoType === "git" ) {
+          label = "Arbitrary git repository URL";
+          placeholder = "example: http://git.example.com/repo";
+        } else if (repoType === "gl") {
+          label = "GitLab repository name or URL";
+          placeholder = "example: https://gitlab.com/mosaik/examples/mosaik-tutorials-on-binder or mosaik/examples/mosaik-tutorials-on-binder";
+          regex = "^(https?:\\/\\/gitlab\\.com\\/)?([^\\/]+\\/[^\\/]+)\\/?$";
+        } else if ( repoType === "zenodo" ) {
+          label = "Zenodo DOI";
+          placeholder = "example: 10.5281/zenodo.3242074";
+        } else if ( repoType === "figshare" ) {
+          label = "FigShare DOI";
+          placeholder = "example: 10.6084/m9.figshare.9782777.v1";
+        } else if ( repoType === "hydroshare" ) {
+          label = "Hydroshare resource id";
+          placeholder = "example: 8f7c2f0341ef4180b0dbe97f59130756";
+        } else if ( repoType === "dataverse" ) {
+          label = "Dataverse DOI";
+          placeholder = "example: 10.7910/DVN/TJCLKP";
+        } else if ( repoType === "ckan" ) {
+          label = "CKAN dataset URL";
+          placeholder = "https://demo.ckan.org/dataset/smaple-dataset-1";
+        }
+
+        repoUrlLabelElement.contents().filter(function () {
+          return this.nodeType === Node.TEXT_NODE;
+        }).first().replaceWith(label);
+
+        repoUrlElement.prop("placeholder", placeholder);
+        if (regex) {
+          repoUrlElement.attr("pattern", regex);
+        } else {
+          repoUrlElement.removeAttr("pattern");
+        }
+      }
+
 
       function homeTriggerSystem(trigger, serviceId, rowId, tabId, elementId, elementOptions) {
         const optionInput = $(`#${serviceId}-${rowId}-${tabId}-option-input`);
@@ -1385,25 +1528,20 @@
     {# <-- WorkshopManager.default.lmod.modules #}
 
     {# WorkshopManager.default.repo2docker.repopathtype --> #}
-      function R2DgetRepoPathType(serviceId, rowId, tabId, elementId) {
-        const values = ["File", "URL"];
-        return values.map(item => [item, item]);
-      }
-
-      function homeTriggerRepoPathTypeInit(trigger, serviceId, rowId, tabId, elementId, elementOptions) {
-        const inputElement = getInputElement(serviceId, rowId, "repopathtype");
-        fillSelect(elementId, inputElement, R2DgetRepoPathType());
-      }
-
-      function wmTriggerRepoPathTypeInit(trigger, serviceId, rowId, tabId, elementId, elementOptions) {
-        homeTriggerRepoPathTypeInit(trigger, serviceId, rowId, tabId, elementId, elementOptions);
-      }
-
-      function wTriggerRepoPathTypeInit(trigger, serviceId, rowId, tabId, elementId, elementOptions) {
-        homeTriggerRepoPathTypeInit(trigger, serviceId, rowId, tabId, elementId, elementOptions);
-      }
 
       function homeTriggerRepoPathType(trigger, serviceId, rowId, tabId, elementId, elementOptions) {
+        const repoPathChecked = val(getLabelCBElement(serviceId, rowId, "repopath"));
+
+        const repoPathTypeDiv = getInputDiv(serviceId, rowId, "repopathtype");
+        const repoPathTypeInput = getInputElement(serviceId, rowId, "repopathtype");
+        if ( !repoPathChecked ) {
+          repoPathTypeDiv.hide();
+        } else {
+          repoPathTypeDiv.show();
+        }
+      }
+
+      function wmTriggerRepoPathType(trigger, serviceId, rowId, tabId, elementId, elementOptions) {
         const repoPathChecked = val(getLabelCBElement(serviceId, rowId, "repopath"));
 
         const repoPathTypeDiv = getInputDiv(serviceId, rowId, "repopathtype");
@@ -1422,31 +1560,18 @@
         }
       }
 
-      function wmTriggerRepoPathType(trigger, serviceId, rowId, tabId, elementId, elementOptions) {
-        homeTriggerRepoPathType(trigger, serviceId, rowId, tabId, elementId, elementOptions);
-      }
-
       function wTriggerRepoPathType(trigger, serviceId, rowId, tabId, elementId, elementOptions) {
         homeTriggerRepoPathType(trigger, serviceId, rowId, tabId, elementId, elementOptions);
       }
     {# <-- WorkshopManager.default.repo2docker.repopathtype #}
 
     {# WorkshopManager.default.repo2docker.repotype --> #}  
-      function R2DgetRepoType() {
-        const values = ["GitHub"];
-        return values.map(item => [item, item]);
+
+      function homeTriggerRepoTypeChanged(trigger, serviceId, rowId, tabId, elementId, elementOptions) {
+        // depending on 
+
       }
 
-      function homeTriggerRepoType(trigger, serviceId, rowId, tabId, elementId, elementOptions) {
-        const repo2dockerSelect = $(`[id^="${serviceId}-${rowId}-"][id$="-${elementId}-input"]`);
-        fillSelect(elementId, repo2dockerSelect, R2DgetRepoType());
-      }
-      function wmTriggerRepoType(trigger, serviceId, rowId, tabId, elementId, elementOptions) {
-        homeTriggerRepoType(trigger, serviceId, rowId, tabId, elementId, elementOptions);
-      }
-      function wTriggerRepoType(trigger, serviceId, rowId, tabId, elementId, elementOptions) {
-        homeTriggerRepoType(trigger, serviceId, rowId, tabId, elementId, elementOptions);
-      }
     {# <-- WorkshopManager.default.repo2docker.repotype #}
 
     {# WorkshopManager.default.expertmode --> #}
@@ -1555,6 +1680,39 @@
           $(`#${serviceId}-${rowId}-config-td-partition`).html(`${partition.val()}`);
         } else {
           partitionDiv.hide();
+        }
+        
+        const repotypeShort = $(`[id^='${serviceId}-${rowId}-'][id$='-repotype-input']`);
+        const repoTypeMapping = {
+          "gh": "GitHub",
+          "git": "Git repository",
+          "gl": "GitLab",
+          "gist": "GitHub Gist",
+          "zenodo": "Zenodo DOI",
+          "figshare": "FigShare DOI",
+          "hydroshare": "Hydroshare resource",
+          "dataverse": "Dataverse DOI",
+          "ckan": "CKAN dataset"
+        }
+        const repotype = repoTypeMapping?.[repotypeShort.val()] || repotypeShort.val();
+        const repotypeDiv = $(`#${serviceId}-${rowId}-config-td-repotype-div`);
+
+        const repourl = $(`[id^='${serviceId}-${rowId}-'][id$='-repourl-input']`);
+        const repourlDiv = $(`#${serviceId}-${rowId}-config-td-repourl-div`);
+
+        if ( repotypeShort.attr("data-collect") === "true" ) {
+          repotypeDiv.show();
+          $(`#${serviceId}-${rowId}-config-td-repotype`).html(`${repotype}`);
+        } else {
+          repotypeDiv.hide();
+        }
+
+        if ( repourl.attr("data-collect") === "true" ) {
+          repourlDiv.show();
+          const repourlVal = repourl.val().split("/").filter(Boolean).pop();
+          $(`#${serviceId}-${rowId}-config-td-repourl`).html(`${repourlVal}`);
+        } else {
+          repourlDiv.hide();
         }
       }
 
@@ -1708,6 +1866,9 @@
           toShow = ["open", "stop"];
           toDisable = ["open"];
         } else if ( status == "starting" ) {
+          toShow = ["start"];
+          toDisable = ["start"];
+        } else if ( status == "starting" ) {
           toShow = ["cancel"];
         } else if ( status == "na" ) {
           toShow = ["na", "del"];
@@ -1721,6 +1882,9 @@
         } else if ( status == "stopped" ) {
           toShow = ["start"];
           toDisable = [];
+        } else if ( status == "building" ) {
+          toShow = ["start"];
+          toDisable = ["start"];
         } else if ( status == "disable" ) {
           toDisable = ["open", "stop", "cancel", "start", "del"];
         }
@@ -2154,6 +2318,8 @@
           background = "bg-danger";
         } else if ( status == "starting" ) {
           text = "starting";
+        } else if ( status == "building" ) {
+          text = "building";
         } else if ( progress == 0 ){
           text = "";
         }
@@ -2189,58 +2355,42 @@
       }
 
       let userOptions = collectSelectedOptions(serviceId, rowId);
-      options["data"] = JSON.stringify(userOptions);
 
-      options["success"] = function (data, textStatus, jqXHR) {
-        updateHeaderButtons(serviceId, rowId, "starting");
-        
-        const url = new URL(window.location.href);
-        url.searchParams.set('service', serviceId);
-        url.searchParams.set('row', newId);
-        url.searchParams.set('showlogs', true);
-        window.location.href = url.toString();
-      }
-      api.start_named_server(user, newId, options);
-    }
 
-    function homeSummaryButtonStart(serviceId, rowId, buttonId, button_options, user, api, base_url, utils) {
-      const options = getAPIOptions();
 
-      const form = $(`form[id^='${serviceId}-${rowId}-form']`);
-      const valid = validateForm(serviceId, rowId);
-      if ( !valid ) {
-        console.log(`Invalid Form for ${serviceId}-${rowId}`);
-        return;
-      }
+      if ( ! (userOptions.service == "jupyterlab" && userOptions.option == "repo2docker") ) {
+        options["data"] = JSON.stringify(userOptions);
 
-      let userOptions = collectSelectedOptions(serviceId, rowId);
-      sseInit()
-      options["data"] = JSON.stringify(userOptions);
-      clearLogs(serviceId, rowId);
-
-      options["success"] = function (data, textStatus, jqXHR) {
-        updateHeaderButtons(serviceId, rowId, "starting");
-        if ( !Object.keys(globalUserOptions).includes(serviceId) ){
-          globalUserOptions[serviceId] = {};
+        options["success"] = function (data, textStatus, jqXHR) {          
+          const url = new URL(window.location.href);
+          url.searchParams.set('service', serviceId);
+          url.searchParams.set('row', newId);
+          url.searchParams.set('showlogs', true);
+          window.location.href = url.toString();
         }
-        globalUserOptions[serviceId][rowId] = userOptions;
-        homeHeaderUpdate(serviceId, rowId);
+        api.start_named_server(user, newId, options);
+      } else {
+        options["data"] = JSON.stringify(userOptions);
 
-        setTimeout(function() {
-          const logInputElement = $(`[id^='${serviceId}-${rowId}-logs'][id$='-logcontainer-input']`);
-          if ( logInputElement.html() == "" ) {
-            console.log("Logs not fetched. Reload website");
-            const url = new URL(window.location.href);
-            url.searchParams.set('service', serviceId);
-            url.searchParams.set('row', rowId);
-            url.searchParams.set('showlogs', true);
-            window.location.href = url.toString();
-          }
-        }, 1000);
+        options["success"] = function (data, textStatus, jqXHR) {
+          const url = new URL(window.location.href);
+          url.searchParams.set('service', serviceId);
+          url.searchParams.set('row', newId);
+          url.searchParams.set('start', true);
+          window.location.href = url.toString();
+        }
+        api.update_named_server(user, newId, options);
       }
-      api.start_named_server(user, rowId, options);
-            
-      const toView = document.getElementById(`${serviceId}-${rowId}-summary-tr`)
+    }    
+
+    // Build repo2docker image and send start request afterwards
+    function startRepo2Docker(serviceId, rowId, userOptions, user, api, base_url, utils) {
+      $(`button[id^='${serviceId}-${rowId}-'][id$='-btn']`).prop("disabled", true);
+      homeHeaderUpdate(serviceId, rowId);
+      updateHeaderButtons(serviceId, rowId, "building");
+      progressBarUpdate(serviceId, rowId, "building", 2);
+
+      let toView = document.getElementById(`${serviceId}-${rowId}-summary-tr`);
       if ( toView ) toView.scrollIntoView();
 
       // show summary-tr
@@ -2255,6 +2405,191 @@
       const navbarLogsButton = $(`[id^='${serviceId}-${rowId}-'][id$='-logs-navbar-button']`);
       if ( navbarLogsButton ) {
         navbarLogsButton.trigger("click");
+      }
+      
+      const term = new Terminal({
+        cursorBlink: true,
+        rows: 20,
+        cols: 80,
+        theme: {
+            background: '#000000',
+            foreground: '#FFFFFF',
+        }
+      });
+      const terminalDiv = $(`[id^='${serviceId}-${rowId}-'][id$='-terminal-container-div']`);
+      const terminalElement = $(`[id^='${serviceId}-${rowId}-'][id$='-terminal-container']`);
+      term.open(terminalElement[0]);
+      term.write("\x1b[2K\r");
+      terminalDiv.fadeIn();
+      const type = userOptions.repo2docker.repotype;
+      const repourl = userOptions.repo2docker.repourl;
+
+      // build api url to call the build process
+      let url = "";
+      if ( type == "gh" ) {
+        const reporef = userOptions.repo2docker?.reporef || "HEAD";
+        url = new URL(utils.url_path_join(window.origin, "services", "binder", "build", type, repourl, reporef).replace("//", "/"));
+        url.searchParams.append("build_only", "true");
+      }
+      console.log("New EventSource");
+      r2dEvtSource = new EventSource(url);
+      let r2dStatus = 0;
+      
+      setTimeout(function() {
+        if ( r2dStatus < 2 ) {
+          term.write("Build failed" + "\r");
+          console.log(e);
+          updateHeaderButtons(serviceId, rowId, "stopped");
+          progressBarUpdate(serviceId, rowId, "stopped", 100);
+          r2dEvtSource.close();
+        }
+      }, 30000);
+
+      r2dEvtSource.onmessage = (event) => {
+        try {
+            const jsonData = JSON.parse(event.data);
+            var message = jsonData.message;
+            if ( jsonData.phase == "waiting" ) {
+              if ( r2dStatus == 0 ) {
+                progressBarUpdate(serviceId, rowId, "building", 2);
+                r2dStatus = 1;
+              }
+            } else if ( jsonData.phase == "fetching" ) {
+              if ( r2dStatus < 2 ) {
+                progressBarUpdate(serviceId, rowId, "building", 3);
+                r2dStatus = 2;
+              }
+            } else if ( jsonData.phase == "building" ) {
+              if ( r2dStatus < 3 ) {
+                progressBarUpdate(serviceId, rowId, "building", 5);
+                r2dStatus = 3;
+              }
+            } else if ( jsonData.phase == "pushing" ) {
+              if ( r2dStatus < 4 ) {
+                progressBarUpdate(serviceId, rowId, "building", 8);
+                r2dStatus = 4;
+              }
+            } else if ( jsonData.phase == "ready" ) {
+              const options = getAPIOptions();
+              userOptions["repo2docker"]["image"] = jsonData.imageName;
+              options["data"] = JSON.stringify(userOptions);
+              options["success"] = function (data, textStatus, jqXHR) {
+                updateHeaderButtons(serviceId, rowId, "starting");
+                if ( !Object.keys(globalUserOptions).includes(serviceId) ){
+                  globalUserOptions[serviceId] = {};
+                }
+                globalUserOptions[serviceId][rowId] = userOptions;
+
+                setTimeout(function() {
+                  const logInputElement = $(`[id^='${serviceId}-${rowId}-logs'][id$='-logcontainer-input']`);
+                  if ( logInputElement.html() == "" ) {
+                    console.log("Logs not fetched. Reload website");
+                    const url = new URL(window.location.href);
+                    url.searchParams.set('service', serviceId);
+                    url.searchParams.set('row', rowId);
+                    url.searchParams.set('showlogs', true);
+                    window.location.href = url.toString();
+                  }
+                }, 1000);
+              }
+              api.start_named_server(user, rowId, options);
+                    
+              const toView = document.getElementById(`${serviceId}-${rowId}-summary-tr`)
+              if ( toView ) toView.scrollIntoView();
+
+              // show summary-tr
+              const summaryTr = $(`tr[id^='${serviceId}-${rowId}-summary-tr']`);
+              const accordionIcon = summaryTr.find(".accordion-icon");
+              const collapse = $(`.collapse[id^='${serviceId}-${rowId}-collapse']`);
+              const shown = collapse.hasClass("show");
+              if ( ! shown ) {
+                accordionIcon.removeClass("collapsed");
+                new bootstrap.Collapse(collapse);
+              }
+              const navbarLogsButton = $(`[id^='${serviceId}-${rowId}-'][id$='-logs-navbar-button']`);
+              if ( navbarLogsButton ) {
+                navbarLogsButton.trigger("click");
+              }
+              r2dEvtSource.close();
+            }
+            if ( message && message != "\n" ) term.write(jsonData.message + "\r");
+
+        } catch (error) {
+            term.write("Build failed" + "\r");
+            console.log(error);
+            updateHeaderButtons(serviceId, rowId, "start");
+            progressBarUpdate(serviceId, rowId, "stopped", 100);
+            r2dEvtSource.close();
+        }
+      }
+
+      r2dEvtSource.onerror = (e) => {
+        console.log("Reconnect");
+        console.log(e);
+        r2dEvtSource.close();
+      }
+    }
+
+    function homeSummaryButtonStart(serviceId, rowId, buttonId, button_options, user, api, base_url, utils) {
+      const form = $(`form[id^='${serviceId}-${rowId}-form']`);
+      const valid = validateForm(serviceId, rowId);
+      if ( !valid ) {
+        console.log(`Invalid Form for ${serviceId}-${rowId}`);
+        return;
+      }
+
+      let userOptions = collectSelectedOptions(serviceId, rowId);
+      clearLogs(serviceId, rowId);
+      defaultLogs(serviceId, rowId);
+      
+      const terminalElement = $(`[id^='${serviceId}-${rowId}-'][id$='-terminal-container']`);
+      terminalElement.html("");
+      
+      // if it's a repo2DockerBuild, we handle the starting procedure in the startRepo2Docker function
+      if ( ! (userOptions.service == "jupyterlab" && userOptions.option == "repo2docker") ) {
+        const options = getAPIOptions();
+        options["data"] = JSON.stringify(userOptions);
+        options["success"] = function (data, textStatus, jqXHR) {
+          $(`button[id^='${serviceId}-${rowId}-'][id$='-btn']`).prop("disabled", true);
+          updateHeaderButtons(serviceId, rowId, "starting");
+          if ( !Object.keys(globalUserOptions).includes(serviceId) ){
+            globalUserOptions[serviceId] = {};
+          }
+          globalUserOptions[serviceId][rowId] = userOptions;
+          homeHeaderUpdate(serviceId, rowId);
+
+          setTimeout(function() {
+            const logInputElement = $(`[id^='${serviceId}-${rowId}-logs'][id$='-logcontainer-input']`);
+            if ( logInputElement.html() == "" ) {
+              console.log("Logs not fetched. Reload website");
+              const url = new URL(window.location.href);
+              url.searchParams.set('service', serviceId);
+              url.searchParams.set('row', rowId);
+              url.searchParams.set('showlogs', true);
+              window.location.href = url.toString();
+            }
+          }, 1000);
+        }
+        api.start_named_server(user, rowId, options);
+              
+        const toView = document.getElementById(`${serviceId}-${rowId}-summary-tr`)
+        if ( toView ) toView.scrollIntoView();
+
+        // show summary-tr
+        const summaryTr = $(`tr[id^='${serviceId}-${rowId}-summary-tr']`);
+        const accordionIcon = summaryTr.find(".accordion-icon");
+        const collapse = $(`.collapse[id^='${serviceId}-${rowId}-collapse']`);
+        const shown = collapse.hasClass("show");
+        if ( ! shown ) {
+          accordionIcon.removeClass("collapsed");
+          new bootstrap.Collapse(collapse);
+        }
+        const navbarLogsButton = $(`[id^='${serviceId}-${rowId}-'][id$='-logs-navbar-button']`);
+        if ( navbarLogsButton ) {
+          navbarLogsButton.trigger("click");
+        }
+      } else {
+        startRepo2Docker(serviceId, rowId, userOptions, user, api, base_url, utils);
       }
     }
 

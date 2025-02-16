@@ -29,6 +29,9 @@
                   {%- if trigger %}
                     {%- set button_options = element_options.get("input", {}).get("options", {}).get(button, {}) %}
                     $(`[id^='{{ service_id }}-'][id$='-{{ button }}-btn']`).on("click", function() {
+                      if (event.target !== this) {
+                        return; // Ignore events bubbling up from child elements
+                      }
                       logDebug && console.log("Button click {{ button }}");
                       const $this = $(this);
                       const serviceId = $this.attr("data-service");
@@ -40,6 +43,19 @@
                 {%- endfor %}
               {%- else %}
                 {%- set trigger_suffix = element_options.get("triggerSuffix", "input") %}
+                {%- for input_key, input_func in element_options.get("onInput", {}).items() %}
+                  $(`[id^='{{ service_id }}-'][id$='-{{ input_key }}-{{ trigger_suffix}}']`).on("input", function (event) {
+                    if (event.target !== this) {
+                      return; // Ignore events bubbling up from child elements
+                    }
+                    logDebug && console.log("update {{ element_id }}. Triggered by: ({{ input_key }})");
+                    const $this = $(this);
+                    const serviceId = $this.attr("data-service");
+                    const rowId = $this.attr("data-row")
+                    {{ input_func }}("{{ input_key }}", serviceId, rowId, "{{ tab_id }}", "{{ element_id }}", {{ element_options | tojson }});
+                    logDebug && console.log("update {{ element_id }}. Triggered by: ({{ input_key }}) done");
+                  });
+                {%- endfor %}
                 {%- for trigger_key, trigger_func in element_options.get("trigger", {}).items() %}
                   $(`[id^='{{ service_id }}-'][id$='-{{ element_id }}-{{ trigger_suffix}}']`).on("trigger_{{ trigger_key }}", function (event) {
                     if (event.target !== this) {
@@ -286,7 +302,43 @@
         }
       });
 
+        $(`[id$='-text-copybutton']`).on("click", function() {
+          const $this = $(this);
+          const serviceId = $this.attr("data-service");
+          const rowId = $this.attr("data-row");
+          const copyKey = $this.attr("data-copy-key");
+          const originalIcon = $this.find(".copy-icon").html();
+          const valid = validateForm(serviceId, rowId);
 
+          let tooltipInstance = bootstrap.Tooltip.getInstance($this);
+
+          if ( !valid ) {
+            showToast("URL not copied. Please check input.");
+            $this.html(`{{ svg.failed_svg | safe }}`);
+            setTimeout(function () {
+              if (tooltipInstance) {
+                tooltipInstance.hide();
+              }
+            }, 1000);
+            setTimeout(function () {
+              $this.html(`{{ svg.copy_svg | safe }}`);
+            }, 3000);            
+            return;
+          }
+
+          const value = $(`[id^='${serviceId}-${rowId}-'][data-copy-key='${copyKey}']`).val();          
+          navigator.clipboard.writeText(value).then(() => {
+            $this.html(`{{ svg.check_svg | safe }}`);
+            setTimeout(function () {
+              if (tooltipInstance) {
+                tooltipInstance.hide();
+              }
+              $this.html(`{{ svg.copy_svg | safe }}`);
+            }, 1000);
+          }).catch(err => {
+            console.error("Failed to copy:", err);
+          });
+        });
         $(`[id$='-modal-copy-btn']`).on("click", function (){
           const $this = $(this);
           const serviceId = $this.attr("data-service");
@@ -553,17 +605,16 @@
         let x = document.getElementById(`${serviceValue}-${rowValue}-summary-tr`)
         if ( x ) x.scrollIntoView();
         if ( urlParams.has('start') ) {
-          const ready = $(`#${serviceValue}-${rowValue}-summary-tr`).attr("data-ready");
-          const active = $(`#${serviceValue}-${rowValue}-summary-tr`).attr("data-active");
-          if ( ready ) {
-            window.open(`/user/{{ user.name}}/${rowId}`, "_blank");
-          } else if ( !active ) {
+          const ready = $(`#${serviceValue}-${rowValue}-summary-tr`).attr("data-spawner-ready");
+          const active = $(`#${serviceValue}-${rowValue}-summary-tr`).attr("data-spawner-active");
+          if ( ready === "true" ) {
+            window.open(`/user/{{ user.name }}/${rowValue}`, "_blank");
+          } else if ( active === "false" ) {
             $(`[id^='${serviceValue}-${rowValue}-'][id$='-start-btn-header']`).trigger("click");
           } else {
             $(`[id^='${serviceValue}-${rowValue}-'][id$='-logs-navbar-button']`).trigger("click");
           }
-        }
-          
+        }          
         if ( urlParams.has('showlogs') ) $(`[id^='${serviceValue}-${rowValue}-'][id$='-logs-navbar-button']`).trigger("click");
       }
     });
