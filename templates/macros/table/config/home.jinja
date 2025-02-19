@@ -3,7 +3,7 @@
     "default": "jupyterlab",
     "options": {
       "jupyterlab": {
-        "fillingOrder": ["option", "system", "account", "project", "partition", "flavor"],
+        "fillingOrder": ["option", "system", "account", "project", "partition", "flavor", "privaterepo"],
         "navbar": {
           "labconfig": {
             "show": true,
@@ -170,6 +170,7 @@
                   "type": "text",
                   "value": "GitHub repository name or URL"
                 },
+                "onInputChange": "repoUrlChanged",
                 "trigger": {
                   "repotype": "homeTriggerUpdateRepoUrlForType"
                 },
@@ -211,8 +212,7 @@
                   "options": {
                     "group": "repo2docker",
                     "enabled": false,
-                    "placeholder": "Path to a notebook file (optional)",
-                    "patternDisabled": "^(\\/?[a-zA-Z0-9/_-]+(?:\\.[a-zA-Z0-9]+)?(?:\\/[a-zA-Z0-9/_-]+(?:\\.[a-zA-Z0-9]+)?)*|[a-zA-Z0-9/_-]+)$"
+                    "placeholder": "Path to a notebook file (optional)"
                   }
                 },
                 "label": {
@@ -443,7 +443,6 @@
                 "input": {
                   "type": "select",
                   "options": {
-                    "show": false,
                     "group": "resources"
                   }
                 },
@@ -456,7 +455,12 @@
                   "project": "homeTriggerReservation",
                   "system": "homeTriggerReservation"
                 },
-                "triggerOnChange": "homeTriggerReservation"
+                "triggerOnChange": "homeTriggerReservation",
+                "dependency": {
+                  "system": [
+                    "unicore"
+                  ]
+                }
               },
               "reservationinfo": {
                 "input": {

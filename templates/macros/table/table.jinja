@@ -9,6 +9,8 @@
   macro_firstheader,
   macro_row_content
 )%}
+
+  <div id="toastContainer" class="position-fixed top-0 end-0 p-3"></div>
   <div id="global-content-div" class="container-fluid p-4" data-sse-reservations>
     {%- if announcement_all.show_announcement %}
       {{ announcement_all.announcement() }}

@@ -3,7 +3,7 @@
     "default": "jupyterlab",
     "options": {      
       "jupyterlab": {
-        "fillingOrder": ["option", "system", "account", "project", "partition"],
+        "fillingOrder": ["option", "system", "account", "project", "partition", "flavor", "privaterepo"],
         "navbar": {
           "labconfig": {
             "show": true,
@@ -100,14 +100,22 @@
                   "options": {
                     "group": "repo2docker",
                     "enabled": true
+                  },
+                  "values": {
+                    "gh": "GitHub",
+                    "gist": "GitHub Gist",
+                    "git": "Git repository",
+                    "gl": "GitLab",
+                    "zenodo": "Zenodo DOI",
+                    "figshare": "FigShare DOI",
+                    "hydroshare": "Hydroshare resource",
+                    "dataverse": "Dataverse DOI",
+                    "ckan": "CKAN dataset"
                   }
                 },
                 "label": {
                   "type": "text",
                   "value": "Repository Type"
-                },
-                "trigger": {
-                  "init": "wTriggerRepoType"
                 },
                 "dependency": {
                   "option": [
@@ -121,13 +129,16 @@
                   "options": {
                     "group": "repo2docker",
                     "enabled": "show",
-                    "placeholder": "GitHub repository name or URL",
-                    "patternDisabled": "^([a-zA-Z0-9._-]+\\/[a-zA-Z0-9._-]+(\\.git)?|https?:\\/\\/[a-zA-Z0-9._-]+(\\.[a-z]{2,})?(:\\d+)?\\/[a-zA-Z0-9._-]+\\/[a-zA-Z0-9._-]+(\\.git)?)(\\/)?$"
+                    "placeholder": "example: yuvipanda/requirements or https://github.com/yuvipanda/requirements",
+                    "pattern": "^(https?:\\/\\/github\\.com\\/)?([^\\/]+\\/[^\\/]+)\\/?$"
                   }
                 },
                 "label": {
                   "type": "text",
                   "value": "Repository name or URL"
+                },
+                "trigger": {
+                  "repotype": "wTriggerUpdateRepoUrlForType"
                 },
                 "dependency": {
                   "option": [
@@ -141,8 +152,7 @@
                   "options": {
                     "group": "repo2docker",
                     "enabled": true,
-                    "placeholder": "HEAD",
-                    "patternDisabled": "^([a-zA-Z0-9._-]+|([a-f0-9]{7,40})|([a-zA-Z0-9._-]+\\/[a-zA-Z0-9._-]+)|([a-zA-Z0-9._-]+@~\\d+)|@~\\d+)$"
+                    "placeholder": "HEAD"
                   }
                 },
                 "label": {
@@ -152,6 +162,12 @@
                 "dependency": {
                   "option": [
                     "repo2docker"
+                  ],
+                  "repotype": [
+                    "gh",
+                    "gist",
+                    "git",
+                    "gl"
                   ]
                 }
               },
@@ -195,7 +211,6 @@
                   }
                 },
                 "trigger": {
-                  "init": "wTriggerRepoPathTypeInit",
                   "repopath": "wTriggerRepoPathType"
                 },
                 "dependency": {
@@ -405,7 +420,12 @@
                   "project": "wTriggerReservation",
                   "system": "wTriggerReservation"
                 },
-                "triggerOnChange": "wTriggerReservation"
+                "triggerOnChange": "wTriggerReservation",
+                "dependency": {
+                  "system": [
+                    "unicore"
+                  ]
+                }
               },
               "reservationinfo": {
                 "input": {
@@ -685,7 +705,10 @@
                     ],
                     "reset": {
                       "firstRow": false,
-                      "trigger": "wTriggerButtonReset"
+                      "trigger": "wTriggerButtonReset",
+                      "options": {
+                        "fillingOrder": ["option", "system", "account", "project", "partition", "flavor", "privaterepo"]
+                      }
                     }
                   }
                 }
@@ -702,7 +725,7 @@
         },
         "summaryButtons": {
           "stop": "homeSummaryButtonStop",
-          "start": "homeSummaryButtonStart",
+          "start": "wSummaryButtonStart",
           "open": "homeSummaryButtonOpen",
           "cancel": "homeSummaryButtonCancel"
         }

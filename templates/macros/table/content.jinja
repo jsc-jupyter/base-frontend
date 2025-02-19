@@ -18,7 +18,7 @@
   <th scope="row" class="name-td">{{ row_id }}</th>
   <th scope="row" class="description-td text-center">{{ row_options.get("user_options", {}).get("description", "") }}</th>
   <th scope="row" class="url-td text-center">
-    <button type="button" id="{{ service_id }}-{{row_id}}-open-btn-header" class="btn btn-success open-workshop-btn" data-target="#{{ row_id }}-workshop-link" onclick="window.open('https://{{ hostname }}{{ base_url }}workshops/{{ row_id }}');">{{ svg.open_svg | safe }} Open</button>
+    <button type="button" id="{{ service_id }}-{{row_id}}-open-btn-header" class="btn btn-success open-workshop-btn" data-target="#{{ row_id }}-workshop-link" onclick="window.open(`${window.origin}/workshops/{{ row_id }}`);">{{ svg.open_svg | safe }} Open</button>
   </th>
 {% endmacro %}
 
@@ -49,7 +49,7 @@
 {% endmacro %}
 
 {% macro workshop_firstheader(service_id, row_id, row_options, service_options) %}
-  <th scope="row" class="name-td">{{ spawner.user_options.get("workshop", {}).get("name", "Workshop") }}</th>
+  <th scope="row" class="name-td">Workshop {{ spawner.user_options.get("workshop_id", "") }}</th>
   <th scope="row" class="description-td text-center">{{ workshop_options.get("description") }}</th>
   <th scope="row" class="status-td">
     <div class="d-flex justify-content-center">
@@ -328,7 +328,7 @@
       {%- elif spawner.events %}
         {%- set progress = 0 %}
       {%- endif %}
-      <th scope="row" class="name-td">{{ spawner.user_options.get("name", "Unnamed") }}</th>
+      <th scope="row" class="name-td">{{ spawner.user_options.get("name", "") }}</th>
       <td scope="row" class="config-td">
         <div style="max-height: 152px; overflow: auto;">
           <div class="row mx-3 mb-1 justify-content-between">
@@ -339,13 +339,13 @@
                   <span id="{{ service_id }}-{{ row_id }}-config-td-system">{{ spawner.user_options.get("system", "unknown") }}</span>
                 </div>
                 <div id="{{ service_id }}-{{ row_id }}-config-td-info-div" class="col text-lg-center col-12 col-lg-9">
-                  <span class="text-muted" style="font-size: smaller;">Workshop {{ service_id }}</span><br>
-                  <span id="{{ service_id }}-{{ row_id }}-config-td-info">Click "Configure" to use this Configuration.</span>
+                  <span class="text-muted" style="font-size: smaller;">Workshop {{ spawner.user_options.get("name", "") }}</span><br>
+                  <span id="{{ service_id }}-{{ row_id }}-config-td-info">Click "Use" to open workshop website.</span>
                 </div>
               {%- else %}
               <div id="{{ service_id }}-{{ row_id }}-config-td-info-div" class="col text-lg-center col-12 col-lg-12">
                 <span class="text-muted" style="font-size: smaller;">Workshop {{ service_id }}</span><br>
-                <span id="{{ service_id }}-{{ row_id }}-config-td-info">Click "Configure" to use this Configuration.</span>
+                <span id="{{ service_id }}-{{ row_id }}-config-td-info">Click "Use" to open workshop website.</span>
               </div>
               {%- endif %}
 
@@ -397,13 +397,28 @@
       </th>
       <th scope="row" class="url-td text-center" style="white-space: nowrap">
         <button type="button"
+          id="{{ service_id }}-{{row_id}}-workshopcopy-btn-header"
+          data-service="{{ service_id }}"
+          data-row="{{ row_id }}"
+          data-show-always="true"
+          data-element="workshopcopy"
+          type="button"
+          data-bs-toggle="tooltip"
+          data-bs-placement="top"
+          title="Copy Workshop link to clipboard"
+          style="background-color: None !important"
+          class="absolute right-2 top-1/2 transform -translate-y-1/2 p-2 rounded-md border border-gray-300 hover:bg-gray-100 active:bg-gray-200"
+        >
+          {{ svg.copy_svg | safe }}
+        </button>
+        <button type="button"
           id="{{ service_id }}-{{row_id}}-manage-btn-header"
           class="btn btn-primary"
           data-service="{{ service_id }}"
           data-row="{{ row_id }}"
           data-element="manage"
           >
-          {{ svg.settings_svg | safe }} Configure
+          {{ svg.settings_svg | safe }} Use
         </button>
         <button type="button"
           id="{{ service_id }}-{{row_id}}-open-btn-header"
@@ -430,18 +445,6 @@
           {%- endif %}
           >
           {{ svg.stop_svg | safe }} Stop
-        </button>
-        <button type="button"
-          id="{{ service_id }}-{{row_id}}-cancel-btn-header"
-          class="btn btn-danger"
-          data-service="{{ service_id }}"
-          data-row="{{ row_id }}"
-          data-element="cancel"
-          {%- if spawner.ready or not spawner.active %}
-          style="display: none"
-          {%- endif %}
-          >
-          {{ svg.stop_svg | safe }} Cancel
         </button>
         <button type="button"
           id="{{ service_id }}-{{row_id}}-del-btn-header"
@@ -537,6 +540,21 @@
         </div>
       </th>
       <th scope="row" class="url-td text-center" style="white-space: nowrap">
+        <button type="button"
+          id="{{ service_id }}-{{row_id}}-sharecopy-btn-header"
+          data-service="{{ service_id }}"
+          data-row="{{ row_id }}"
+          data-show-always="true"
+          data-element="sharecopy"
+          type="button"
+          data-bs-toggle="tooltip"
+          data-bs-placement="top"
+          title="Copy Share link to clipboard"
+          style="background-color: None !important"
+          class="absolute right-2 top-1/2 transform -translate-y-1/2 p-2 rounded-md border border-gray-300 hover:bg-gray-100 active:bg-gray-200"
+        >
+          {{ svg.copy_svg | safe }}
+        </button>
         <button type="button"
           id="{{ service_id }}-{{row_id}}-open-btn-header"
           class="btn btn-success"

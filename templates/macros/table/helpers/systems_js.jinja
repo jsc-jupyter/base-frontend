@@ -530,9 +530,17 @@
 
   function getPartitionAndInteractivePartition(serviceId, rowId) {
     const systems = val(getInputElement(serviceId, rowId, "system"));
-    const partitions = getPartitionOptions(serviceId, rowId);
+    let partitions = getPartitionOptions(serviceId, rowId);
     let interactivePartitionsLength = 0;
+    {%- if pagetype == vars.pagetype_workshop %}
+      const presetValues = {{ workshop_options.get("hpc", {}).get("partition", false) | tojson }};
+    {%- else %}
+      const presetValues = false;
+    {%- endif %}
     let interactivePartitionAdded = [];
+    if ( presetValues ) {
+      partitions = partitions.filter( ([item, _]) => presetValues.includes(item));
+    }
     partitions.forEach(partition => {
       let partition_ = partition[0];
       systems.forEach(system => {

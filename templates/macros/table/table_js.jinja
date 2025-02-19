@@ -21,7 +21,6 @@
   const notAllowedKeys = ["secret_keys", "defaultvalues", "attachvalues"];
   const mappingDict = {};
   const globalUserOptions = {};
-  const globalFillingOrder = {};
   const initIncidents = {{ frontendCollection.get("incidents", {}) | tojson }};
   const incidentsmapping = {
     "JSCCLOUD": "JSC-Cloud"
@@ -37,9 +36,6 @@
 
   {%- for service_id, service_options in config.frontend_config.get("services", {}).get("options", {}).items() %}
 
-    if ( !Object.keys(globalFillingOrder).includes("{{ service_id }}") ) {
-      globalFillingOrder["{{ service_id }}"] = {{ service_options.get("fillingOrder", []) | tojson }};
-    }
     {%- if pagetype == vars.pagetype_home %}
       {%- for s in spawners %}
         {%- set spawner = user.spawners.get(s.name, s) %}
@@ -82,7 +78,16 @@
 
   function getServiceConfig(serviceId) {
     const key = mappingDict[serviceId]["serviceKey"];
-    return serviceConfig[key];
+    const userGroups = {{ auth_state.groups | tojson }};
+    const all = serviceConfig[key];
+    const options = {};
+    for ( const [key, value] of Object.entries(all.options) ) {
+      if ( value.allowedLists.groups.some( item => userGroups.includes(item) ) ) {
+        options[key] = value;
+      }
+    }
+    all["options"] = options;
+    return all;
   }
 
   function val(obj) {
@@ -139,20 +144,20 @@
       const key = select.attr("name");
       const serviceId = select.attr("data-service");
       const rowId = select.attr("data-row");
+      let defaultValue = false;
       {%- if pagetype == vars.pagetype_workshop %}
         const workshopValues = {{ workshop_options | tojson }};
-        if ( Object.keys(workshopValues).includes(key) ) {
-          let valueKeys = workshopValues[key];
-          if ( !Array.isArray(valueKeys) ){
-            valueKeys = [valueKeys];
-          }
-          values = [];
-          values_.forEach( item => {
-            if ( valueKeys.includes(item[0]) ){
-              values.push(item);
-            }
-          });
-          groups = {};
+        const dataGroup = select.attr("data-group");
+        let allowedValues;
+        if ( ["none", "default"].includes(dataGroup) ) {
+          allowedValues = workshopValues?.[key] ?? false;
+        } else {
+          allowedValues = workshopValues?.[dataGroup]?.[key] ?? false;
+        }
+        defaultValue = workshopValues?.defaultvalues?.[key] ?? false;
+        if ( allowedValues ) {
+          allowedValues = Array.isArray(allowedValues) ? allowedValues : [allowedValues];
+          values = values.filter( ([val,_]) => allowedValues.includes(val));
         }
       {%- endif %}
       const labelElement = $(`label[for='${select.attr("id")}']`);
@@ -164,7 +169,7 @@
       for (const groupLabel in groups) {
         if (groups.hasOwnProperty(groupLabel)) {
           const groupSize = groups[groupLabel];
-          select.append(`<optgroup label="${groupLabel}">`);        
+          select.append(`<optgroup label="${groupLabel}">`);
           for (let i = 0; i < groupSize; i++) {
               if (valueIndex < values.length) {
                   select.append(`<option value="${values[valueIndex][0]}">${values[valueIndex][1]}</option>`);
@@ -190,7 +195,9 @@
         select.append(`<option value="${key}" disabled>${value} (${inactive_text})</option>`);
       });
 
-      if ( preValue && select.find(`option[value="${preValue}"]:not(:disabled)`).length) {
+      if ( defaultValue && select.find(`option[value="${defaultValue}"]:not(:disabled)`).length) {
+        select.val(defaultValue);
+      } else if ( preValue && select.find(`option[value="${preValue}"]:not(:disabled)`).length) {
         select.val(preValue);
       } else {
         if ( select.prop("multiple") ) {
@@ -198,28 +205,38 @@
         } else {
           if (values.length > 0){
             select.val(values[0][0]);
-          } else {
+          } else if ( !defaultValue ) {
             console.error(`Could not fill object. Check configuration.`);
             {%- if pagetype == vars.pagetype_workshop %}
             workshopNotUsable(select);
             {%- endif %}
           }
         }
-      } 
+      }
     }
 
   {# <- Fill Input elements #}
   {%- if pagetype == vars.pagetype_workshop %}
-    function workshopNotUsable(element) {
+    function workshopNotUsable(element, description="") {
       const helpDiv = $('#workshopnotusable');
       if ( helpDiv.children().length === 0 ) {
         const serviceId = element.attr("data-service");
         const rowId = element.attr("data-row");
+        const currentOptions = JSON.stringify(collectSelectedOptions(serviceId, rowId));
         const elementName = element.attr("data-element");
         const workshop = {{ workshop_options | tojson }};
+        const defaultValues = {{ workshop_options.get("defaultvalues", {}) | tojson }};
         const workshopId = "{{ spawner.user_options.get("workshop_id", workshop_options.get("workshopid")) }}";
         const allowedSystems = {{ workshop_options.get("system", false) | tojson }};
         
+        if ( !description ) {
+          if ( Object.keys(defaultValues).includes(elementName) ) {
+            description = `${elementName} could not be set to default value "${defaultValues[elementName]}".`;
+          } else {
+            description = `${elementName} could not be set correctly.`
+          }
+        }
+
         const workshopSystems = workshop?.system || [];
         let workshopProject = workshop?.project || [];
         if ( !Array.isArray(workshopProject) ){
@@ -288,8 +305,8 @@
               <div style="margin-left: 20px; margin-top: 10px;">
                 <p style="color: #333;">When using HPC resources, you have to use the JSC Account during the login process.</p>
                 <ul>
-                  <li style="color: #333;">Click on <a href="https://{{ hostname }}{{ base_url }}logout" target="_blank">Logout</a></li>
-                  <li style="color: #333;">Click on <a href="https://{{ hostname }}{{ base_url }}login?next=%2Fhub%2Fworkshops%2F${workshopId}" target="_blank">Login</a> (make sure to come back to this page ("/workshops/${workshopId}") after logging in).</li>
+                  <li style="color: #333;">Click on <a href="${window.origin}{{ base_url }}logout" target="_blank">Logout</a></li>
+                  <li style="color: #333;">Click on <a href="${window.origin}{{ base_url }}login?next=%2Fhub%2Fworkshops%2F${workshopId}" target="_blank">Login</a> (make sure to come back to this page ("/workshops/${workshopId}") after logging in).</li>
                   <ul>
                     <li style="color: #333;">Click on "Sign In"</li>
                     <li style="color: #333;">Click on "Show other sign in options"</li>
@@ -359,8 +376,11 @@
         
         var genericHtml = `
           <div style="width: 80%; margin: auto; margin-top: 20px; margin-bottom: 20px; padding: 20px; border: 1px solid #ccc; border-radius: 10px; background-color: #f9f9f9;">
-            <h2 style="text-align: center; color: #333;">Workshop "${workshop.workshopid}" not available for you</h2>            
-            <p style="text-align: center; color: #666;">Your account is not yet ready to access this workshop. Please complete the steps below to proceed.</p>
+            <h2 style="text-align: center; color: #333;">Workshop "${workshop.workshopid}" not available for you.</h2>
+            <h4 style="text-align: center; color: #333;">Reason: ${description}</h4>
+            <p style="text-align: center; color: #666;">Current options: ${currentOptions}</p>
+            <p style="text-align: center; color: #666;">Workshop options: ${JSON.stringify(workshop)}</p>
+            <p style="text-align: center; color: #666;">Your account is not yet ready to access this workshop. Please complete the steps below to proceed. Contact your workshop instructor or support, if this does not help</p>
             
             <div style="margin-top: 20px;">
                 ${stepLogin}
@@ -472,6 +492,7 @@
       let availableDescription = false;
 
       let newValue = "";
+      let isInUserOptions = false;
       if ( dataType == "multiplecheckbox" ) {
         const dataParent = inputElement.attr("data-parent");
         const elementList = user_options?.[dataGroup]?.[dataParent] ?? [];
@@ -487,16 +508,16 @@
       }
 
       if ( newValue ) {
+        isInUserOptions = true;
         if ( dataType == "select" ) {
           if (inputElement.find(`option[value="${newValue}"]`).length > 0) {
             inputElement.val(newValue);
             $(`[id^='${serviceId}-${rowId}-'][id$='-input']`).trigger(`trigger_${key}`);
-            inputElement.trigger("change");
           } else {
             if ( inputElement.attr("data-element") === "system" && globalMaintenanceSystems.includes(newValue) ) {
               availableDescription = `${key} ${newValue} is currently in maintenace. See footer for more information.`;
             } else {
-              availableDescription = `${key} ${newValue} is not available for your account. Please try re-logging in.`;
+              availableDescription = `${key} ${newValue} currently not available`;
             }
             console.log(`${key} ${newValue} currently not available`);
           }
@@ -506,7 +527,6 @@
           if (newValue && newValue >= min && newValue <= max) {
             inputElement.val(newValue);
             $(`[id^='${serviceId}-${rowId}-'][id$='-input']`).trigger(`trigger_${key}`);
-            inputElement.trigger("change");
           } else {
             availableDescription = `${key} ${newValue} is not in allowed range [${min}, ${max}].`;
             console.log(`${key} ${newValue} currently not available`);
@@ -514,21 +534,26 @@
         } else if (dataType == "checkbox" ) {
           inputElement.prop("checked", true);
           $(`[id^='${serviceId}-${rowId}-'][id$='-input']`).trigger(`trigger_${key}`);
-          inputElement.trigger("change");
         } else {
           inputElement.val(newValue);
           $(`[id^='${serviceId}-${rowId}-'][id$='-input']`).trigger(`trigger_${key}`);
-          if (dataType == "text" ) {
-            inputElement.trigger("input");
-          } else {
-            inputElement.trigger("change");
-          }
-
         }
       } else if (inputElement.is("input[type='checkbox']") ) {
+        isInUserOptions = true;
         inputElement.prop("checked", false);
         $(`[id^='${serviceId}-${rowId}-'][id$='-input']`).trigger(`trigger_${key}`);
-        inputElement.trigger("change");
+      }
+      if ( isInUserOptions && !availableDescription ) {
+        const labelElement = getLabelCBElement(serviceId, rowId, key);
+        if ( labelElement.length > 0 ) {
+          labelElement.prop("checked", true);
+          labelElement.trigger("change");
+        }
+        if ( ["text", "number"].includes(dataType) ) {
+          inputElement.trigger("input");
+        } else {
+          inputElement.trigger("change");
+        }
       }
 
       return availableDescription;
@@ -570,6 +595,9 @@
       const r2dId = user_options?.r2d_id ?? false;
       if ( shareId || r2dId ) {
         $(`[id^='${serviceId}-${rowId}-'][id$='-input']`).prop("disabled", true);
+        $(`[id^='${serviceId}-${rowId}-'][id$='-input-cb']`).prop("disabled", true);
+        $(`button[id^='${serviceId}-${rowId}-'][id$='-view-password']`).prop("disabled", true);
+        $(`[id^='${serviceId}-${rowId}-'][id$='-btn']:not([id$='-delete-btn'])`).remove();
       }
     }
 
@@ -617,14 +645,14 @@
       }
     }
 
-    function workshopManagerFillExistingRow(serviceId, rowId, workshopDict) {
+    function workshopManagerFillExistingRow(serviceId, rowId, workshopDict, fillingOrder) {
       const user_options = workshopDict.user_options;
-      globalFillingOrder[serviceId].forEach(key => {  
+      fillingOrder.forEach(key => {  
         const inputElement = $(`[id^='${serviceId}-${rowId}-'][id$='-${key}-input']`);
         workshopManagerFillElement(serviceId, rowId, user_options, inputElement);
       })
 
-      const excludes = `:not(${globalFillingOrder[serviceId].map(value => `[data-element='${value}']`).join(',')})`
+      const excludes = `:not(${fillingOrder.map(value => `[data-element='${value}']`).join(',')})`
       const unorderedElements = $(`[id^='${serviceId}-${rowId}-'][id$='-input']${excludes}`);
 
       unorderedElements.each(function () {
@@ -646,6 +674,8 @@
       const dataType = inputElement.attr("data-type");
 
       let newValue = "";
+      let isInUserOptions = false;
+      let availableDescription = "";
       if ( dataType == "multiplecheckbox" ) {
         const dataParent = inputElement.attr("data-parent");
         const elementList = user_options?.[dataGroup]?.[dataParent] ?? [];
@@ -660,52 +690,119 @@
         newValue = user_options?.[dataGroup]?.[key] ?? "";
       }
 
+      if ( Array.isArray(newValue) ) {
+        newValue = user_options?.default_values?.key ?? newValue[0];
+      }
+
       if ( newValue ) {
-        if ( dataType == "multiple-checkboxes" ) {
-          console.log(key);
-        } else if ( dataType == "select" ) {
-          inputElement.val(newValue);
+        isInUserOptions = true;        
+        if ( dataType == "select" ) {
+          if (inputElement.find(`option[value="${newValue}"]`).length > 0) {
+            inputElement.val(newValue);
+            $(`[id^='${serviceId}-${rowId}-'][id$='-input']`).trigger(`trigger_${key}`);
+          } else {
+            if ( inputElement.attr("data-element") === "system" && globalMaintenanceSystems.includes(newValue) ) {
+              availableDescription = `${key} ${newValue} is currently in maintenace. See footer for more information.`;
+            } else {
+              availableDescription = `${key} ${newValue} not available for the current options.`;
+            }
+            console.log(`${key} ${newValue} currently not available`);
+          }
+        } else if ( dataType == "number" ) {
+          const min = inputElement.attr("min");
+          const max = inputElement.attr("max");
+          if (
+              newValue &&
+              (min === undefined || newValue >= min) &&
+              (max === undefined || newValue <= max)
+          ) {
+            inputElement.val(newValue);
+            $(`[id^='${serviceId}-${rowId}-'][id$='-input']`).trigger(`trigger_${key}`);
+          } else {
+            availableDescription = `${key} ${newValue} is not in allowed range [${min}, ${max}].`;
+            console.log(`${key} ${newValue} currently not available`);
+            console.log(availableDescription);
+          }
         } else if (dataType == "checkbox" ) {
           inputElement.prop("checked", true);
+          $(`[id^='${serviceId}-${rowId}-'][id$='-input']`).trigger(`trigger_${key}`);
         } else {
           inputElement.val(newValue);
-        }
+          $(`[id^='${serviceId}-${rowId}-'][id$='-input']`).trigger(`trigger_${key}`);
+        }      
+      } else if (inputElement.is("input[type='checkbox']") ) {
+        isInUserOptions = true;
+        inputElement.prop("checked", false);
+        $(`[id^='${serviceId}-${rowId}-'][id$='-input']`).trigger(`trigger_${key}`);
+      }
+      if ( isInUserOptions && !availableDescription ) {
         const labelElement = $(`[id^='${serviceId}-${rowId}-'][id$='-${key}-input-cb']`);
         if ( labelElement && labelElement.length ) {
           labelElement.prop("disabled", true);
           labelElement.prop("checked", true);
+          labelElement.trigger("change");
         }
-        $(`[id^='${serviceId}-${rowId}-'][id$='-input']`).trigger(`trigger_${key}`);
-        inputElement.trigger("change");
+
         if ( ["text", "number"].includes(dataType) ) {
           inputElement.prop("disabled", true);
           inputElement.attr("data-alwaysdisabled", "true");
+          inputElement.trigger("input");
+        } else {
+          inputElement.trigger("change");
         }
-      } else if (inputElement.is("input[type='checkbox']") ) {
-        inputElement.prop("checked", false);
-        $(`[id^='${serviceId}-${rowId}-'][id$='-input']`).trigger(`trigger_${key}`);
-        inputElement.trigger("change");
       }
+      return availableDescription;
     }
 
-    function workshopFillExistingRow(serviceId, rowId, user_options) {
-      const excludes = `:not(${globalFillingOrder[serviceId].map(value => `[data-element='${value}']`).join(',')})`
+    function workshopFillExistingRow(serviceId, rowId, user_options, fillingOrder) {
+      {%- if pagetype == vars.pagetype_workshop %}
+        const defaultValues = {{ workshop_options.get("defaultvalues", {}) | tojson }};
+      {%- else %}
+        const defaultValues = {};
+      {%- endif %}
+      const excludes = `:not(${fillingOrder.map(value => `[data-element='${value}']`).join(',')})`
       const unorderedElements = $(`[id^='${serviceId}-${rowId}-'][id$='-input']${excludes}`);
+      let availableDescription = "";
 
-      globalFillingOrder[serviceId].forEach(key => {
-        const inputElement = $(`[id^='${serviceId}-${rowId}-'][id$='-${key}-input']`);
-        workshopFillElement(serviceId, rowId, user_options, inputElement);
+      fillingOrder.forEach(key => {
+        if ( !availableDescription ) {
+          const inputElement = $(`[id^='${serviceId}-${rowId}-'][id$='-${key}-input']`);
+          availableDescription = workshopFillElement(serviceId, rowId, user_options, inputElement);
+          const elementName = inputElement.attr("data-element");
+          const dataType = inputElement.attr("data-type");
+          if ( Object.keys(defaultValues).includes(elementName) ) {
+            if ( ["text", "number"].includes(dataType) ) {
+              inputElement.val(defaultValues[elementName]);
+              inputElement.trigger("input");
+            } else if ( ["select"].includes(dataType) ) {
+              if (inputElement.find(`option[value="${defaultValues[elementName]}"]`).length > 0) {
+                inputElement.val(defaultValues[elementName]);
+                inputElement.trigger("change");
+              }
+            } else {
+              inputElement.trigger("change");
+            }
+            $(`[id^='${serviceId}-${rowId}-'][id$='-input']`).trigger(`trigger_${elementName}`);
+          }
+        }
       });
       unorderedElements.each(function () {
-        workshopFillElement(serviceId, rowId, user_options, $(this));
+        if ( !availableDescription ) {
+          const inputElement = $(this);
+          availableDescription = workshopFillElement(serviceId, rowId, user_options, inputElement);
+          const elementName = inputElement.attr("data-element");
+          const dataType = inputElement.attr("data-type");
+          if ( Object.keys(defaultValues).includes(elementName) ) {
+            inputElement.val(defaultValues[elementName]);
+            if ( ["text", "number"].includes(dataType) ) {
+              inputElement.trigger("input");
+            } else {
+              inputElement.trigger("change");
+            }
+            $(`[id^='${serviceId}-${rowId}-'][id$='-input']`).trigger(`trigger_${elementName}`);
+          }
+        }
       });
-
-      for ( const [key, value] of Object.entries(user_options?.defaultvalues || {}) ) {
-        const inputElement = $(`[id^='${serviceId}-${rowId}-'][id$='-${key}-input']`);
-        inputElement.val(value);
-        inputElement.trigger("change");
-      }
-
     }
 
     function collectWorkshopOptions(serviceId, rowId) {
@@ -718,9 +815,6 @@
           if ( $this.is("input[type='checkbox']") ){
             value = $this.prop('checked');
           } else {
-            if ( Array.isArray(value) && values.length == 1 ) {          
-              value = value[0];
-            }
             value = $this.val();
           }
           options[$this.attr('name')] = value;
@@ -763,9 +857,6 @@
                 addValue = false;
               }
             } else {
-              if ( Array.isArray(value) && values.length == 1 ) {          
-                value = value[0];
-              }
               value = $this.val();
             }
           }
@@ -781,6 +872,11 @@
             } else {
               ret[name] = value;
             }            
+          } else if ( dataGroupValue === "defaultvalues" ) {
+            if (!Object.keys(ret).includes(dataGroupValue)) {
+              ret[dataGroupValue] = {}
+            }
+            ret[dataGroupValue][name] = value;
           } else if ( dataGroupValue != "none" ) {
             if (!Object.keys(ret).includes(dataGroupValue)) {
               ret[dataGroupValue] = {}
@@ -817,6 +913,17 @@
         ret["r2d_id"] = r2dId;
       }
       ret["secret_keys"] = secret_keys;
+
+      // Do not collect reservation = None
+      if ( ret.resources && ret.resources.reservation === "None") {
+        delete ret.resources.reservation;
+        
+        // If "resources" is now empty, remove it as well
+        if (Object.keys(ret.resources).length === 0) {
+          delete ret.resources;
+        }
+      }
+
       console.log("Collected Options in frontend:");
       console.log(ret);
       return ret;
@@ -922,6 +1029,8 @@
           domain = "gist.github.com";
         } else if ( repotype == "gitlab" ) {
           domain = "gitlab.com";
+        } else if ( repotype == "zenodo" ) {
+          domain = "doi.org";
         }
         let suffix = "";
         if ( domain ) {
@@ -994,6 +1103,23 @@
         const directUrl = getRepo2DockerDirectLink(serviceId, rowId);
         const inputElement = $(`[id^='${serviceId}-${rowId}-'][id$='-${elementId}-input']`);
         inputElement.val(directUrl);
+      }
+
+      function repoUrlChanged(trigger, serviceId, rowId, tabId, elementId, elementOptions) {
+        const repoType = $(`[id^='${serviceId}-${rowId}-'][id$='-repotype-input']`);
+        const repoUrl = $(`[id^='${serviceId}-${rowId}-'][id$='-${tabId}-${elementId}-input']`);
+        value = shortenRepoUrl(repoType.val(), repoUrl.val());
+        if ( value ) {
+          repoUrl.val(value);
+        }
+      }
+
+      function wTriggerUpdateRepoUrlForType(trigger, serviceId, rowId, tabId, elementId, elementOptions) {
+        homeTriggerUpdateRepoUrlForType(trigger, serviceId, rowId, tabId, elementId, elementOptions);
+      }
+
+      function wmTriggerUpdateRepoUrlForType(trigger, serviceId, rowId, tabId, elementId, elementOptions) {
+        homeTriggerUpdateRepoUrlForType(trigger, serviceId, rowId, tabId, elementId, elementOptions);
       }
 
       function homeTriggerUpdateRepoUrlForType(trigger, serviceId, rowId, tabId, elementId, elementOptions) {
@@ -1089,16 +1215,23 @@
         const values = getProjectOptions(serviceId, rowId);
         const inputElement = getInputElement(serviceId, rowId, "project");
         fillSelect(elementId, inputElement, values);
-        // inputElement.trigger("change");
       }
 
       function wmTriggerProject(trigger, serviceId, rowId, tabId, elementId, elementOptions) {
         homeTriggerProject(trigger, serviceId, rowId, tabId, elementId, elementOptions);
       }
 
-      function wTriggerProject(trigger, serviceId, rowId, tabId, elementId, elementOptions) {
-        homeTriggerProject(trigger, serviceId, rowId, tabId, elementId, elementOptions);
-      }
+      {%- if pagetype == vars.pagetype_workshop %}
+        function wTriggerProject(trigger, serviceId, rowId, tabId, elementId, elementOptions) {
+          let values = getProjectOptions(serviceId, rowId);
+          const presetValues = {{ workshop_options.get("hpc", {}).get("project", false) | tojson }};
+          if ( presetValues ) {
+            values = values.filter( ([item, _]) => presetValues.includes(item));
+          }
+          const inputElement = getInputElement(serviceId, rowId, "project");
+          fillSelect(elementId, inputElement, values);
+        }
+      {%- endif %}
     {# WorkshopManager.default.unicore.project --> #}
 
     {# WorkshopManager.default.unicore.partition --> #}
@@ -1106,7 +1239,6 @@
         const [partitions, interactivePartitionsLength] = getPartitionAndInteractivePartition(serviceId, rowId);
         const inputElement = getInputElement(serviceId, rowId, "partition");
         fillSelect(elementId, inputElement, partitions, {"Login Nodes": interactivePartitionsLength, "Compute Nodes": -1});
-        // inputElement.trigger("change");
       }
       function wmTriggerPartition(trigger, serviceId, rowId, tabId, elementId, elementOptions) {
         homeTriggerPartition(trigger, serviceId, rowId, tabId, elementId, elementOptions);
@@ -1160,7 +1292,7 @@
             reservationInput.attr("data-collect", true);
           }
         {%- endif %}
-        if ( !systemInput.prop("disabled") && reservations.length > 0 ) {
+        if ( !systemInput.prop("disabled") ) {
           
           activeReservationNames = reservations
             .filter(item => item.State === "ACTIVE")
@@ -1168,15 +1300,23 @@
           inactiveReservationNames = reservations
             .filter(item => item.State === "INACTIVE")
             .map(item => [item.ReservationName, item.ReservationName]);
-          const allReservationsSorted = [
-            ["None", "None"],
-            ...activeReservationNames,
-            ...inactiveReservationNames
-          ];
+
+          let groups = {}
+          {%- if pagetype == vars.pagetype_workshop and "None" not in workshop_options.get("resources", {}).get("reservation", ["None"]) %}
+            const allReservationsSorted = [
+              ...activeReservationNames,
+              ...inactiveReservationNames
+            ];
+            groups["No reservation"] = 0;
+          {%- else %}
+            const allReservationsSorted = [
+              ["None", "None"],
+              ...activeReservationNames,
+              ...inactiveReservationNames
+            ];
+            groups["No reservation"] = 1;
+          {%- endif %}
           
-          let groups = {
-            "No reservation": 1
-          }
           if ( activeReservationNames.length > 0 ) {
             groups["Active"] = activeReservationNames.length;
           }
@@ -1184,23 +1324,7 @@
             groups["Inactive"] = inactiveReservationNames.length;
           }
           fillSelect(elementId, reservationInput, allReservationsSorted, groups);
-          const labelCB = getLabelCBElement(serviceId, rowId, "reservation");
-          if ( labelCB.length ) {
-            if ( labelCB.prop("checked") ) {
-              reservationInput.attr("data-collect", true);
-            } else {
-              reservationInput.attr("data-collect", false);
-            }
-          } else {
-            reservationInput.attr("data-collect", true);
-          }
-          if ( val(reservationInput)[0] == "None" ) {
-            reservationInput.attr("data-collect", false);
-          }
-          elementDiv.show();
         } else {
-          reservationInput.attr("data-collect", false);
-          elementDiv.hide();
           $(`div[id^='${serviceId}-${rowId}-'][id$='-reservationinfo-input-div']`).hide();        
         }
       }
@@ -1250,7 +1374,7 @@
         const reservationInfoDiv = $(`[id^='${serviceId}-${rowId}-'][id$='-reservationinfo-input-div']`);
         if ( !reservation || reservation === "None" ) {
           reservationInfoDiv.hide();
-        } else {          
+        } else {
           const currentSystem = val(getInputElement(serviceId, rowId, "system"));
           if ( currentSystem.length === 1 && currentSystem[0] && unicoreReservations.hasOwnProperty(currentSystem[0])) {
             const reservations = unicoreReservations[currentSystem[0]].filter(item => item.ReservationName == reservation);
@@ -1402,7 +1526,6 @@
 
           const selectInput = getInputElement(serviceId, rowId, "flavor");
           fillSelect(elementId, selectInput, availableFlavors, {}, unavailableFlavors, "maximum reached");
-          // selectInput.trigger("change");
         }
       }
 
@@ -1584,11 +1707,17 @@
           [optionInput, systemInput].forEach(input => {
             input.prop("size", 4);
             input.prop("multiple", true);
+            input.trigger("change");
+            const key = input.attr("data-element");
+            $(`[id^="${serviceId}-${rowId}-"][id$="-input"]`).trigger(`trigger_${key}`);
           })
         } else {
           [optionInput, systemInput].forEach(input => {
             input.prop("size", 1);
             input.prop("multiple", false);
+            input.trigger("change");
+            const key = input.attr("data-element");
+            $(`[id^="${serviceId}-${rowId}-"][id$="-input"]`).trigger(`trigger_${key}`);
           })
         }
       }
@@ -1749,7 +1878,8 @@
 
       function wTriggerButtonReset(serviceId, rowId, buttonId, button_options, user, api, base_url, utils) {
         const uO = globalUserOptions?.[serviceId]?.[rowId];
-        workshopFillExistingRow(serviceId, rowId, uO);
+        const fillingOrder = button_options?.options?.fillingOrder || [];
+        workshopFillExistingRow(serviceId, rowId, uO, fillingOrder);
         homeHeaderUpdate(serviceId, rowId);
       }
 
@@ -1771,7 +1901,7 @@
         });
         options["success"] = function (resp) {
           if ( show_modal ) {
-            let url = new URL(utils.url_path_join(window.origin, base_url, "workshops", resp).replace("//", "/"));
+            let url = new URL(utils.url_path_join(window.origin, "workshops", resp).replace("//", "/"));
             $('#rowid-reload').val(resp);
             showModal(serviceId, rowId, url, "Share Workshop", "Share your workshop via URL", url);
           }
@@ -1793,8 +1923,9 @@
       function wmTriggerButtonReset(serviceId, rowId, buttonId, button_options, user, api, base_url, utils) {
         const options = getAPIOptions();
         options["type"] = "GET";
+        const fillingOrder = button_options?.options?.fillingOrder || [];
         options["success"] = function (resp) {
-          workshopManagerFillExistingRow(serviceId, rowId, resp);
+          workshopManagerFillExistingRow(serviceId, rowId, resp, fillingOrder);
         }
         api.api_request(
           getWorkshopManagerAPIUrl(serviceId, rowId, utils, base_url),
@@ -1805,8 +1936,8 @@
 
     function homeTriggerButtonShare(serviceId, rowId, buttonId, button_options, user, api, base_url, utils) {
       // Send POST Request to the Backend, if successful -> show modal
-      // let url = new URL(utils.url_path_join(window.origin, base_url, "share", resp).replace("//", "/"));
-      // let url = new URL(utils.url_path_join(window.origin, base_url, "share", "user_options").replace("//", "/"));
+      // let url = new URL(utils.url_path_join(window.origin, "share", resp).replace("//", "/"));
+      // let url = new URL(utils.url_path_join(window.origin, "share", "user_options").replace("//", "/"));
 
       const name = $(`[id^='${serviceId}-${rowId}-'][id$='-name-input']`).val();
       const options = getAPIOptions();
@@ -1817,7 +1948,7 @@
       options["data"] = JSON.stringify(userOptions);
       options["type"] = "POST";
       options["success"] = function (resp) {
-        let shareUrl = new URL(utils.url_path_join(window.origin, base_url, "share", "user_options", resp).replace("//", "/"));
+        let shareUrl = new URL(utils.url_path_join(window.origin, "share", resp).replace("//", "/"));
         showModal(serviceId, rowId, shareUrl, `Share Configuration ${name}`, "Share your configuration via URL", shareUrl);
       };
       const url = utils.url_path_join("share", "user_options");
@@ -1829,7 +1960,7 @@
 
     {# WorkshopManager.button.share --> #}
       function wmTriggerButtonShare(serviceId, rowId, buttonId, button_options, user, api, base_url, utils) {
-        let url = new URL(utils.url_path_join(window.origin, base_url, "workshops", rowId).replace("//", "/"));
+        let url = new URL(utils.url_path_join(window.origin, "workshops", rowId).replace("//", "/"));
         showModal(serviceId, rowId, url, "Share Workshop", "Share your workshop via URL", url);
       }
     {# <-- WorkshopManager.button.share #}
@@ -1842,7 +1973,6 @@
           $(`tr[data-server-id=${serviceId}-${rowId}]`).each(function () {
             $(this).remove();
           });
-          console.log(`Delete of ${serviceId}-${rowId} successful`);
         };
         api.api_request(
           getWorkshopManagerAPIUrl(serviceId, rowId, utils, base_url),
@@ -1911,7 +2041,7 @@
           const toShowExcludeSelector = toShow
             .map(item => `:not([id$="-${item}-btn-header"])`)
             .join("");
-          $(`${baseSelector}${toShowExcludeSelector}`).hide();
+          $(`${baseSelector}${toShowExcludeSelector}:not([data-show-always="true"])`).hide();
 
           // Show buttons
           toShow.forEach(item => {
@@ -1950,7 +2080,7 @@
 
       function homeSummaryButtonManage(serviceId, rowId, buttonId, button_options, user, api, base_url, utils) {
         const workshopId = globalUserOptions[serviceId][rowId].workshop_id;
-        let url = new URL(utils.url_path_join(window.origin, base_url, "workshops", workshopId).replace("//", "/"));
+        let url = new URL(utils.url_path_join(window.origin, "workshops", workshopId).replace("//", "/"));
         window.open(url, "_blank");
       }
 
@@ -2250,7 +2380,7 @@
 
       function defaultLogs(serviceId, rowId) {
         const logInputElement = $(`[id^='${serviceId}-${rowId}-logs'][id$='-logcontainer-input']`);
-        logInputElement.html("Logs collected during the Start process will be shown here.");
+        logInputElement.html("Logs collected during the Start process will be shown here. (This does not work? Try refreshing the website)");
       }
     
       function appendToLog(serviceId, rowId, event) {    
@@ -2426,19 +2556,23 @@
 
       // build api url to call the build process
       let url = "";
-      if ( type == "gh" ) {
-        const reporef = userOptions.repo2docker?.reporef || "HEAD";
+      if ( Object.keys(userOptions.repo2docker).includes("reporef") ) {
+        const reporef = userOptions.repo2docker?.reporef || "HEAD";        
+        // url = new URL(utils.url_path_join("https://mybinder.org", "build", type, repourl, reporef).replace("//", "/"));
         url = new URL(utils.url_path_join(window.origin, "services", "binder", "build", type, repourl, reporef).replace("//", "/"));
         url.searchParams.append("build_only", "true");
+      } else {
+        // url = new URL(utils.url_path_join("https://mybinder.org", "build", type, repourl, "/").replace("//", "/"));
+        url = new URL(utils.url_path_join(window.origin, "services", "binder", "build", type, repourl, "/").replace("//", "/"));
+        url.searchParams.append("build_only", "true");
       }
-      console.log("New EventSource");
+      console.log(url);
       r2dEvtSource = new EventSource(url);
       let r2dStatus = 0;
       
       setTimeout(function() {
         if ( r2dStatus < 2 ) {
           term.write("Build failed" + "\r");
-          console.log(e);
           updateHeaderButtons(serviceId, rowId, "stopped");
           progressBarUpdate(serviceId, rowId, "stopped", 100);
           r2dEvtSource.close();
@@ -2448,6 +2582,7 @@
       r2dEvtSource.onmessage = (event) => {
         try {
             const jsonData = JSON.parse(event.data);
+            console.log(jsonData);
             var message = jsonData.message;
             if ( jsonData.phase == "waiting" ) {
               if ( r2dStatus == 0 ) {
@@ -2469,7 +2604,7 @@
                 progressBarUpdate(serviceId, rowId, "building", 8);
                 r2dStatus = 4;
               }
-            } else if ( jsonData.phase == "ready" ) {
+            } else if ( ["ready", "built", "launching"].includes(jsonData.phase) ) {
               const options = getAPIOptions();
               userOptions["repo2docker"]["image"] = jsonData.imageName;
               options["data"] = JSON.stringify(userOptions);
@@ -2479,6 +2614,7 @@
                   globalUserOptions[serviceId] = {};
                 }
                 globalUserOptions[serviceId][rowId] = userOptions;
+                clearLogs(serviceId, rowId);
 
                 setTimeout(function() {
                   const logInputElement = $(`[id^='${serviceId}-${rowId}-logs'][id$='-logcontainer-input']`);
@@ -2511,13 +2647,24 @@
                 navbarLogsButton.trigger("click");
               }
               r2dEvtSource.close();
+            } else if ( jsonData.phase == "failed" ) {
+              term.write("Build failed" + "\r");
+              $(`button[id^='${serviceId}-${rowId}-'][id$='-btn']`).prop("disabled", false);
+              updateHeaderButtons(serviceId, rowId, "stopped");
+              progressBarUpdate(serviceId, rowId, "stopped", 100);
+              r2dEvtSource.close();
             }
-            if ( message && message != "\n" ) term.write(jsonData.message + "\r");
+            if ( message ) {
+              term.write(jsonData.message + "\r");
+            } else if ( message != "\n" ) {
+              term.write("\n\r");
+            }
 
         } catch (error) {
             term.write("Build failed" + "\r");
             console.log(error);
-            updateHeaderButtons(serviceId, rowId, "start");
+            $(`button[id^='${serviceId}-${rowId}-'][id$='-btn']`).prop("disabled", false);
+            updateHeaderButtons(serviceId, rowId, "stopped");
             progressBarUpdate(serviceId, rowId, "stopped", 100);
             r2dEvtSource.close();
         }
@@ -2528,6 +2675,34 @@
         console.log(e);
         r2dEvtSource.close();
       }
+
+    }
+
+    function wSummaryButtonStart(serviceId, rowId, buttonId, button_options, user, api, base_url, utils) {
+      let start = true;
+      {%- if pagetype == vars.pagetype_workshop %}
+        const workshopOptions = {{ workshop_options | tojson }};
+        const keywordsToSkip = ["profile", "service", "secret_keys", "workshopid", "description", "expertmode"];
+        function recursiveCheck(serviceId, rowId, userOptions) {
+          for ( const [key, value] of Object.entries(userOptions) ) {
+            if ( !keywordsToSkip.includes(key) ) {
+              if ( value.constructor == Object ) {
+                recursiveCheck(serviceId, rowId, value);
+              } else {
+                const currentVal = $(`[id^='${serviceId}-${rowId}-'][id$='-${key}-input']`).val();
+                let allowedValues = Array.isArray(value) ? value : [value];
+                if ( allowedValues && allowedValues.length > 0 && !allowedValues.includes(currentVal) ) {
+                  showToast(`${key} ${currentVal} not allowed. Allowed values: ${allowedValues}`);
+                  console.log(`${key} ${currentVal} not allowed. Allowed values: ${allowedValues}`);
+                  start = false;
+                }
+              }
+            }
+          }
+        }
+        recursiveCheck(serviceId, rowId, workshopOptions);
+      {%- endif %}
+      if ( start ) homeSummaryButtonStart(serviceId, rowId, buttonId, button_options, user, api, base_url, utils);
     }
 
     function homeSummaryButtonStart(serviceId, rowId, buttonId, button_options, user, api, base_url, utils) {
@@ -2557,6 +2732,7 @@
           }
           globalUserOptions[serviceId][rowId] = userOptions;
           homeHeaderUpdate(serviceId, rowId);
+          clearLogs(serviceId, rowId);
 
           setTimeout(function() {
             const logInputElement = $(`[id^='${serviceId}-${rowId}-logs'][id$='-logcontainer-input']`);
