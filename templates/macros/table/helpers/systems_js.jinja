@@ -593,7 +593,7 @@
     });
     
     let uniqueSystems = [...new Set(ret)];
-    uniqueSystems.sort((a, b) => (systemConfig[b].weight || 0) - (systemConfig[a].weight || 0));
+    uniqueSystems.sort((a, b) => (systemConfig[a].weight || 0) - (systemConfig[b].weight || 0));
     uniqueSystems = uniqueSystems.filter(system => !globalMaintenanceSystems.includes(system) );
     return uniqueSystems.map(item => [item, item]);
   }
