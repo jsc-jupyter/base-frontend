@@ -1,6 +1,12 @@
 {%- import "macros/svgs.jinja" as svg -%}
 
+{%- if frontendCollection.get("hostname", "jupyter.jsc.fz-juelich.de") == "portal.gauss-centre.eu" %}
+{%- set jupyter_name = "GaussCentre Portal" -%}
+{%- elif frontendCollection.get("hostname", "jupyter.jsc.fz-juelich.de") == "portal-staging.gauss-centre.eu" %}
+{%- set jupyter_name = "GaussCentre StagingPortal" -%}
+{$- else %}
 {%- set jupyter_name = "Jupyter-JSC" -%}
+{$- endif %}
 
 {#- Get all systems configured for this hub,
     sort them by weight and assign status ids -#}
@@ -144,14 +150,15 @@ require(["jquery"], function (
     var base_url = window.jhdata.base_url;
     const staticUrl = base_url + "static";
 
-    let displayName;
-    if (system === "JUPYTER") {
-        displayName = {{ jupyter_name | tojson | safe }};
-    } else if (system === "JSCCLOUD") {
-        displayName = "JSC-Cloud";
-    } else {
-        displayName = system;
+    const nameMapping = {
+      "JUPYTER": {{ jupyter_name | tojson | safe }},
+      "JSCCLOUD": "JSC-Cloud",
+      "DENBICLOUD": "deNBI-Cloud",
+      "TUDSTAGING": "TUD-Staging"
+      "HLRSSTAGING": "HLRS-Staging",
+      "LRZSTAGING": "LRZ-Staging"
     }
+    const displayName = nameMapping[system] || system;
 
     let ampelHtml = "";
     if ( ["JUPYTER", "JUWELS", "JURECA", "JEDI", "JUSUF", "DEEP", "JSCCLOUD"].includes(system) ) {
