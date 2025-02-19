@@ -29,7 +29,7 @@
         ret.push(...Object.keys(allFlavors)
           .filter(key => allFlavors[key].max != 0) // do not use flavor.max == 0
           .filter(key => allFlavors[key].current < allFlavors[key].max || allFlavors[key].max == -1 ) // must be room for new jupyterlabs
-          .sort((a, b) => allFlavors[a].weight - allFlavors[b].weight) // sort by weight
+          .sort((a, b) => allFlavors[b].weight - allFlavors[a].weight) // sort by weight
           .map(key => [key, allFlavors[key].display_name])); // get keyname + displayname
       }
     });
@@ -46,7 +46,7 @@
         ret.push(...Object.keys(allFlavors)
           .filter(key => allFlavors[key].max != 0) // do not use flavor.max == 0
           .filter(key => allFlavors[key].current >= allFlavors[key].max && allFlavors[key].max != -1)
-          .sort((a, b) => allFlavors[a].weight - allFlavors[b].weight)
+          .sort((a, b) => allFlavors[b].weight - allFlavors[a].weight)
           .map(key => [key, allFlavors[key].display_name]));
       }
     });
@@ -593,7 +593,7 @@
     });
     
     let uniqueSystems = [...new Set(ret)];
-    uniqueSystems.sort((a, b) => (systemConfig[a].weight || 0) - (systemConfig[b].weight || 0));
+    uniqueSystems.sort((a, b) => (systemConfig[b].weight || 0) - (systemConfig[a].weight || 0));
     uniqueSystems = uniqueSystems.filter(system => !globalMaintenanceSystems.includes(system) );
     return uniqueSystems.map(item => [item, item]);
   }

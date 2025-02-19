@@ -1554,7 +1554,7 @@
               .sort(([, a], [, b]) => {
                 const weightA = a["weight"] || 99;
                 const weightB = b["weight"] || 99;
-                return weightA > weightB ? 1 : -1;
+                return weightA > weightB ? -1 : 1;
               })) {
               var current = description.current || 0;
               var maxAllowed = description.max;
