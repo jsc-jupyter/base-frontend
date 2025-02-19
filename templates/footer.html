@@ -49,7 +49,7 @@
       <span class="{{ footer_margin }}">|</span>
       <a href="{{ base_url }}terms">Terms of Service</a>
       <span class="{{ footer_margin }}">|</span>
-      <a href="mailto:ds-support@fz-juelich.de?subject=Jupyter-JSC Support&amp;body=Please describe your problem here. (english or german)">Support</a>
+      <a href="mailto:ds-support@fz-juelich.de?subject={{ jupyter_name }} Support&amp;body=Please describe your problem here. (english or german)">Support</a>
     </div>
     <div class="py-4 {{div_classes}}">
       <a href="https://www.helmholtz.de/en/" target="_blank">
@@ -157,7 +157,7 @@ require(["jquery"], function (
       "TUDSTAGING": "TUD-Staging",
       "HLRSSTAGING": "HLRS-Staging",
       "LRZSTAGING": "LRZ-Staging"
-    }
+    };
     const displayName = nameMapping[system] || system;
 
     let ampelHtml = "";
