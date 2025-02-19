@@ -1,7 +1,7 @@
 {%- set frontend_config = {
   "services": {
     "default": "jupyterlab",
-    "options": {      
+    "options": {
       "jupyterlab": {
         "fillingOrder": ["option", "system", "account", "project", "partition", "flavor", "privaterepo"],
         "navbar": {
@@ -94,6 +94,39 @@
                   "option": "wTriggerSystem"
                 }
               },
+              "repo2dockerdirectlink": {
+                "input": {
+                  "type": "text",
+                  "options": {
+                    "collect": false,
+                    "enabled": false,
+                    "copy": true
+                  }
+                },
+                "label": {
+                  "type": "text",
+                  "width": 4,
+                  "value": "Direct Link for this configuration"
+                },
+                "onInput": {
+                  "repourl": "homeTriggerUpdateDirectLinks",
+                  "reporef": "homeTriggerUpdateDirectLinks",
+                  "repopath": "homeTriggerUpdateDirectLinks",
+                  "localstoragepath": "homeTriggerUpdateDirectLinks"
+                },
+                "trigger": {
+                  "repotype": "homeTriggerUpdateDirectLinks",
+                  "system": "homeTriggerUpdateDirectLinks",
+                  "flavor": "homeTriggerUpdateDirectLinks",
+                  "repopathtype": "homeTriggerUpdateDirectLinks",
+                  "localstoragepath": "homeTriggerUpdateDirectLinks"
+                },
+                "dependency": {
+                  "option": [
+                    "repo2docker"
+                  ]
+                }
+              },
               "repotype": {
                 "input": {
                   "type": "select",
@@ -117,6 +150,7 @@
                   "type": "text",
                   "value": "Repository Type"
                 },
+                "triggerOnChange": "homeTriggerRepoTypeChanged",
                 "dependency": {
                   "option": [
                     "repo2docker"
@@ -128,6 +162,7 @@
                   "type": "text",
                   "options": {
                     "group": "repo2docker",
+                    "required": true,
                     "enabled": "show",
                     "placeholder": "example: yuvipanda/requirements or https://github.com/yuvipanda/requirements",
                     "pattern": "^(https?:\\/\\/github\\.com\\/)?([^\\/]+\\/[^\\/]+)\\/?$"
@@ -135,8 +170,9 @@
                 },
                 "label": {
                   "type": "text",
-                  "value": "Repository name or URL"
+                  "value": "GitHub repository name or URL"
                 },
+                "onInputChange": "repoUrlChanged",
                 "trigger": {
                   "repotype": "wTriggerUpdateRepoUrlForType"
                 },
@@ -199,19 +235,19 @@
                   "type": "select",
                   "options": {
                     "group": "repo2docker",
-                    "enabled": false,
                     "show": false
+                  },
+                  "values": {
+                    "file": "File",
+                    "url": "URL"
                   }
                 },
                 "label": {
-                  "type": "textcheckbox",
-                  "value": "Notebook Type",
-                  "options": {
-                    "default": false
-                  }
+                  "type": "text",
+                  "value": "Notebook Type"
                 },
                 "trigger": {
-                  "repopath": "wTriggerRepoPathType"
+                  "repopath": "homeTriggerRepoPathType"
                 },
                 "dependency": {
                   "option": [
@@ -293,6 +329,7 @@
                 "input": {
                   "type": "text",
                   "options": {
+                    "secret": true,
                     "group": "custom",
                     "show": false,
                     "placeholder": "Enter your password"
@@ -407,8 +444,7 @@
                 "input": {
                   "type": "select",
                   "options": {
-                    "group": "resources",
-                    "show": false
+                    "group": "resources"
                   }
                 },
                 "label": {
@@ -582,7 +618,14 @@
                 "input": {
                   "type": "selecthelper"
                 },
-                "triggerSuffix": "input-div"
+                "options": {
+                  "show": true
+                },
+                "dependency": {
+                  "option": [
+                    "lmod"
+                  ]
+                }
               }
             },
           },
