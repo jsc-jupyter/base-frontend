@@ -25,6 +25,7 @@ tr.summary-tr {
 
 .collapsible-tr {
   --bs-table-hover-bg: #fff !important;
+  --bs-table-striped-bg: #fff !important;
 }
 
 /* 
