@@ -12,7 +12,6 @@
 {%- set pagetype = vars.pagetype_workshop %}
 
 {%- set table_rows = { spawner.name: spawner.user_options } %}
-<div>{{ workshop_options}}</div>
 {%- from "macros/table/table.jinja" import tables with context %}
 {%- import "macros/table/content.jinja" as functions with context %}
 <div id="workshopnotusable"></div>
