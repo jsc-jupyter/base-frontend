@@ -4,9 +4,9 @@
 {%- set jupyter_name = "GaussCentre Portal" -%}
 {%- elif frontendCollection.get("hostname", "jupyter.jsc.fz-juelich.de") == "portal-staging.gauss-centre.eu" %}
 {%- set jupyter_name = "GaussCentre StagingPortal" -%}
-{$- else %}
+{%- else %}
 {%- set jupyter_name = "Jupyter-JSC" -%}
-{$- endif %}
+{%- endif %}
 
 {#- Get all systems configured for this hub,
     sort them by weight and assign status ids -#}
