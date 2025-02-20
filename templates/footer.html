@@ -270,6 +270,7 @@ require(["jquery"], function (
 
     var carousel_exists = $("#footerSystemsCarousel").length;
     // Recreate footer with systems in the sorted order
+    const itemsPerPage = getItemsPerPage(); 
     for (const [index, system] of systemsSorted.entries()) {
       let ampel = $(`#ampel-${system.toLowerCase()}`);
       ampel.remove();
@@ -277,8 +278,9 @@ require(["jquery"], function (
         $("#systems-page-1").append(ampel);
       }
       else {
-        if (index < 4) $("#systems-page-1").append(ampel);
-        else $("#systems-page-2").append(ampel);
+        if (index < itemsPerPage) $("#systems-page-1").append(ampel);
+        else if (index < 2*itemsPerPage) $("#systems-page-2").append(ampel);
+        else $("#systems-page-3").append(ampel);
       }
     }
   }
