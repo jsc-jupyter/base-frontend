@@ -671,13 +671,28 @@
       {%- endif %}
 
       const queryString = window.location.search;
-      if (localStorage.getItem('row') && localStorage.getItem('service')) {
+      const urlParams = new URLSearchParams(queryString);
+      let serviceValue = "";
+      let rowValue = "";
+      let start = false;
+      let showlogs = false;
+      if (urlParams.has('row') && urlParams.has('service')) {
+        serviceValue = urlParams.get('service');
+        rowValue = urlParams.get('row');
+        start = urlParams.has('start')
+        showlogs = urlParams.has('showlogs');
+      } else if (localStorage.getItem('row') && localStorage.getItem('service')) {
         // Get the value of the "row" parameter
-        const serviceValue = localStorage.getItem('service');
-        let rowValue = localStorage.getItem('row');
+        serviceValue = localStorage.getItem('service');
+        rowValue = localStorage.getItem('row');
         localStorage.removeItem('service');
         localStorage.removeItem('row');
-        
+        start = localStorage.getItem("start") === "true";
+        if ( start ) localStorage.removeItem('start');
+        showlogs = localStorage.getItem("showlogs") === "true";
+        if ( showlogs ) localStorage.removeItem('showlogs');
+      }
+      if ( rowValue && serviceValue ) { 
         $(`div[id$='-table-div']:not([id^='${serviceValue}-'])`).hide();
         $(`div[id$='-table-div'][id^='${serviceValue}-']`).show();
 
@@ -685,8 +700,7 @@
         $(`div[id^='${serviceValue}-${rowValue}-collapse']`).addClass("show");
         let x = document.getElementById(`${serviceValue}-${rowValue}-summary-tr`)
         if ( x ) x.scrollIntoView();
-        if ( localStorage.getItem("start") === "true" ) {
-          localStorage.removeItem('start');
+        if ( start ) {
           const ready = $(`#${serviceValue}-${rowValue}-summary-tr`).attr("data-spawner-ready");
           const active = $(`#${serviceValue}-${rowValue}-summary-tr`).attr("data-spawner-active");
           if ( ready === "true" ) {
@@ -697,9 +711,8 @@
             $(`[id^='${serviceValue}-${rowValue}-'][id$='-logs-navbar-button']`).trigger("click");
           }
         }          
-        if (localStorage.getItem("showlogs") === "true") {
+        if ( showlogs ) {
           $(`[id^='${serviceValue}-${rowValue}-'][id$='-logs-navbar-button']`).trigger("click");
-          localStorage.removeItem("showlogs");
         }
       }
     });
