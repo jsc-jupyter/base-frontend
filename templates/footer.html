@@ -308,9 +308,6 @@ require(["jquery"], function (
             newMaintenanceList.push(_system);
           }
         }
-      } else {
-        $(`#ampel-${system.toLowerCase()}-tooltip`)
-          .attr('data-bs-original-title', "System's healthy");
       }
     }
     globalMaintenanceSystems = newMaintenanceList;
