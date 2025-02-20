@@ -60,7 +60,7 @@
     </div>
     <div class="d-flex flex-column align-items-end ms-auto">
       <a class="navbar-brand" href="/">
-        <img id="jupyter-logo" src='{{ static_url("images/header/jupyterjsc.png", include_version=True) }}' height="60px" alt="Jupyter-JSC" title="{{hostname}}{{ base_url|default('', true) }}">
+        <img id="jupyter-logo" src='{{ static_url("images/header/jupyterjsc.png", include_version=True) }}' height="60px" alt="Jupyter-JSC" title="{{frontendCollection.get('hostname')}}{{ base_url|default('', true) }}">
       </a>
       {{ create_user_widget() }}
     </div>

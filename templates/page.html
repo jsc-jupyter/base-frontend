@@ -13,7 +13,7 @@
   <meta property="og:site_name" content="jupyter-jsc">
   <meta property="og:title" content="jupyter-jsc">
   <meta property="og:type" content="website">
-  <meta property="og:url" content="https://{{hostname}}{{ base_url|default('', true) }}">
+  <meta property="og:url" content="https://{{frontendCollection.get('hostname')}}{{ base_url|default('', true) }}">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   {% block favicon -%}
   <link rel="icon" href='{{static_url("images/favicon.svg", include_version=True)}}' type="jpg/png" />
