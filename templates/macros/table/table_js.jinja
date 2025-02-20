@@ -87,7 +87,11 @@
       }
     }
     const sortedOptions = Object.entries(options).sort((a, b) => b[1].weight - a[1].weight)
-    all["options"] = sortedOptions;
+    const sortedOptionsObj = {};
+    for (const [key, value] of sortedOptions) {
+      sortedOptionsObj[key] = value;
+    }
+    all["options"] = sortedOptionsObj;
     return all;
   }
 
