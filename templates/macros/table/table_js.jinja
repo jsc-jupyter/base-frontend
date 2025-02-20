@@ -2137,7 +2137,8 @@
               successCounter += 1;
               if ( successCounter > 8 ) {
                 if ( blank ) {
-                  window.open(url, "_blank");
+                  var newTab = window.open("about:blank");
+                  newTab.location.href = url;
                 } else {
                   window.open(url);
                 }
