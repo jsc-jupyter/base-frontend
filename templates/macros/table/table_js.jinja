@@ -86,7 +86,8 @@
         options[key] = value;
       }
     }
-    all["options"] = options;
+    const sortedOptions = Object.entries(options).sort((a, b) => b[1].weight - a[1].weight)
+    all["options"] = sortedOptions;
     return all;
   }
 
