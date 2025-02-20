@@ -2717,6 +2717,8 @@
       let userOptions = collectSelectedOptions(serviceId, rowId);
       clearLogs(serviceId, rowId);
       defaultLogs(serviceId, rowId);
+      updateHeaderButtons(serviceId, rowId, "stopped");
+      progressBarUpdate(serviceId, rowId, "", 0);
       
       const terminalElement = $(`[id^='${serviceId}-${rowId}-'][id$='-terminal-container']`);
       terminalElement.html("");
