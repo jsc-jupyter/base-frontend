@@ -38,11 +38,8 @@
     {%- if user.admin %}
     <li class="nav-item"><a id="{{prefix}}admin-nav-item" class="nav-link text-decoration-none" href="{{ base_url }}admin">Admin</a></li>
     {%- endif -%}
-    {#- {%- else %}  -#}
-    {#-  <li class="nav-item"><a id="{{prefix}}start-nav-item" class="nav-link text-decoration-none" href="{{ base_url }}login">Sign in</a></li> -#} 
-    <li class="nav-item"><a id="{{prefix}}status-nav-item" class="nav-link text-decoration-none" target="_blank" href="https://status.jsc.fz-juelich.de/">JSC Status</a></li>
-    <li class="nav-item"><a id="{{prefix}}docs-nav-item" class="nav-link text-decoration-none" target="_blank" href="https://docs.jupyter.jsc.fz-juelich.de/github/FZJ-JSC/jupyter-jsc-notebooks/blob/documentation/index.ipynb">Documentation</a></li>
     {%- endif %}
+    <li class="nav-item"><a id="{{prefix}}docs-nav-item" class="nav-link text-decoration-none" target="_blank" href="https://docs.jupyter.jsc.fz-juelich.de">Documentation</a></li>
   </div>
 </ul>
 {%- endmacro -%}
