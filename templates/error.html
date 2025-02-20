@@ -1,7 +1,6 @@
 {%- extends "page.html" -%}
 
 {%- block meta -%}
-{% set service = spawner.user_options.get("service", "jupyterlab") | lower %}
 {%- if message and message == "OAuth error: Access denied by resource owner or authorization server" %}
   <meta http-equiv="refresh" content="0; url=https://{{frontendCollection.get('hostname')}}{{ base_url }}login" />
 {%- endif %}
