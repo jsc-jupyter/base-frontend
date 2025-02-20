@@ -577,8 +577,6 @@
                   "type": "select",
                   "options": {
                     "group": "resources",
-                    "show": false,
-                    "collectstatic": true,
                     "enabled": false,
                     "multiple": true,
                     "size": 4
@@ -589,7 +587,6 @@
                   "options": {
                     "default": false
                   },
-                  "triggerOnChange": "toggleCollectCB",
                   "value": "Reservation"
                 },
                 "trigger": {
@@ -597,6 +594,7 @@
                   "partition": "wmTriggerReservation",
                   "project": "wmTriggerReservation"
                 },
+                "triggerOnChange": "wmTriggerReservation"
                 "dependency": {
                   "system": [
                     "unicore"
