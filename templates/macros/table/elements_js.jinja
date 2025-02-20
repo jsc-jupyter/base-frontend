@@ -671,11 +671,12 @@
       {%- endif %}
 
       const queryString = window.location.search;
-      const urlParams = new URLSearchParams(queryString);
-      if (urlParams.has('row') && urlParams.has('service')) {
+      if (localStorage.getItem('row') && localStorage.getItem('service')) {
         // Get the value of the "row" parameter
-        const serviceValue = urlParams.get('service');
-        let rowValue = urlParams.get('row');
+        const serviceValue = localStorage.getItem('service');
+        let rowValue = localStorage.getItem('row');
+        localStorage.removeItem('service');
+        localStorage.removeItem('row');
         
         $(`div[id$='-table-div']:not([id^='${serviceValue}-'])`).hide();
         $(`div[id$='-table-div'][id^='${serviceValue}-']`).show();
@@ -684,7 +685,8 @@
         $(`div[id^='${serviceValue}-${rowValue}-collapse']`).addClass("show");
         let x = document.getElementById(`${serviceValue}-${rowValue}-summary-tr`)
         if ( x ) x.scrollIntoView();
-        if ( urlParams.has('start') ) {
+        if ( localStorage.getItem("start") === "true" ) {
+          localStorage.removeItem('start');
           const ready = $(`#${serviceValue}-${rowValue}-summary-tr`).attr("data-spawner-ready");
           const active = $(`#${serviceValue}-${rowValue}-summary-tr`).attr("data-spawner-active");
           if ( ready === "true" ) {
@@ -695,7 +697,10 @@
             $(`[id^='${serviceValue}-${rowValue}-'][id$='-logs-navbar-button']`).trigger("click");
           }
         }          
-        if ( urlParams.has('showlogs') ) $(`[id^='${serviceValue}-${rowValue}-'][id$='-logs-navbar-button']`).trigger("click");
+        if (localStorage.getItem("showlogs") === "true") {
+          $(`[id^='${serviceValue}-${rowValue}-'][id$='-logs-navbar-button']`).trigger("click");
+          localStorage.removeItem("showlogs");
+        }
       }
     });
   });

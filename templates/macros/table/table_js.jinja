@@ -2494,9 +2494,9 @@
 
         options["success"] = function (data, textStatus, jqXHR) {          
           const url = new URL(window.location.href);
-          url.searchParams.set('service', serviceId);
-          url.searchParams.set('row', newId);
-          url.searchParams.set('showlogs', true);
+          localStorage.setItem("service", serviceId);
+          localStorage.setItem("row", newId);
+          localStorage.setItem("showlogs", "true");
           window.location.href = url.toString();
         }
         api.start_named_server(user, newId, options);
@@ -2505,9 +2505,9 @@
 
         options["success"] = function (data, textStatus, jqXHR) {
           const url = new URL(window.location.href);
-          url.searchParams.set('service', serviceId);
-          url.searchParams.set('row', newId);
-          url.searchParams.set('start', true);
+          localStorage.setItem("service", serviceId);
+          localStorage.setItem("row", newId);
+          localStorage.setItem("showlogs", "true");
           window.location.href = url.toString();
         }
         api.update_named_server(user, newId, options);
@@ -2622,9 +2622,9 @@
                   if ( logInputElement.html() == "" ) {
                     console.log("Logs not fetched. Reload website");
                     const url = new URL(window.location.href);
-                    url.searchParams.set('service', serviceId);
-                    url.searchParams.set('row', rowId);
-                    url.searchParams.set('showlogs', true);
+                    localStorage.setItem("service", serviceId);
+                    localStorage.setItem("row", rowId);
+                    localStorage.setItem("showlogs", "true");
                     window.location.href = url.toString();
                   }
                 }, 1000);
@@ -2740,9 +2740,9 @@
             if ( logInputElement.html() == "" ) {
               console.log("Logs not fetched. Reload website");
               const url = new URL(window.location.href);
-              url.searchParams.set('service', serviceId);
-              url.searchParams.set('row', rowId);
-              url.searchParams.set('showlogs', true);
+              localStorage.setItem("service", serviceId);
+              localStorage.setItem("row", rowId);
+              localStorage.setItem("showlogs", "true");
               window.location.href = url.toString();
             }
           }, 1000);
