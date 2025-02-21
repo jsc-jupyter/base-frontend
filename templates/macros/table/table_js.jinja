@@ -1268,6 +1268,44 @@
           }
         }
       }
+
+      function enableStartButton(serviceId, rowId) {
+        const summaryStartButton = $(`#${serviceId}-${rowId}-start-btn-header`);
+        const startButton = $(`#${serviceId}-${rowId}-startgreen-btn`);
+        if ( summaryStartButton.length > 0 ) {
+          summaryStartButton.prop("disabled", false);
+        }
+        if ( startButton.length > 0 ) {
+          startButton.prop("disabled", false);
+        }
+      }
+
+      function disableStartButton(serviceId, rowId) {
+        const summaryStartButton = $(`#${serviceId}-${rowId}-start-btn-header`);
+        const startButton = $(`#${serviceId}-${rowId}-startgreen-btn`);
+        if ( summaryStartButton.length > 0 ) {
+          summaryStartButton.prop("disabled", true);
+        }
+        if ( startButton.length > 0 ) {
+          startButton.prop("disabled", true);
+        }
+      }
+
+      // When reservation selected is inactive, we disable the start button
+      // If we switch the option or system, we will never trigger "reservationChanged",
+      // that's why we observe data-collect of Reservation
+      function homeTriggerReservationObserveCollect(element, newValue) {
+        if ( newValue === "false" ) {
+          const serviceId = element.attr("data-service");
+          const rowId = element.attr("data-row");
+          enableStartButton(serviceId, rowId);
+        }
+      }
+
+      function wTriggerReservationObserveCollect(element, newValue) {
+        homeTriggerReservationObserveCollect(element, newValue)
+      }
+
       function homeTriggerReservation(trigger, serviceId, rowId, tabId, elementId, elementOptions) {
         const systemInput = getInputElement(serviceId, rowId, "system");
         const elementDiv = getInputDiv(serviceId, rowId, elementId);
@@ -1327,8 +1365,10 @@
           }
           if ( inactiveReservationNames.length > 0 ) {
             groups["Inactive"] = inactiveReservationNames.length;
-          }
+          }          
           fillSelect(elementId, reservationInput, allReservationsSorted, groups);
+          const reservation = reservationInput.val();
+          inactiveReservationNames.filter( item => item[0] === reservation ).length > 0 ? disableStartButton(serviceId, rowId) : enableStartButton(serviceId, rowId);
         } else {
           $(`div[id^='${serviceId}-${rowId}-'][id$='-reservationinfo-input-div']`).hide();        
         }
@@ -1389,6 +1429,11 @@
                 reservationInfoDiv.find(`span[id$="-end"]`).html(`${reservationInfo.EndTime} (Europe/Berlin)`);
                 reservationInfoDiv.find(`span[id$="-state"]`).html(reservationInfo.State);
                 reservationInfoDiv.find(`pre[id$="-details"]`).html(JSON.stringify(reservationInfo, null, 2));
+                if ( reservationInfo.State == "INACTIVE" ) {
+                  reservationInfoDiv.find(`span[id$="-state"]`).css("color", "red");
+                } else {
+                  reservationInfoDiv.find(`span[id$="-state"]`).css("color", "green");
+                }
               }
             }
             reservationInfoDiv.show();

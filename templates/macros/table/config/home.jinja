@@ -455,6 +455,9 @@
                   "project": "homeTriggerReservation",
                   "system": "homeTriggerReservation"
                 },
+                "observeAttribute": {
+                  "collect": "homeTriggerReservationObserveCollect"
+                },
                 "triggerOnChange": "homeTriggerReservation",
                 "dependency": {
                   "system": [
@@ -472,6 +475,11 @@
                 "triggerSuffix": "input-div",
                 "trigger": {
                   "reservation": "homeTriggerReservationInfo"
+                },
+                "dependency": {
+                  "system": [
+                    "unicore"
+                  ]
                 }
               },
               "flavor": {

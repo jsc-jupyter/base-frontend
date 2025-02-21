@@ -456,6 +456,9 @@
                   "project": "wTriggerReservation",
                   "system": "wTriggerReservation"
                 },
+                "observeAttribute": {
+                  "collect": "wTriggerReservationObserveCollect"
+                },
                 "triggerOnChange": "wTriggerReservation",
                 "dependency": {
                   "system": [
@@ -473,6 +476,11 @@
                 "triggerSuffix": "input-div",
                 "trigger": {
                   "reservation": "wTriggerReservationInfo"
+                },
+                "dependency": {
+                  "system": [
+                    "unicore"
+                  ]
                 }
               },
               "flavor": {

@@ -53,7 +53,6 @@
         try {
           const jsonData = JSON.parse(event.data);
           for (const [key, value] of Object.entries(jsonData)) {
-            console.log(`SSE ${key}`);
             $(`[data-sse-${key}]`).trigger("sse", value);
           }
         } catch (error) {
