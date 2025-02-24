@@ -2504,7 +2504,7 @@
         }
         progressBarElement.width(progress).removeClass("bg-success bg-danger bg-primary").addClass(background).html("");
         progressTextElement.css('color', color);
-        if ( progress == 100 ) {
+        if ( progress == 100 || progress == 0 ) {
           progressTextElement.html("");
         } else {
           progressTextElement.html(`${progress}%`);
