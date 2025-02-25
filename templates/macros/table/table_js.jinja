@@ -529,8 +529,8 @@
         } else if (dataType == "number" ) {
           const min = inputElement.attr("min");
           const max = inputElement.attr("max");
-          if (newValue && newValue >= min && newValue <= max) {
-            inputElement.val(newValue);
+          if (newValue && parseInt(newValue) >= parseInt(min) && parseInt(newValue) <= parseInt(max)) {
+            inputElement.val(parseInt(newValue));
             $(`[id^='${serviceId}-${rowId}-'][id$='-input']`).trigger(`trigger_${key}`);
           } else {
             availableDescription = `${key} ${newValue} is not in allowed range [${min}, ${max}].`;
