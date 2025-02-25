@@ -228,7 +228,11 @@
                   color: black
                   {% endif -%}
                   "
-              >{{ progress }}%</span>
+              >
+              {%- if progress > 0 && progress < 100 %}
+              {{ progress }}%
+              {%- endif %}
+              </span>
             </div>
             <span id="{{ service_id }}-{{ row_id }}-progress-info-text" class="progress-info-text text-center text-muted" style="font-size: smaller;">
               {%- if ready %}
@@ -381,7 +385,11 @@
                   color: black
                   {% endif -%}
                   "
-              >{{ progress }}%</span>
+              >
+              {%- if progress > 0 && progress < 100 %}
+              {{ progress }}%
+              {%- endif %}
+              </span>
             </div>
             <span id="{{ service_id }}-{{ row_id }}-progress-info-text" class="progress-info-text text-center text-muted" style="font-size: smaller;">
               {%- if ready %}
@@ -525,7 +533,11 @@
                   color: black
                   {% endif -%}
                   "
-              >{{ progress }}%</span>
+              >
+              {%- if progress > 0 && progress < 100 %}
+              {{ progress }}%
+              {%- endif %}
+              </span>
             </div>
             <span id="{{ service_id }}-{{ row_id }}-progress-info-text" class="progress-info-text text-center text-muted" style="font-size: smaller;">
               {%- if ready %}
@@ -692,7 +704,11 @@
                   color: black
                   {% endif -%}
                   "
-              >{{ progress }}%</span>
+              >
+              {%- if progress > 0 && progress < 100 %}
+              {{ progress }}%
+              {%- endif %}
+              </span>
             </div>
             <span id="{{ service_id }}-{{ row_id }}-progress-info-text" class="progress-info-text text-center text-muted" style="font-size: smaller;">
               {%- if ready %}
