@@ -1543,12 +1543,6 @@
           } else {
             inputElement.attr("data-collect", true);
           }
-          {%- if pagetype == vars.pagetype_workshop %}          
-            const workshopValues = {{ workshop_options | tojson }}
-            if ( Object.keys(workshopValues).includes(elementId) ){
-              console.log(`Yeah - ${elementId} is defined`);
-            } 
-          {%- endif %}
         } else {
           inputDiv.hide();
           inputElement.attr("data-collect", false);
