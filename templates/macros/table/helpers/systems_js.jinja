@@ -60,7 +60,7 @@
   #}
 
   const resPattern = /^urn:(?<namespace>.+?(?=:res:)):res:(?<systempartition>[^:]+):(?<project>[^:]+):act:(?<account>[^:]+):(?<accounttype>[^:]+)$/;
-  const unicoreEntitlements = {{ auth_state.entitlements | list | tojson }};
+  const unicoreEntitlements = {{ auth_state.oauth_user.entitlements | list | tojson }};
   const unicorePreferredUsername = {{ auth_state.preferred_username | default("none", true) | tojson }};
   let unicoreReservations = {{ frontendCollection.get("reservations", {}) | tojson }};
   const unicoreMapSystems = {{ frontendCollection.get("mapSystems", {}) | tojson }};
