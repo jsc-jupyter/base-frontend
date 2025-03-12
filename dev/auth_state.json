@@ -1,0 +1,84 @@
+{
+  "access_token": "secret",
+  "refresh_token": "secret",
+  "id_token": "something",
+  "scope": [
+    "profile",
+    "single-logout",
+    "entitlements",
+    "eduperson_assurance",
+    "email",
+    "openid",
+    "voperson_id"
+  ],
+  "token_response": {
+    "access_token": "secret",
+    "refresh_token": "secret",
+    "scope": "profile single-logout entitlements eduperson_assurance email openid voperson_id",
+    "id_token": "something",
+    "token_type": "Bearer",
+    "expires_in": 4000
+  },
+  "oauth_user": {
+    "entitlements": [],
+    "sub": "336d6c61-6bd8-44c8-ae07-089751321d3c",
+    "voperson_id": "336d6c61-6bd8-44c8-ae07-089751321d3c@https://login.jsc.fz-juelich.de/oauth2",
+    "email_verified": true,
+    "last_idp": "https://judoor.fz-juelich.de/oauth2/access_token",
+    "name": "Max Mustermann",
+    "preferred_username": "mustermann1",
+    "given_name": "Max",
+    "family_name": "Mustermann",
+    "email": "m.mustermann@fz-juelich.de"
+  },
+  "exp": 1741683519,
+  "preferred_username": "mustermann1",
+  "entitlements": [],
+  "name": "m.mustermann_at_fz-juelich.de",
+  "groups": [],
+  "outpost_flavors": {
+    "JSC-Cloud": {
+      "_undefined": {
+        "max": 0,
+        "current": 0,
+        "display_name": "default flavor",
+        "weight": 1
+      },
+      "m1": {
+        "max": -1,
+        "weight": 10,
+        "display_name": "2GB RAM, 1VCPU, 5 days",
+        "description": "JupyterLab will run for max 5 days with 2GB RAM and 1VCPU.",
+        "runtime": {
+          "days": 5
+        },
+        "resources": {
+          "cpu_guarantee": 0.2,
+          "cpu_limit": 1,
+          "mem_guarantee": "1536M",
+          "mem_limit": "2048M"
+        },
+        "current": 0
+      },
+      "l1": {
+        "max": 50,
+        "weight": 12,
+        "display_name": "4GB RAM, 1VCPUs, 2 days",
+        "description": "JupyterLab will run for max 2 days with 4GB RAM and 1VCPUs.",
+        "runtime": {
+          "days": 2
+        },
+        "resources": {
+          "cpu_guarantee": 0.2,
+          "cpu_limit": 1,
+          "mem_guarantee": "1024M",
+          "mem_limit": "4096M"
+        },
+        "current": 0
+      }
+    }
+  },
+  "custom_config_update": 1741678893.7378275,
+  "incidents_update": 1741679511,
+  "reservation_update": 1741679512
+}

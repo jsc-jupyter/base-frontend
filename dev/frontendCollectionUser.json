@@ -1,0 +1,1535 @@
+{
+  "hostname": "jupyter-jsc-dev2.fz-juelich.de",
+  "incidentCheck": {
+    "interval": 60,
+    "healthThreshold": {
+      "interactive": 50,
+      "compute": 40
+    },
+    "url": "https://status.jsc.fz-juelich.de/api",
+    "services": {
+      "JUWELS": 13,
+      "JURECA": 1,
+      "JEDI": 45,
+      "JUSUF": 30,
+      "DEEP": 43,
+      "JSCCLOUD": 44,
+      "JUPYTER": 40
+    },
+    "loggerName": "IncidentCheck",
+    "logger": {
+      "stream": {
+        "formatter": "simple",
+        "level": 10,
+        "stream": "ext://sys.stdout"
+      }
+    }
+  },
+  "systemConfig": {
+    "JUWELS": {
+      "interactivePartitions": [
+        "LoginNode",
+        "LoginNodeBooster",
+        "LoginNodeVis"
+      ],
+      "weight": 1,
+      "backendService": "outpostUnicore"
+    },
+    "JURECA": {
+      "interactivePartitions": [
+        "LoginNode"
+      ],
+      "weight": 2,
+      "backendService": "outpostUnicore"
+    },
+    "JEDI": {
+      "interactivePartitions": [
+        "LoginNode"
+      ],
+      "weight": 3,
+      "backendService": "outpostUnicore"
+    },
+    "JUSUF": {
+      "interactivePartitions": [
+        "LoginNode"
+      ],
+      "weight": 4,
+      "backendService": "outpostUnicore"
+    },
+    "DEEP": {
+      "interactivePartitions": [
+        "LoginNode"
+      ],
+      "weight": 5,
+      "backendService": "outpostUnicore"
+    },
+    "JSC-Cloud": {
+      "weight": 6,
+      "maxPerUser": {
+        "default": 1
+      },
+      "backendService": "outpostKubeJSCCloud"
+    }
+  },
+  "mapSystems": {
+    "jureca_booster": "JURECA",
+    "jureca-dc_cpu": "JURECA",
+    "jureca-dc_cpu-bigmem": "JURECA",
+    "jureca-dc_cpu-devel": "JURECA",
+    "jureca-dc_gpu": "JURECA",
+    "jureca-dc_gpu-devel": "JURECA",
+    "jureca-dc_hwai": "JURECA",
+    "jureca-dc_wai": "JURECA",
+    "juwels": "JUWELS",
+    "juwels_devel": "JUWELS",
+    "juwels_mem192": "JUWELS",
+    "juwels_develgpus": "JUWELS",
+    "juwels_booster": "JUWELS",
+    "juwels_develbooster": "JUWELS",
+    "juwels_gpus": "JUWELS",
+    "jedi": "JEDI",
+    "jusuf": "JUSUF",
+    "jusuf_cpu": "JUSUF",
+    "jusuf_gpus": "JUSUF",
+    "jusuf_develgpus": "JUSUF",
+    "deep_dam": "DEEP",
+    "deep_cpu": "DEEP",
+    "deep_ml-gpu": "DEEP",
+    "deep_booster": "DEEP"
+  },
+  "mapPartitions": {
+    "jureca_booster": "booster",
+    "jureca-dc_cpu": "dc-cpu",
+    "jureca-dc_cpu-bigmem": "dc-cpu-bigmem",
+    "jureca-dc_cpu-devel": "dc-cpu-devel",
+    "jureca-dc_gpu": "dc-gpu",
+    "jureca-dc_gpu-devel": "dc-gpu-devel",
+    "jureca-dc_hwai": "dc-hwai",
+    "jureca-dc_wai": "dc-wai",
+    "juwels": "batch",
+    "juwels_devel": "devel",
+    "juwels_mem192": "mem192",
+    "juwels_develgpus": "develgpus",
+    "juwels_booster": "booster",
+    "juwels_develbooster": "develbooster",
+    "juwels_gpus": "gpus",
+    "jedi": "all",
+    "jusuf": "batch",
+    "jusuf_cpu": "batch",
+    "jusuf_gpus": "gpus",
+    "jusuf_develgpus": "develgpus",
+    "deep_dam": "dp-dam",
+    "deep_cpu": "dp-cn",
+    "deep_booster": "dp-esb",
+    "deep_ml-gpu": "ml-gpu"
+  },
+  "defaultPartitions": {
+    "juwels": [
+      "juwels_devel",
+      "juwels_mem192"
+    ],
+    "juwels_booster": [
+      "juwels_develbooster"
+    ],
+    "juwels_gpus": [
+      "juwels_develgpus"
+    ],
+    "jureca-dc_cpu": [
+      "jureca-dc_cpu-bigmem",
+      "jureca-dc_cpu-devel"
+    ],
+    "jureca-dc_gpu": [
+      "jureca-dc_gpu-devel"
+    ],
+    "jusuf_gpus": [
+      "jusuf_develgpus"
+    ],
+    "deep_cpu": [
+      "deep_ml-gpu"
+    ]
+  },
+  "serviceConfig": {
+    "JupyterLab": {
+      "allowedGroups": [
+        "default"
+      ],
+      "optionsName": "Version",
+      "serviceId": "jupyterlab",
+      "defaultOption": 4.2,
+      "options": {
+        "4.3": {
+          "name": "JupyterLab - 4.3",
+          "mapping": "lmod",
+          "kernelSet": "4.3",
+          "extensionSet": "4.3",
+          "proxySet": "4.3",
+          "allowedLists": {
+            "groups": [
+              "default"
+            ],
+            "systems": [
+              "JURECA",
+              "JUWELS",
+              "JEDI",
+              "JUSUF",
+              "DEEP"
+            ]
+          }
+        },
+        "4.2": {
+          "name": "JupyterLab - 4.2",
+          "mapping": "lmod",
+          "kernelSet": "4.2",
+          "extensionSet": "4.2",
+          "proxySet": "4.2",
+          "allowedLists": {
+            "groups": [
+              "default"
+            ],
+            "systems": [
+              "JURECA",
+              "JUWELS",
+              "JEDI",
+              "JUSUF",
+              "DEEP",
+              "JSC-Cloud",
+              "Dummy",
+              "LocalDummy"
+            ]
+          }
+        },
+        "3.6": {
+          "name": "JupyterLab - 3.6",
+          "mapping": "lmod",
+          "kernelSet": "3.6",
+          "extensionSet": "3.6",
+          "proxySet": "3.6",
+          "allowedLists": {
+            "groups": [
+              "default"
+            ],
+            "systems": [
+              "JURECA",
+              "JUWELS",
+              "JUSUF",
+              "DEEP",
+              "JSC-Cloud"
+            ]
+          }
+        },
+        "custom": {
+          "name": "Custom Docker image (starting a Jupyter server)",
+          "userInput": {
+            "required": true,
+            "defaultMountEnabled": true,
+            "defaultMountPath": "/mnt/userdata"
+          },
+          "allowedLists": {
+            "groups": [
+              "default"
+            ],
+            "systems": [
+              "JSC-Cloud",
+              "LRZ-Staging",
+              "LRZ",
+              "MPCDF",
+              "LocalDummy",
+              "Dummy"
+            ]
+          }
+        },
+        "repo2docker": {
+          "name": "Repo2docker (Binder)",
+          "userInput": {
+            "isRepo2Docker": true
+          },
+          "allowedLists": {
+            "groups": [
+              "default"
+            ],
+            "systems": [
+              "JSC-Cloud",
+              "LocalDummy",
+              "Dummy"
+            ]
+          }
+        }
+      }
+    }
+  },
+  "userModules": {
+    "extensions": {
+      "collaboration": {
+        "displayName": "Jupyter Collaboration",
+        "default": false,
+        "href": "https://github.com/jupyterlab/jupyter-collaboration",
+        "sets": [
+          "4.3"
+        ]
+      },
+      "ipyvue": {
+        "displayName": "ipyvue",
+        "default": false,
+        "href": "https://github.com/widgetti/ipyvue",
+        "sets": [
+          "4.3"
+        ]
+      },
+      "jupyterai": {
+        "displayName": "Jupyter-AI",
+        "default": false,
+        "href": "https://jupyter-ai.readthedocs.io/en/latest/index.html",
+        "sets": [
+          "3.6",
+          "4.2",
+          "4.2-juniq"
+        ]
+      },
+      "jupyterview": {
+        "displayName": "JupyterView",
+        "default": true,
+        "href": "https://github.com/trungleduc/jupyterview",
+        "sets": [
+          "4.2",
+          "4.2-juniq",
+          "4.3"
+        ]
+      },
+      "kernelgateway": {
+        "displayName": "Kernel Gateway",
+        "default": false,
+        "href": "https://github.com/jupyter-server/kernel_gateway",
+        "sets": [
+          "4.3"
+        ]
+      },
+      "nbdev": {
+        "displayName": "nbdev",
+        "default": false,
+        "href": "https://nbdev.fast.ai/",
+        "sets": [
+          "4.2",
+          "4.2-juniq",
+          "4.3"
+        ]
+      },
+      "nglview": {
+        "displayName": "NGLview",
+        "default": false,
+        "href": "https://nglviewer.org/nglview/latest/",
+        "sets": [
+          "3.6",
+          "4.2",
+          "4.2-juniq",
+          "4.3"
+        ]
+      },
+      "slurmwrapper": {
+        "displayName": "Slurm Wrapper",
+        "default": false,
+        "href": "https://github.com/FZJ-JSC/jupyter-jsc-notebooks/blob/documentation/05-News&Updates/Announcement-2022-12_Slurm_Wrapped_Kernels.ipynb",
+        "interactive_only": true,
+        "sets": [
+          "3.6",
+          "4.2",
+          "4.2-juniq",
+          "4.3"
+        ],
+        "allowed_systems": [
+          "JUWELS",
+          "JURECA",
+          "JEDI",
+          "JUSUF",
+          "DEEP"
+        ]
+      },
+      "spellchecker": {
+        "displayName": "Spellchecker",
+        "default": false,
+        "href": "https://github.com/jupyterlab-contrib/spellchecker",
+        "sets": [
+          "4.2",
+          "4.2-juniq"
+        ],
+        "allowed_systems": [
+          "JUWELS",
+          "JURECA",
+          "JUSUF",
+          "DEEP",
+          "JSC-Cloud"
+        ]
+      },
+      "tramemanager": {
+        "displayName": "Trame Manager",
+        "default": false,
+        "href": "https://github.com/jwindgassen/jupyterlab-trame-manager",
+        "sets": [
+          "4.2",
+          "4.2-juniq"
+        ],
+        "allowed_systems": [
+          "JUWELS",
+          "JURECA",
+          "JUSUF"
+        ]
+      },
+      "variableinspector": {
+        "displayName": "VariableInspector",
+        "default": false,
+        "href": "https://github.com/jupyterlab-contrib/jupyterlab-variableInspector",
+        "sets": [
+          "4.2",
+          "4.2-juniq"
+        ],
+        "allowed_systems": [
+          "JUWELS",
+          "JURECA",
+          "JUSUF",
+          "DEEP",
+          "JSC-Cloud"
+        ]
+      },
+      "voila": {
+        "displayName": "Voila",
+        "default": {
+          "4.2-juniq": true,
+          "default": false
+        },
+        "href": "https://voila.readthedocs.io",
+        "sets": [
+          "4.2",
+          "4.2-juniq",
+          "4.3"
+        ]
+      }
+    },
+    "kernels": {
+      "bash": {
+        "displayName": "Bash",
+        "default": true,
+        "href": "https://github.com/easybuilders/JSC/blob/2024/Golden_Repo/j/JupyterKernel-Bash/JupyterKernel-Bash-0.9.3-GCCcore-12.3.0-4.2.1.eb",
+        "sets": [
+          "3.6",
+          "4.2",
+          "4.2-juniq",
+          "4.3"
+        ]
+      },
+      "cling": {
+        "displayName": "Cling",
+        "default": {
+          "4.2-juniq": false,
+          "default": true
+        },
+        "href": "https://github.com/easybuilders/JSC/blob/2024/Golden_Repo/j/JupyterKernel-Cling/JupyterKernel-Cling-20231018-GCCcore-12.3.0-4.2.1.eb",
+        "sets": [
+          "3.6",
+          "4.2",
+          "4.2-juniq",
+          "4.3"
+        ]
+      },
+      "java": {
+        "displayName": "Java",
+        "default": false,
+        "href": "https://github.com/easybuilders/JSC/blob/2024/Golden_Repo/j/JupyterKernel-Java/JupyterKernel-Java-1.3.0-GCCcore-12.3.0.eb",
+        "sets": [
+          "4.2",
+          "4.2-juniq"
+        ]
+      },
+      "julia": {
+        "displayName": "Julia",
+        "default": {
+          "4.2-juniq": false,
+          "default": true
+        },
+        "href": "https://github.com/easybuilders/JSC/blob/2024/Golden_Repo/j/JupyterKernel-Julia/JupyterKernel-Julia-1.9.3-GCCcore-12.3.0.eb",
+        "sets": [
+          "3.6",
+          "4.2",
+          "4.2-juniq"
+        ]
+      },
+      "lfortran": {
+        "displayName": "LFortran",
+        "default": {
+          "4.2-juniq": false,
+          "default": true
+        },
+        "href": "https://github.com/easybuilders/JSC/blob/2024/Golden_Repo/j/JupyterKernel-LFortran/JupyterKernel-LFortran-0.30.0-GCCcore-12.3.0.eb",
+        "sets": [
+          "3.6",
+          "4.2",
+          "4.2-juniq",
+          "4.3"
+        ]
+      },
+      "octave": {
+        "displayName": "Octave",
+        "default": true,
+        "href": "https://github.com/easybuilders/JSC/blob/2024/Golden_Repo/j/JupyterKernel-Octave/JupyterKernel-Octave-8.4.0-GCCcore-12.3.0-4.2.1.eb",
+        "sets": [
+          "3.6",
+          "4.2",
+          "4.2-juniq",
+          "4.3"
+        ]
+      },
+      "pydeeplearning": {
+        "displayName": "PyDeepLearning",
+        "default": {
+          "4.2-juniq": false,
+          "default": true
+        },
+        "href": "https://github.com/easybuilders/JSC/blob/2024/Golden_Repo/j/JupyterKernel-PyDeepLearning/JupyterKernel-PyDeepLearning-2024.3-GCCcore-12.3.0-4.2.1.eb",
+        "sets": [
+          "3.6",
+          "4.2",
+          "4.2-juniq"
+        ]
+      },
+      "pyearthsystem": {
+        "displayName": "PyEarthSystem",
+        "default": {
+          "4.2-juniq": false,
+          "default": true
+        },
+        "href": "https://github.com/easybuilders/JSC/blob/2024/Golden_Repo/j/JupyterKernel-PyEarthSystem/JupyterKernel-PyEarthSystem-2024.3-GCCcore-12.3.0-4.2.1.eb",
+        "sets": [
+          "3.6",
+          "4.2",
+          "4.2-juniq"
+        ]
+      },
+      "pyhpc": {
+        "displayName": "PyHPC",
+        "default": false,
+        "href": "https://pyhpc.io/",
+        "sets": [
+          "4.2",
+          "4.2-juniq"
+        ],
+        "allowed_systems": [
+          "JSC-Cloud"
+        ]
+      },
+      "pyquantum": {
+        "displayName": "PyQuantum",
+        "default": true,
+        "href": "https://github.com/easybuilders/JSC/blob/2024/Golden_Repo/j/JupyterKernel-PyQuantum/JupyterKernel-PyQuantum-2024.10-GCCcore-12.3.0-4.2.1.eb",
+        "sets": [
+          "3.6",
+          "4.2",
+          "4.2-juniq"
+        ]
+      },
+      "pyvisualization": {
+        "displayName": "PyVisualization",
+        "default": {
+          "4.2-juniq": false,
+          "default": true
+        },
+        "href": "https://github.com/easybuilders/JSC/blob/2024/Golden_Repo/j/JupyterKernel-PyVisualization/JupyterKernel-PyVisualization-2024.3-GCCcore-12.3.0-4.2.1.eb",
+        "sets": [
+          "3.6",
+          "4.2",
+          "4.2-juniq"
+        ]
+      },
+      "r": {
+        "displayName": "R",
+        "default": true,
+        "href": "https://github.com/easybuilders/JSC/blob/2024/Golden_Repo/j/JupyterKernel-R/JupyterKernel-R-4.3.2-GCCcore-12.3.0-4.2.1.eb",
+        "sets": [
+          "3.6",
+          "4.2",
+          "4.2-juniq",
+          "4.3"
+        ]
+      },
+      "ruby": {
+        "displayName": "Ruby",
+        "default": {
+          "4.2-juniq": false,
+          "default": true
+        },
+        "href": "https://github.com/easybuilders/JSC/blob/2024/Golden_Repo/j/JupyterKernel-Ruby/JupyterKernel-Ruby-3.2.2-GCCcore-12.3.0.eb",
+        "sets": [
+          "3.6",
+          "4.2",
+          "4.2-juniq",
+          "4.3"
+        ]
+      }
+    },
+    "proxies": {
+      "nest": {
+        "displayName": "NEST Desktop",
+        "default": false,
+        "href": "https://nest-desktop.readthedocs.io/en/latest/",
+        "sets": [
+          "3.6",
+          "4.2",
+          "4.2-juniq"
+        ],
+        "allowed_systems": [
+          "JUWELS",
+          "JURECA",
+          "JEDI",
+          "JUSUF",
+          "JSC-Cloud"
+        ],
+        "compute_only": false
+      },
+      "xprahtml5": {
+        "displayName": "Xpra",
+        "default": true,
+        "href": "https://github.com/easybuilders/JSC/blob/2024/Golden_Repo/j/JupyterProxy-XpraHTML5/JupyterProxy-XpraHTML5-0.4.0-GCCcore-12.3.0-4.2.1.eb",
+        "sets": [
+          "3.6",
+          "4.2",
+          "4.2-juniq"
+        ]
+      },
+      "rstudio": {
+        "displayName": "RStudio",
+        "default": false,
+        "href": "https://docs.posit.co/ide/user/",
+        "sets": [
+          "4.2",
+          "4.2-juniq"
+        ],
+        "allowed_systems": [
+          "JUWELS",
+          "JURECA",
+          "JUSUF",
+          "JSC-Cloud"
+        ],
+        "compute_only": false
+      }
+    }
+  },
+  "resourcesConfig": {
+    "JURECA": {
+      "LoginNode": {},
+      "dc-cpu": {
+        "nodes": {
+          "default": 1,
+          "minmax": [
+            1,
+            64
+          ]
+        },
+        "runtime": {
+          "default": 30,
+          "minmax": [
+            10,
+            1440
+          ]
+        }
+      },
+      "dc-cpu-bigmem": {
+        "nodes": {
+          "default": 1,
+          "minmax": [
+            1,
+            48
+          ]
+        },
+        "runtime": {
+          "default": 30,
+          "minmax": [
+            10,
+            1440
+          ]
+        }
+      },
+      "dc-cpu-devel": {
+        "nodes": {
+          "default": 1,
+          "minmax": [
+            1,
+            4
+          ]
+        },
+        "runtime": {
+          "default": 30,
+          "minmax": [
+            10,
+            120
+          ]
+        }
+      },
+      "dc-gpu": {
+        "gpus": {
+          "default": 4,
+          "minmax": [
+            1,
+            4
+          ]
+        },
+        "nodes": {
+          "default": 1,
+          "minmax": [
+            1,
+            24
+          ]
+        },
+        "runtime": {
+          "default": 30,
+          "minmax": [
+            10,
+            1440
+          ]
+        }
+      },
+      "dc-gpu-devel": {
+        "gpus": {
+          "default": 4,
+          "minmax": [
+            1,
+            4
+          ]
+        },
+        "nodes": {
+          "default": 1,
+          "minmax": [
+            1,
+            4
+          ]
+        },
+        "runtime": {
+          "default": 30,
+          "minmax": [
+            10,
+            120
+          ]
+        }
+      },
+      "dc-hwai": {
+        "gpus": {
+          "default": 4,
+          "minmax": [
+            1,
+            4
+          ]
+        },
+        "nodes": {
+          "default": 1,
+          "minmax": [
+            1,
+            16
+          ]
+        },
+        "runtime": {
+          "default": 30,
+          "minmax": [
+            10,
+            1440
+          ]
+        }
+      },
+      "dc-wai": {
+        "gpus": {
+          "default": 4,
+          "minmax": [
+            1,
+            4
+          ]
+        },
+        "nodes": {
+          "default": 1,
+          "minmax": [
+            1,
+            16
+          ]
+        },
+        "runtime": {
+          "default": 30,
+          "minmax": [
+            10,
+            1440
+          ]
+        }
+      },
+      "booster-devel": {
+        "nodes": {
+          "default": 1,
+          "minmax": [
+            1,
+            8
+          ]
+        },
+        "runtime": {
+          "default": 30,
+          "minmax": [
+            10,
+            360
+          ]
+        }
+      },
+      "booster": {
+        "nodes": {
+          "default": 1,
+          "minmax": [
+            1,
+            512
+          ]
+        },
+        "runtime": {
+          "default": 30,
+          "minmax": [
+            10,
+            1440
+          ]
+        }
+      }
+    },
+    "JEDI": {
+      "LoginNode": {},
+      "all": {
+        "nodes": {
+          "default": 1,
+          "minmax": [
+            1,
+            48
+          ]
+        },
+        "runtime": {
+          "default": 30,
+          "minmax": [
+            10,
+            1440
+          ]
+        }
+      }
+    },
+    "JUWELS": {
+      "LoginNode": {},
+      "LoginNodeBooster": {},
+      "LoginNodeVis": {},
+      "batch": {
+        "nodes": {
+          "default": 1,
+          "minmax": [
+            1,
+            1024
+          ]
+        },
+        "runtime": {
+          "default": 30,
+          "minmax": [
+            10,
+            1440
+          ]
+        }
+      },
+      "gpus": {
+        "gpus": {
+          "default": 4,
+          "minmax": [
+            1,
+            4
+          ]
+        },
+        "nodes": {
+          "default": 1,
+          "minmax": [
+            1,
+            46
+          ]
+        },
+        "runtime": {
+          "default": 30,
+          "minmax": [
+            10,
+            1440
+          ]
+        }
+      },
+      "mem192": {
+        "nodes": {
+          "default": 1,
+          "minmax": [
+            1,
+            64
+          ]
+        },
+        "runtime": {
+          "default": 30,
+          "minmax": [
+            10,
+            1440
+          ]
+        }
+      },
+      "devel": {
+        "nodes": {
+          "default": 1,
+          "minmax": [
+            1,
+            8
+          ]
+        },
+        "runtime": {
+          "default": 30,
+          "minmax": [
+            10,
+            120
+          ]
+        }
+      },
+      "develgpus": {
+        "gpus": {
+          "default": 4,
+          "minmax": [
+            1,
+            4
+          ]
+        },
+        "nodes": {
+          "default": 1,
+          "minmax": [
+            1,
+            2
+          ]
+        },
+        "runtime": {
+          "default": 30,
+          "minmax": [
+            10,
+            120
+          ]
+        }
+      },
+      "booster": {
+        "gpus": {
+          "default": 4,
+          "minmax": [
+            1,
+            4
+          ]
+        },
+        "nodes": {
+          "default": 1,
+          "minmax": [
+            1,
+            384
+          ]
+        },
+        "runtime": {
+          "default": 30,
+          "minmax": [
+            10,
+            1440
+          ]
+        }
+      },
+      "develbooster": {
+        "gpus": {
+          "default": 4,
+          "minmax": [
+            1,
+            4
+          ]
+        },
+        "nodes": {
+          "default": 1,
+          "minmax": [
+            1,
+            4
+          ]
+        },
+        "runtime": {
+          "default": 30,
+          "minmax": [
+            10,
+            120
+          ]
+        }
+      }
+    },
+    "JUSUF": {
+      "LoginNode": {},
+      "batch": {
+        "nodes": {
+          "default": 1,
+          "minmax": [
+            1,
+            1024
+          ]
+        },
+        "runtime": {
+          "default": 30,
+          "minmax": [
+            10,
+            1440
+          ]
+        }
+      },
+      "scraper": {
+        "nodes": {
+          "default": 1,
+          "minmax": [
+            1,
+            10
+          ]
+        },
+        "runtime": {
+          "default": 30,
+          "minmax": [
+            10,
+            20160
+          ]
+        }
+      },
+      "gpus": {
+        "gpus": {
+          "default": 1,
+          "minmax": [
+            1,
+            1
+          ]
+        },
+        "nodes": {
+          "default": 1,
+          "minmax": [
+            1,
+            46
+          ]
+        },
+        "runtime": {
+          "default": 30,
+          "minmax": [
+            10,
+            1440
+          ]
+        },
+        "xserver": {
+          "default": 0,
+          "minmax": [
+            0,
+            0
+          ],
+          "checkbox": true,
+          "label": "Use XServer GPU index",
+          "checkbox_label": "Activate XServer",
+          "default_checkbox": false
+        }
+      },
+      "develgpus": {
+        "gpus": {
+          "default": 1,
+          "minmax": [
+            1,
+            1
+          ]
+        },
+        "nodes": {
+          "default": 1,
+          "minmax": [
+            1,
+            2
+          ]
+        },
+        "runtime": {
+          "default": 30,
+          "minmax": [
+            10,
+            1440
+          ]
+        },
+        "xserver": {
+          "default": 0,
+          "minmax": [
+            0,
+            0
+          ],
+          "checkbox": true,
+          "label": "Use XServer GPU index",
+          "checkbox_label": "Activate XServer",
+          "default_checkbox": false
+        }
+      }
+    },
+    "DEEP": {
+      "LoginNode": {},
+      "sdv": {
+        "nodes": {
+          "default": 1,
+          "minmax": [
+            1,
+            16
+          ]
+        },
+        "runtime": {
+          "default": 30,
+          "minmax": [
+            10,
+            1440
+          ]
+        }
+      },
+      "debug": {
+        "nodes": {
+          "default": 1,
+          "minmax": [
+            1,
+            91
+          ]
+        },
+        "runtime": {
+          "default": 30,
+          "minmax": [
+            10,
+            1440
+          ]
+        }
+      },
+      "dp-cn": {
+        "nodes": {
+          "default": 1,
+          "minmax": [
+            1,
+            50
+          ]
+        },
+        "runtime": {
+          "default": 30,
+          "minmax": [
+            10,
+            1440
+          ]
+        }
+      },
+      "dp-dam": {
+        "nodes": {
+          "default": 1,
+          "minmax": [
+            1,
+            16
+          ]
+        },
+        "runtime": {
+          "default": 30,
+          "minmax": [
+            10,
+            1440
+          ]
+        }
+      },
+      "dp-dam-ext": {
+        "nodes": {
+          "default": 1,
+          "minmax": [
+            1,
+            8
+          ]
+        },
+        "runtime": {
+          "default": 30,
+          "minmax": [
+            10,
+            1440
+          ]
+        }
+      },
+      "dp-esb": {
+        "nodes": {
+          "default": 1,
+          "minmax": [
+            1,
+            75
+          ]
+        },
+        "runtime": {
+          "default": 30,
+          "minmax": [
+            10,
+            1440
+          ]
+        }
+      },
+      "ml-gpu": {
+        "nodes": {
+          "default": 1,
+          "minmax": [
+            1,
+            3
+          ]
+        },
+        "runtime": {
+          "default": 30,
+          "minmax": [
+            10,
+            1440
+          ]
+        }
+      },
+      "extoll": {
+        "nodes": {
+          "default": 1,
+          "minmax": [
+            1,
+            16
+          ]
+        },
+        "runtime": {
+          "default": 30,
+          "minmax": [
+            10,
+            1440
+          ]
+        }
+      }
+    }
+  },
+  "backendServices": {
+    "outpostUnicore": {
+      "flavorsRequired": false,
+      "mapping": "unicore",
+      "poll": true,
+      "pollAccessTokenRequired": true,
+      "pollInterval": 1800,
+      "pollIntervalRandomizer": 100,
+      "requestKwargs": {
+        "request_timeout": 300
+      },
+      "sendAccessToken": true,
+      "sendAccessTokenKey": "Auth-State-access_token",
+      "type": "unicore",
+      "urls": {
+        "services": "http://outpost-unicore.unicore.svc:8080/services"
+      },
+      "userflavors": false,
+      "userflavorsRequestKwargs": {
+        "request_timeout": 2
+      }
+    },
+    "outpostKubeJSCCloud": {
+      "flavorsRequired": true,
+      "mapping": "jsccloud",
+      "poll": true,
+      "pollInterval": 30,
+      "pollIntervalRandomizer": 10,
+      "requestKwargs": {
+        "request_timeout": 300
+      },
+      "type": "kube",
+      "urls": {
+        "services": "http://outpost-kube.outpost.svc:8080/services"
+      },
+      "userflavors": true,
+      "userflavorsRequestKwargs": {
+        "request_timeout": 2
+      }
+    },
+    "outpostKubeHLRS": {
+      "flavorsRequired": true,
+      "mapping": "hlrs",
+      "poll": true,
+      "pollInterval": 30,
+      "pollIntervalRandomizer": 10,
+      "requestKwargs": {
+        "request_timeout": 300
+      },
+      "type": "kube",
+      "urls": {
+        "services": "http://...unknown...:8080/services"
+      },
+      "userflavors": true,
+      "userflavorsRequestKwargs": {
+        "request_timeout": 2
+      }
+    },
+    "outpostKubeHLRSStaging": {
+      "flavorsRequired": true,
+      "mapping": "hlrsstaging",
+      "poll": true,
+      "pollInterval": 30,
+      "pollIntervalRandomizer": 10,
+      "requestKwargs": {
+        "request_timeout": 300
+      },
+      "sendAccessToken": true,
+      "sendAccessTokenKey": "Auth-State-access_token",
+      "type": "kube",
+      "urls": {
+        "services": "https://inhpc-jup.hydra1.hlrs.de/services"
+      },
+      "userflavors": true,
+      "userflavorsRequestKwargs": {
+        "request_timeout": 2
+      }
+    },
+    "outpostKubeLRZ": {
+      "flavorsRequired": true,
+      "mapping": "lrz",
+      "poll": true,
+      "pollInterval": 30,
+      "pollIntervalRandomizer": 10,
+      "requestKwargs": {
+        "request_timeout": 300
+      },
+      "sendAccessToken": true,
+      "sendAccessTokenKey": "Auth-State-access_token",
+      "type": "kube",
+      "urls": {
+        "services": "http://...unknown...:8080/services"
+      },
+      "userflavors": true,
+      "userflavorsRequestKwargs": {
+        "request_timeout": 2
+      }
+    },
+    "outpostKubeLRZStaging": {
+      "flavorsRequired": true,
+      "mapping": "lrzstaging",
+      "poll": true,
+      "pollInterval": 30,
+      "pollIntervalRandomizer": 10,
+      "requestKwargs": {
+        "request_timeout": 300
+      },
+      "sendAccessToken": true,
+      "sendAccessTokenKey": "Auth-State-access_token",
+      "type": "kube",
+      "urls": {
+        "services": "http://...unknown...:8080/services"
+      },
+      "userflavors": true,
+      "userflavorsRequestKwargs": {
+        "request_timeout": 2
+      }
+    },
+    "outpostKubeTUD": {
+      "flavorsRequired": false,
+      "mapping": "tud",
+      "poll": true,
+      "pollInterval": 30,
+      "pollIntervalRandomizer": 10,
+      "requestKwargs": {
+        "request_timeout": 300,
+        "validate_cert": false
+      },
+      "type": "kube",
+      "urls": {
+        "services": "https://..../services"
+      },
+      "userflavors": false,
+      "userflavorsRequestKwargs": {
+        "request_timeout": 2
+      }
+    },
+    "outpostKubeTUDStaging": {
+      "flavorsRequired": false,
+      "mapping": "tudstaging",
+      "poll": true,
+      "pollInterval": 30,
+      "pollIntervalRandomizer": 10,
+      "requestKwargs": {
+        "request_timeout": 300,
+        "validate_cert": false
+      },
+      "type": "kube",
+      "urls": {
+        "services": "https://dev.jupyterhub-outpost.zih.tu-dresden.de/services"
+      },
+      "userflavors": false,
+      "userflavorsRequestKwargs": {
+        "request_timeout": 2
+      }
+    },
+    "outpostKubeMPCDF": {
+      "flavorsRequired": false,
+      "mapping": "mpcdf",
+      "poll": true,
+      "pollInterval": 30,
+      "pollIntervalRandomizer": 10,
+      "requestKwargs": {
+        "request_timeout": 300,
+        "validate_cert": false
+      },
+      "type": "kube",
+      "urls": {
+        "services": "https://outpost.hpccloud.mpcdf.mpg.de/services"
+      },
+      "userflavors": false,
+      "userflavorsRequestKwargs": {
+        "request_timeout": 2
+      }
+    },
+    "outpostKubeDenbi": {
+      "flavorsRequired": true,
+      "mapping": "denbi",
+      "poll": true,
+      "pollInterval": 30,
+      "pollIntervalRandomizer": 10,
+      "requestKwargs": {
+        "request_timeout": 10
+      },
+      "type": "kube",
+      "urls": {
+        "services": "https://outpost.jupyter4nfdi.bi.denbi.de/services"
+      },
+      "userflavors": true,
+      "userflavorsRequestKwargs": {
+        "request_timeout": 2
+      }
+    },
+    "outpostKubeLocalDummy": {
+      "flavorsRequired": false,
+      "mapping": "localdummy",
+      "poll": true,
+      "pollInterval": 30,
+      "pollIntervalRandomizer": 10,
+      "requestKwargs": {
+        "request_timeout": 300,
+        "validate_cert": false
+      },
+      "type": "kube",
+      "urls": {
+        "services": "http://jupyterhub-outpost.localdummy.svc:8080/services"
+      },
+      "userflavors": false,
+      "userflavorsRequestKwargs": {
+        "request_timeout": 2
+      }
+    },
+    "outpostKubeDummy": {
+      "flavorsRequired": false,
+      "mapping": "dummy",
+      "poll": true,
+      "pollInterval": 30,
+      "pollIntervalRandomizer": 10,
+      "requestKwargs": {
+        "request_timeout": 300,
+        "validate_cert": false
+      },
+      "type": "kube",
+      "urls": {
+        "services": "http://jupyterhub-outpost.dummy.svc:8080/services"
+      },
+      "userflavors": false,
+      "userflavorsRequestKwargs": {
+        "request_timeout": 2
+      }
+    },
+    "tunnel": {
+      "requestKwargs": {
+        "request_timeout": 30,
+        "validate_cert": false
+      },
+      "urls": {
+        "logs": "http://tunnel.jupyter.svc/api/logs/handler/",
+        "restart": "http://tunnel.jupyter.svc/api/restart/",
+        "tunnel": "http://tunnel.jupyter.svc/api/tunnel/"
+      }
+    }
+  },
+  "incidents": {
+    "JUWELS": {
+      "incident": "",
+      "health": 20
+    },
+    "JURECA": {
+      "incident": "2025-03-13T08:00:00+01:00 - 2025-03-13T18:00:00+01:00:\nFull System Maintenance",
+      "health": 20
+    },
+    "JEDI": {
+      "incident": "",
+      "health": 20
+    },
+    "JUSUF": {
+      "incident": "",
+      "health": 20
+    },
+    "DEEP": {
+      "incident": "2025-02-17T13:57:19.958748+01:00 - unknown:\nMessage of the day",
+      "health": 10
+    },
+    "JSCCLOUD": {
+      "incident": "",
+      "health": 0
+    },
+    "JUPYTER": {
+      "incident": "",
+      "health": 0
+    }
+  },
+  "reservations": {
+    "JURECA": [],
+    "JUWELS": [],
+    "JEDI": [],
+    "JUSUF": [],
+    "DEEP": []
+  },
+  "decrypted_user_options": {
+    "": {},
+    "k4u8p1n7lm903hlppmwtisjpgnyw7hsy": {
+      "workshop_id": "juwels"
+    },
+    "v8e94bef6cca4d8a9b871a7e1f02070e": {
+      "name": "r2d example",
+      "option": "repo2docker",
+      "system": "JSC-Cloud",
+      "repo2dockerdirectlink": "https://jupyter-jsc-dev2.fz-juelich.de/v2/gh/FZJ-JSC/jupyter-jsc-notebooks/HEAD?system=JSC-Cloud&flavor=m1",
+      "repo2docker": {
+        "repotype": "gh",
+        "repourl": "FZJ-JSC/jupyter-jsc-notebooks",
+        "reporef": "",
+        "repopathtype": "file",
+        "image": "registry.jsc.fz-juelich.de/jupyterjsc/repo2docker/fzj-2djsc-2djupyter-2djsc-2dnotebooks-130ae3:62da1da7f02f3f8b755c0f046fe1c9a1674ad237"
+      },
+      "flavor": "m1",
+      "profile": "repo2docker",
+      "service": "jupyterlab",
+      "secret_keys": []
+    },
+    "zc3d39ee528247a4913d3728ce182a16": {
+      "name": "Unnamed jupyterlab",
+      "option": "repo2docker",
+      "system": "JSC-Cloud",
+      "repo2dockerdirectlink": "https://jupyter-jsc-dev2.fz-juelich.de/v2/zenodo/10.5281/zenodo.3242074/?system=JSC-Cloud&flavor=m1",
+      "repo2docker": {
+        "repotype": "zenodo",
+        "repourl": "10.5281/zenodo.3242074",
+        "repopathtype": "file",
+        "image": "registry.jsc.fz-juelich.de/jupyterjsc/repo2docker/zenodo-2d3242074-b993d2:3242074"
+      },
+      "flavor": "m1",
+      "profile": "repo2docker",
+      "service": "jupyterlab",
+      "secret_keys": []
+    },
+    "v9fds2tjadee7suhzuz810jz35at4lw1": {
+      "name": "FZJ-JSC",
+      "option": "repo2docker",
+      "system": "JSC-Cloud",
+      "repo2dockerdirectlink": "https://jupyter-jsc-dev2.fz-juelich.de/v2/gh/FZJ-JSC/jupyter-jsc-notebooks/HEAD?system=JSC-Cloud&flavor=l1",
+      "repo2docker": {
+        "repotype": "gh",
+        "repourl": "FZJ-JSC/jupyter-jsc-notebooks",
+        "reporef": "HEAD",
+        "repopathtype": "file",
+        "image": "registry.jsc.fz-juelich.de/jupyterjsc/repo2docker/fzj-2djsc-2djupyter-2djsc-2dnotebooks-130ae3:62da1da7f02f3f8b755c0f046fe1c9a1674ad237"
+      },
+      "flavor": "l1",
+      "profile": "repo2docker",
+      "service": "jupyterlab",
+      "r2d_id": "6bb91c9324dcf2abeb305104d7c5303c0af2b8c3eeb8f0d329f45330b0bfe9d4",
+      "secret_keys": []
+    },
+    "d3ciy1uax7nwgkv2a6m5t1ulhj8b2jfk": {
+      "name": "Workshop abc",
+      "option": "4.2",
+      "system": "JSC-Cloud",
+      "flavor": "m1",
+      "profile": "4.2",
+      "service": "jupyterlab",
+      "workshop_id": "abc",
+      "secret_keys": []
+    }
+  }
+}

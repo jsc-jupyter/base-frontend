@@ -1,0 +1,9 @@
+{
+  "name": "mustermann1",
+  "settings": null,
+  "authenticator": null,
+  "spawner": {},
+  "spawners": {
+    "spawner1": {}
+  }
+}

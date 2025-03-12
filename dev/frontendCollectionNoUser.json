@@ -1,0 +1,84 @@
+{
+  "hostname": "jupyter-jsc-dev2.fz-juelich.de",
+  "incidentCheck": {
+    "interval": 60,
+    "healthThreshold": {
+      "interactive": 50,
+      "compute": 40
+    },
+    "url": "https://status.jsc.fz-juelich.de/api",
+    "services": {
+      "JUWELS": 13,
+      "JURECA": 1,
+      "JEDI": 45,
+      "JUSUF": 30,
+      "DEEP": 43,
+      "JSCCLOUD": 44,
+      "JUPYTER": 40
+    },
+    "loggerName": "IncidentCheck",
+    "logger": {
+      "stream": {
+        "formatter": "simple",
+        "level": 10,
+        "stream": "ext://sys.stdout"
+      }
+    }
+  },
+  "systemConfig": {
+    "JUWELS": {
+      "interactivePartitions": [
+        "LoginNode",
+        "LoginNodeBooster",
+        "LoginNodeVis"
+      ],
+      "weight": 1,
+      "backendService": "outpostUnicore"
+    },
+    "JURECA": {
+      "interactivePartitions": [
+        "LoginNode"
+      ],
+      "weight": 2,
+      "backendService": "outpostUnicore"
+    },
+    "JEDI": {
+      "interactivePartitions": [
+        "LoginNode"
+      ],
+      "weight": 3,
+      "backendService": "outpostUnicore"
+    },
+    "JUSUF": {
+      "interactivePartitions": [
+        "LoginNode"
+      ],
+      "weight": 4,
+      "backendService": "outpostUnicore"
+    },
+    "DEEP": {
+      "interactivePartitions": [
+        "LoginNode"
+      ],
+      "weight": 5,
+      "backendService": "outpostUnicore"
+    },
+    "JSC-Cloud": {
+      "weight": 6,
+      "maxPerUser": {
+        "default": 1
+      },
+      "backendService": "outpostKubeJSCCloud"
+    }
+  },
+  "mapSystems": {},
+  "mapPartitions": {},
+  "defaultPartitions": {},
+  "serviceConfig": {},
+  "userModules": {},
+  "resourcesConfig": {},
+  "backendServices": {},
+  "incidents": {},
+  "reservations": {},
+  "decrypted_user_options": {}
+}
