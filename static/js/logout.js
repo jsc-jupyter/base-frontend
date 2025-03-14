@@ -7,8 +7,9 @@ require(["jquery", "utils"], function (
 ) {
   "use strict";
 
-  var base_url = window.jhdata.base_url;
-  var user_active = window.jhdata.user_active;
+  // ToDo!
+  var base_url = "";
+  var user_active = "";
 
   function logout() {
     if (user_active) {

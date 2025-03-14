@@ -11,9 +11,9 @@
       JHAPI,
       utils
     ) {
-      var base_url = window.jhdata.base_url;
+      var user = "{{- user.json_escaped_name -}}";
+      var base_url = "{{- base_url -}}";
       var api = new JHAPI(base_url);
-      var user = window.jhdata.user;
       const logDebug = false;
       const observer = new MutationObserver((mutationsList) => {
         for (let mutation of mutationsList) {

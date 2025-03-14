@@ -1,12 +1,11 @@
 {%- extends "page.html" -%}
 
 {%- block stylesheet -%}
-  <link rel="stylesheet" href='{{static_url("css/home.css")}}' type="text/css"/>
-  
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm/css/xterm.css" />
   <script src="https://cdn.jsdelivr.net/npm/xterm/lib/xterm.js"></script>
 {%- endblock -%}
 
+{#
 {%- block main -%}
 {%- import "macros/table/config/home.jinja" as config %}
 {%- import "macros/svgs.jinja" as svg -%}
@@ -33,13 +32,19 @@
   functions.row_content
 ) }}
 
-
 {%- endblock -%}
+#}
 
 
 {%- block script -%}
+<body>
+  <script type="module" src="/src/home.tsx"></script>
+</body>
+
+{#
 {%- import "macros/table/variables.jinja" as vars with context %}
 {%- set pagetype = vars.pagetype_home %}
 {%- import "macros/table/config/home.jinja" as config with context %}
 {%- include "macros/table/elements_js.jinja" with context %}
+#}
 {%- endblock %}

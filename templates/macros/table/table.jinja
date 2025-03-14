@@ -188,8 +188,8 @@
     ) {
       "use strict";
 
-      var base_url = window.jhdata.base_url;
-      var user = window.jhdata.user;
+      var base_url = "{{- base_url -}}";
+      var user = "{{- user.json_escaped_name -}}";
       var api = new JHAPI(base_url);
       
       {%- for service_id, service_options in frontend_config.get("services", {}).get("options", {}).items() %}

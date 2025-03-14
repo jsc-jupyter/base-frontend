@@ -1,7 +1,7 @@
 nav .nav-link {
   font-size: 19px;
   border-bottom: 5px solid transparent;
-  color: black;
+  color: black !important;
 }
 
 nav .nav-link:hover,
