@@ -1,19 +1,19 @@
 // Copyright (c) Jupyter Development Team.
 // Distributed under the terms of the Modified BSD License.
 
-define(["jquery", "utils"], function ($, utils) {
-  "use strict";
+define(['jquery', 'utils'], function ($, utils) {
+  'use strict';
 
-  var JHAPI = function (base_url) {
+  const JHAPI = function (base_url) {
     this.base_url = base_url;
     this.xsrf_token = window.jhdata.xsrf_token;
   };
 
-  var default_options = {
-    type: "GET",
-    contentType: "application/json",
+  const default_options = {
+    type: 'GET',
+    contentType: 'application/json',
     cache: false,
-    dataType: "json",
+    dataType: 'json',
     processData: false,
     success: null,
     tryCount: 5,
@@ -29,15 +29,15 @@ define(["jquery", "utils"], function ($, utils) {
     },
   };
 
-  var update = function (d1, d2) {
+  const update = function (d1, d2) {
     $.map(d2, function (i, key) {
       d1[key] = d2[key];
     });
     return d1;
   };
 
-  var ajax_defaults = function (options) {
-    var d = {};
+  const ajax_defaults = function (options) {
+    const d = {};
     update(d, default_options);
     update(d, options);
     return d;
@@ -46,92 +46,70 @@ define(["jquery", "utils"], function ($, utils) {
   JHAPI.prototype.api_request = function (path, options) {
     options = options || {};
     options = ajax_defaults(options || {});
-    var url = utils.url_path_join(
-      this.base_url,
-      "api",
-      utils.encode_uri_components(path)
-    );
+    let url = utils.url_path_join(this.base_url, 'api', utils.encode_uri_components(path));
     if (this.xsrf_token) {
       // add xsrf token to url parameter
-      var sep = url.indexOf("?") === -1 ? "?" : "&";
-      url = url + sep + "_xsrf=" + this.xsrf_token;
+      const sep = url.indexOf('?') === -1 ? '?' : '&';
+      url = url + sep + '_xsrf=' + this.xsrf_token;
     }
     $.ajax(url, options);
   };
 
   JHAPI.prototype.start_server = function (user, options) {
     options = options || {};
-    options = update(options, { type: "POST", dataType: null });
-    this.api_request(utils.url_path_join("users", user, "server"), options);
+    options = update(options, { type: 'POST', dataType: null });
+    this.api_request(utils.url_path_join('users', user, 'server'), options);
   };
 
   JHAPI.prototype.start_named_server = function (user, server_name, options) {
     options = options || {};
-    options = update(options, { type: "POST", dataType: null });
-    this.api_request(
-      utils.url_path_join("users", user, "encryptedservers", server_name),
-      options
-    );
+    options = update(options, { type: 'POST', dataType: null });
+    this.api_request(utils.url_path_join('users', user, 'encryptedservers', server_name), options);
   };
 
   JHAPI.prototype.update_named_server = function (user, server_name, options) {
     options = options || {};
-    options = update(options, { type: "POST", dataType: null });
-    this.api_request(
-      utils.url_path_join("users", user, "servers", server_name, "update"),
-      options
-    );
+    options = update(options, { type: 'POST', dataType: null });
+    this.api_request(utils.url_path_join('users', user, 'servers', server_name, 'update'), options);
   };
 
   JHAPI.prototype.share_server = function (options) {
     options = options || {};
-    options = update(options, { type: "POST", dataType: null });
-    this.api_request(
-      utils.url_path_join("share", "user_options"),
-      options
-    );
+    options = update(options, { type: 'POST', dataType: null });
+    this.api_request(utils.url_path_join('share', 'user_options'), options);
   };
 
   JHAPI.prototype.stop_server = function (user, options) {
     options = options || {};
-    options = update(options, { type: "DELETE", dataType: null });
-    this.api_request(utils.url_path_join("users", user, "server"), options);
+    options = update(options, { type: 'DELETE', dataType: null });
+    this.api_request(utils.url_path_join('users', user, 'server'), options);
   };
 
   JHAPI.prototype.cancel_named_server = function (user, server_name, options) {
     options = options || {};
-    options = update(options, { type: "POST" });
+    options = update(options, { type: 'POST' });
     options.data = JSON.stringify({
       failed: true,
-      progress: 100
+      progress: 100,
     });
-    this.api_request(
-      utils.url_path_join("users/progress/events", user, server_name),
-      options
-    );
+    this.api_request(utils.url_path_join('users/progress/events', user, server_name), options);
   };
 
   JHAPI.prototype.cancel_server = function (user, options) {
     options = options || {};
-    options = update(options, { type: "POST" });
+    options = update(options, { type: 'POST' });
     options.data = JSON.stringify({
       failed: true,
       progress: 100,
-      html_message: "<details><summary>Start cancelled.</summary></details>"
+      html_message: '<details><summary>Start cancelled.</summary></details>',
     });
-    this.api_request(
-      utils.url_path_join("users/progress/events", user),
-      options
-    );
+    this.api_request(utils.url_path_join('users/progress/events', user), options);
   };
 
   JHAPI.prototype.stop_named_server = function (user, server_name, options) {
     options = options || {};
-    options = update(options, { type: "DELETE", dataType: null });
-    this.api_request(
-      utils.url_path_join("users", user, "servers", server_name),
-      options
-    );
+    options = update(options, { type: 'DELETE', dataType: null });
+    this.api_request(utils.url_path_join('users', user, 'servers', server_name), options);
   };
 
   JHAPI.prototype.delete_named_server = function (user, server_name, options) {
@@ -142,88 +120,79 @@ define(["jquery", "utils"], function ($, utils) {
 
   JHAPI.prototype.create_template = function (user, server_name, options) {
     options = options || {};
-    options = update(options, { type: "POST", dataType: null });
-    this.api_request(
-      utils.url_path_join("templates", user, server_name),
-      options
-    );
+    options = update(options, { type: 'POST', dataType: null });
+    this.api_request(utils.url_path_join('templates', user, server_name), options);
   };
 
   JHAPI.prototype.list_users = function (options) {
-    this.api_request("users", options);
+    this.api_request('users', options);
   };
 
   JHAPI.prototype.get_user = function (user, options) {
-    this.api_request(utils.url_path_join("users", user), options);
+    this.api_request(utils.url_path_join('users', user), options);
   };
 
   JHAPI.prototype.add_users = function (usernames, userinfo, options) {
     options = options || {};
-    var data = update(userinfo, { usernames: usernames });
+    const data = update(userinfo, { usernames: usernames });
     options = update(options, {
-      type: "POST",
+      type: 'POST',
       dataType: null,
       data: JSON.stringify(data),
     });
 
-    this.api_request("users", options);
+    this.api_request('users', options);
   };
 
   JHAPI.prototype.edit_user = function (user, userinfo, options) {
     options = options || {};
     options = update(options, {
-      type: "PATCH",
+      type: 'PATCH',
       dataType: null,
       data: JSON.stringify(userinfo),
     });
 
-    this.api_request(utils.url_path_join("users", user), options);
+    this.api_request(utils.url_path_join('users', user), options);
   };
 
   JHAPI.prototype.admin_access = function (user, options) {
     options = options || {};
     options = update(options, {
-      type: "POST",
+      type: 'POST',
       dataType: null,
     });
 
-    this.api_request(
-      utils.url_path_join("users", user, "admin-access"),
-      options
-    );
+    this.api_request(utils.url_path_join('users', user, 'admin-access'), options);
   };
 
   JHAPI.prototype.delete_user = function (user, options) {
     options = options || {};
-    options = update(options, { type: "DELETE", dataType: null });
-    this.api_request(utils.url_path_join("users", user), options);
+    options = update(options, { type: 'DELETE', dataType: null });
+    this.api_request(utils.url_path_join('users', user), options);
   };
 
   JHAPI.prototype.request_token = function (user, props, options) {
     options = options || {};
-    options = update(options, { type: "POST" });
+    options = update(options, { type: 'POST' });
     if (props) {
       options.data = JSON.stringify(props);
     }
-    this.api_request(utils.url_path_join("users", user, "tokens"), options);
+    this.api_request(utils.url_path_join('users', user, 'tokens'), options);
   };
 
   JHAPI.prototype.revoke_token = function (user, token_id, options) {
     options = options || {};
-    options = update(options, { type: "DELETE" });
-    this.api_request(
-      utils.url_path_join("users", user, "tokens", token_id),
-      options
-    );
+    options = update(options, { type: 'DELETE' });
+    this.api_request(utils.url_path_join('users', user, 'tokens', token_id), options);
   };
 
   JHAPI.prototype.shutdown_hub = function (data, options) {
     options = options || {};
-    options = update(options, { type: "POST" });
+    options = update(options, { type: 'POST' });
     if (data) {
       options.data = JSON.stringify(data);
     }
-    this.api_request("shutdown", options);
+    this.api_request('shutdown', options);
   };
 
   return JHAPI;

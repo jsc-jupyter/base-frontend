@@ -1,12 +1,12 @@
-import { createRoot } from 'react-dom/client'
-import { Page } from "./Page.tsx";
+import { createRoot } from 'react-dom/client';
+import { Page } from './Page.tsx';
 
 export function Home() {
-    return <></>
+  return <></>;
 }
 
 createRoot(document.getElementById('root')!).render(
-    <Page>
-        <Home />
-    </Page>
-)
+  <Page>
+    <Home />
+  </Page>,
+);

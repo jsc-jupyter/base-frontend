@@ -1,14 +1,12 @@
-define(["jquery"], function (
-  $
-) {
-  "use strict";
+define(['jquery'], function ($) {
+  'use strict';
 
   const functions = {
-    get_hpc_system
+    get_hpc_system,
   };
 
   function get_hpc_system(software_key, tab_key, input_key, values) {
-    const systems = ["JUWELS", "JURECA", "JEDI", "JUSUF", "DEEP", "JSC-Cloud"];
+    const systems = ['JUWELS', 'JURECA', 'JEDI', 'JUSUF', 'DEEP', 'JSC-Cloud'];
     const entitlements = getEntitlements();
     const mapSystems = getMapSystems();
     console.log(mapSystems);
@@ -19,7 +17,7 @@ define(["jquery"], function (
       if (match) {
         const lowersystempartition = match.groups.systempartition.toLowerCase();
         const system = mapSystems?.[lowersystempartition];
-        if ( system && !systemPartitions.includes(system) ) {
+        if (system && !systemPartitions.includes(system)) {
           systemPartitions.push(system);
         }
       }
@@ -28,4 +26,4 @@ define(["jquery"], function (
     return systems;
   }
   return functions;
-})
+});

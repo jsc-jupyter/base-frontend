@@ -3,77 +3,83 @@
  */
 import urlJoin from 'url-join';
 
-
 type IncidentCheck = {
-    interval: number;
-    url: string;
-    services: Record<string, number>;
-    healthThreshold: {
-        interactive: number;
-        compute: number;
-    }
-}
+  interval: number;
+  url: string;
+  services: Record<string, number>;
+  healthThreshold: {
+    interactive: number;
+    compute: number;
+  };
+};
 
 type SystemConfiguration = {
-    interactivePartitions: [number];
-    weight: number;
-    backendService: string;
-    maxPerUser?: {
-        default: number;
-    }
-}
+  interactivePartitions: [number];
+  weight: number;
+  backendService: string;
+  maxPerUser?: {
+    default: number;
+  };
+};
 
 type FrontendCollection = {
-    hostname: string;
-    incidentCheck: IncidentCheck;
-    systemConfig: Record<string, SystemConfiguration>;
-    mapSystems: Record<string, string>;
-    mapPartitions: Record<string, string>;
-    defaultPartitions: Record<string, [string]>;
-    serviceConfig: Record<string, object>;
-}
+  hostname: string;
+  incidentCheck: IncidentCheck;
+  systemConfig: Record<string, SystemConfiguration>;
+  mapSystems: Record<string, string>;
+  mapPartitions: Record<string, string>;
+  defaultPartitions: Record<string, [string]>;
+  serviceConfig: Record<string, object>;
+};
 
-export const frontendCollection: FrontendCollection = JSON.parse(document.getElementById("data-frontendCollection")?.textContent ?? "{}")
+export const frontendCollection: FrontendCollection = JSON.parse(
+  document.getElementById('data-frontendCollection')?.textContent ?? '{}',
+);
 
 export function getJupyterName() {
-    switch (frontendCollection.hostname) {
-        case "portal.gauss-centre.eu": return "GaussCentre Portal";
-        case "portal-staging.gauss-centre.eu": return "GaussCentre StagingPortal";
-        default: return "Jupyter-JSC";
-    }
+  switch (frontendCollection.hostname) {
+    case 'portal.gauss-centre.eu':
+      return 'GaussCentre Portal';
+    case 'portal-staging.gauss-centre.eu':
+      return 'GaussCentre StagingPortal';
+    default:
+      return 'Jupyter-JSC';
+  }
 }
 
 type JupyterHubData = {
-    baseUrl: string;
-    prefix: string;
-    user?: string;
-    userActive: boolean;
-    adminAccess: boolean;
-    optionsForm: boolean;
-    cancelUrl?: string;
-    xsrfToken: string;
-}
+  baseUrl: string;
+  prefix: string;
+  user?: string;
+  userActive: boolean;
+  adminAccess: boolean;
+  optionsForm: boolean;
+  cancelUrl?: string;
+  xsrfToken: string;
+};
 
-export const jupyterHubData: JupyterHubData = JSON.parse(document.getElementById("data-jupyterHubData")?.textContent ?? "{}")
+export const jupyterHubData: JupyterHubData = JSON.parse(
+  document.getElementById('data-jupyterHubData')?.textContent ?? '{}',
+);
 
-const staticUrlBase: string = document.getElementById("data-staticUrlBase")?.textContent?.trim() ?? "/";
+const staticUrlBase: string = document.getElementById('data-staticUrlBase')?.textContent?.trim() ?? '/';
 
 export function staticUrl(...paths: string[]) {
-    return urlJoin(staticUrlBase, ...paths);
+  return urlJoin(staticUrlBase, ...paths);
 }
 
 // ToDo: Convert to camelcase somehow?
 type OAuthUser = {
-    name?: string;
-}
+  name?: string;
+};
 
 type AuthState = {
-    access_token: string;
-    refresh_token: string;
-    id_token: string;
-    scope: string[];
-    oauth_user?: OAuthUser;
-    groups: string[];
-}
+  access_token: string;
+  refresh_token: string;
+  id_token: string;
+  scope: string[];
+  oauth_user?: OAuthUser;
+  groups: string[];
+};
 
-export const authState: AuthState = JSON.parse(document.getElementById("data-authState")?.textContent ?? "{}")
+export const authState: AuthState = JSON.parse(document.getElementById('data-authState')?.textContent ?? '{}');

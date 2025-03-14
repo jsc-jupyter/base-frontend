@@ -1,0 +1,24 @@
+# Ignore Artifacts
+dist/
+node_modules/
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Python dev server stuff
+dev/
+venv
+
+# Ignore 3rd-Party code
+static/components/
+
+# ToDo: Make jinja2 template formatting correct
+templates/

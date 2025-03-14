@@ -4,10 +4,14 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
     "build": "tsc -b && vite build",
-    "lint": "eslint .",
-    "preview": "vite preview"
+    "eslint": "npm run eslint:check -- --fix",
+    "eslint:check": "eslint . --cache --ext .ts,.tsx",
+    "lint": "npm run eslint && npm run prettier",
+    "lint:check": "npm run eslint:check && npm run prettier:check",
+    "prettier": "npm run prettier:base -- --write --list-different",
+    "prettier:base": "prettier \"{**/*,*}.{ts,tsx,js,jsx,css,html,json}\"",
+    "prettier:check": "npm run prettier:base -- --check"
   },
   "dependencies": {
     "bootstrap": "^5.3.3",
@@ -23,12 +27,19 @@
     "@types/react-dom": "^19.0.4",
     "@vitejs/plugin-react": "^4.3.4",
     "eslint": "^9.21.0",
+    "eslint-config-prettier": "^10.1.1",
     "eslint-plugin-react-hooks": "^5.1.0",
     "eslint-plugin-react-refresh": "^0.4.19",
     "globals": "^15.15.0",
+    "prettier": "3.5.3",
     "typescript": "~5.7.2",
     "typescript-eslint": "^8.24.1",
     "vite": "^6.2.0",
     "vite-plugin-static-copy": "^2.3.0"
+  },
+  "prettier": {
+    "printWidth": 120,
+    "singleQuote": true,
+    "arrowParens": "avoid"
   }
 }

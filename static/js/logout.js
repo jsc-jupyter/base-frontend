@@ -1,73 +1,61 @@
 // Copyright (c) Jupyter Development Team.
 // Distributed under the terms of the Modified BSD License.
 
-require(["jquery", "utils"], function (
-  $,
-  utils
-) {
-  "use strict";
+require(['jquery', 'utils'], function ($, utils) {
+  'use strict';
 
   // ToDo!
-  var base_url = "";
-  var user_active = "";
+  const base_url = '';
+  const user_active = '';
 
   function logout() {
     if (user_active) {
       var content =
-        "Jupyter-JSC Logout." +
+        'Jupyter-JSC Logout.' +
         '<div class="checkbox"><label><input type="checkbox" id="stopAll" checked="checked">Stop all running JupyterLabs.</label></div>' +
         '<div class="checkbox"><label><input type="checkbox" id="alldevices" checked="checked">Logout from all devices.</label></div>';
     } else {
       var content =
-        "Jupyter-JSC Logout." +
+        'Jupyter-JSC Logout.' +
         '<div class="checkbox"><label><input type="checkbox" id="alldevices" checked="checked">Logout from all devices.</label></div>';
     }
 
     $.confirm({
-      title: "Logout",
+      title: 'Logout',
       content: content,
       buttons: {
         logout: {
-          text: "Logout",
-          btnClass: "btn-primary",
+          text: 'Logout',
+          btnClass: 'btn-primary',
           action: function () {
-            var $stopall = this.$content.find("#stopAll");
-            var $alldevices = this.$content.find("#alldevices");
-            if (user_active && $stopall.prop("checked")) {
-              if ($alldevices.prop("checked")) {
-                window.location.replace(
-                  utils.url_path_join(
-                    base_url,
-                    "logout?stopall=true&alldevices=true"
-                  )
-                );
+            const $stopall = this.$content.find('#stopAll');
+            const $alldevices = this.$content.find('#alldevices');
+            if (user_active && $stopall.prop('checked')) {
+              if ($alldevices.prop('checked')) {
+                window.location.replace(utils.url_path_join(base_url, 'logout?stopall=true&alldevices=true'));
               } else {
-                window.location.replace(
-                  utils.url_path_join(base_url, "logout?stopall=true")
-                );
+                window.location.replace(utils.url_path_join(base_url, 'logout?stopall=true'));
               }
             } else {
-              if ($alldevices.prop("checked")) {
-                window.location.replace(
-                  utils.url_path_join(base_url, "logout?alldevices=true")
-                );
+              if ($alldevices.prop('checked')) {
+                window.location.replace(utils.url_path_join(base_url, 'logout?alldevices=true'));
               } else {
-                window.location.replace(
-                  utils.url_path_join(base_url, "logout")
-                );
+                window.location.replace(utils.url_path_join(base_url, 'logout'));
               }
             }
-            this.$$cancel.attr('disabled','disabled');
-            this.$$logout.attr('disabled','disabled');
-            this.$$logout.prepend('<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>');
+            this.$$cancel.attr('disabled', 'disabled');
+            this.$$logout.attr('disabled', 'disabled');
+            this.$$logout.prepend(
+              '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>',
+            );
             return false; // Do not close popup
           },
         },
         cancel: {
-          text: "Cancel",
-          btnClass: "btn-danger",
+          text: 'Cancel',
+          btnClass: 'btn-danger',
           action: function () {
-            window.location.replace(location.href.replace(location.search, ""));
+            window.location.replace(location.href.replace(location.search, ''));
           },
         },
       },
@@ -75,20 +63,20 @@ require(["jquery", "utils"], function (
   }
 
   $(document).ready(function () {
-    if (utils.getUrlParameter("logout") == "true") {
+    if (utils.getUrlParameter('logout') == 'true') {
       logout();
     }
   });
 
-  $("#logout").click(function () {
-    var url = window.location.href;
-    if (utils.getUrlParameter("logout") != "true") {
+  $('#logout').click(function () {
+    let url = window.location.href;
+    if (utils.getUrlParameter('logout') != 'true') {
       if (window.location.search) {
-        url += "&";
+        url += '&';
       } else {
-        url += "?";
+        url += '?';
       }
-      url += "logout=true";
+      url += 'logout=true';
     }
     window.location.replace(url);
   });
