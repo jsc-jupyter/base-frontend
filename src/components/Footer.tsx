@@ -2,9 +2,9 @@ import { useMemo } from 'react';
 import Navbar from 'react-bootstrap/Navbar';
 import { Carousel, Container } from 'react-bootstrap';
 
-import { frontendCollection, getJupyterName, jupyterHubData, staticUrl } from '../gloabals.ts';
-import { link, servers, users } from '../assets/icons';
-import '../assets/css/Footer.css';
+import { frontendCollection, getJupyterName, jupyterHubData, staticUrl } from '@/gloabals.ts';
+import { LinkIcon, ServersIcon, UsersIcon } from '@/assets/icons';
+import '@/assets/css/Footer.css';
 
 const logoWidth = '220px';
 const footerMargin = 'm-2';
@@ -42,15 +42,15 @@ function numberOfUsers(system: string) {
   let systemSvg, urlSuffix, tooltipTitle;
 
   if (system === 'jupyter') {
-    systemSvg = users;
+    systemSvg = <UsersIcon />;
     urlSuffix = '';
     tooltipTitle = 'Number of active users in the last 24 hours';
   } else if (system === 'jsccloud') {
-    systemSvg = servers;
+    systemSvg = <ServersIcon />;
     urlSuffix = 'var-system=JSC-Cloud';
     tooltipTitle = 'Number of active servers';
   } else {
-    systemSvg = link;
+    systemSvg = <LinkIcon />;
     urlSuffix = `var-system=${system.toUpperCase()}`;
     tooltipTitle = 'Number of active servers';
   }
@@ -65,10 +65,10 @@ function numberOfUsers(system: string) {
       target="_blank"
     >
       <span id={`${system}-users`}>0</span>
-      <span>{systemSvg}</span>
+      {systemSvg}
       <div className="system-users-link-div d-inline-block">
         <span className="system-users-link" id={`${system}-users-link`}>
-          {link}
+          <LinkIcon />
         </span>
       </div>
     </a>

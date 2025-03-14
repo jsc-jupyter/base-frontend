@@ -51,7 +51,7 @@
   display: block;
   color: #023d6b;
   padding: 15px 20px 15px 30px;
-  background: url('/hub/static/images/sprite.png') #adbde3 no-repeat 12px -5139px;
+  background: url('/static/images/sprite.png') #adbde3 no-repeat 12px -5139px;
   /* background-color: #adbde3; */
 }
 
@@ -63,8 +63,6 @@
 /* Carousel */
 
 #login-background {
-  background: url('/hub/static/images/pages/login/background.jpg') center center no-repeat;
-  background-size: cover;
   min-height: 500px;
 }
 

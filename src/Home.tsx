@@ -1,12 +1,8 @@
 import { createRoot } from 'react-dom/client';
-import { Page } from './Page.tsx';
+import { Page } from '@/Page.tsx';
 
 export function Home() {
-  return <></>;
+  return <Page>ToDo!</Page>;
 }
 
-createRoot(document.getElementById('root')!).render(
-  <Page>
-    <Home />
-  </Page>,
-);
+createRoot(document.getElementById('root')!).render(<Home />);

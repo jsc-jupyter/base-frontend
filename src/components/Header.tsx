@@ -1,7 +1,7 @@
 import { Container, Dropdown, Nav, Navbar } from 'react-bootstrap';
 
-import { authState, frontendCollection, jupyterHubData, staticUrl } from '../gloabals.ts';
-import '../assets/css/Header.css';
+import { authState, frontendCollection, jupyterHubData, staticUrl } from '@/gloabals.ts';
+import '@/assets/css/Header.css';
 
 function UserDropdown() {
   const displayName = authState.oauth_user?.name ?? 'ToDo!';
