@@ -2542,6 +2542,7 @@
           localStorage.setItem("service", serviceId);
           localStorage.setItem("row", newId);
           localStorage.setItem("showlogs", "true");
+          localStorage.setItem("start", "true");
           window.location.href = url.toString();
         }
         api.start_named_server(user, newId, options);
@@ -2553,6 +2554,7 @@
           localStorage.setItem("service", serviceId);
           localStorage.setItem("row", newId);
           localStorage.setItem("showlogs", "true");
+          localStorage.setItem("start", "true");
           window.location.href = url.toString();
         }
         api.update_named_server(user, newId, options);
