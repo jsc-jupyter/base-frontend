@@ -941,7 +941,6 @@
   {# Workshop Manager --> #}
     {# WorkshopManager.helper --> #}
     function isWorkshopInstructor() {
-      console.log(" {{ auth_state.get("groups", []) }} ");
       {%- if auth_state and "geant:dfn.de:fz-juelich.de:jsc:jupyter:workshop_instructors" in auth_state.get("groups", []) %}
       return true;
       {%- else %}
@@ -2289,13 +2288,14 @@
                     key,
                     value.displayName,
                     typeof value.default === 'object' && value.default !== null ? value.default.default : value.default,
-                    value.href
+                    value.href,
+                    value.weight ?? 10
                   ]);
                 }
               });
           }
         });
-        return values;
+        return values.sort((a, b) => b[4] - a[4]);
       }
 
       function homeTriggerModules(trigger, serviceId, rowId, tabId, elementId, elementOptions) {
