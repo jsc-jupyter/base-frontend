@@ -2197,12 +2197,13 @@
               }
             } else if ( response.status == 424 ) {
               failed = true;
-              console.log("Give up");
+              $(`button[id^='${serviceId}-${rowId}-'][id$='-btn']`).prop("disabled", false);
               return;
             }
           } catch (error) {
             console.error(`Attempt ${attempt}: Network error or invalid URL -`, error);
           }
+          $(`button[id^='${serviceId}-${rowId}-'][id$='-btn']`).prop("disabled", false);
 
           if (attempt < retries) {
             // Wait for the specified delay before retrying
