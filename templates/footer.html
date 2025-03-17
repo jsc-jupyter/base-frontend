@@ -163,12 +163,12 @@ require(["jquery"], function (
     let ampelHtml = "";
     if ( ["JUPYTER", "JUWELS", "JURECA", "JEDI", "JUSUF", "DEEP", "JSCCLOUD"].includes(system) ) {
       let imgSrc = `${staticUrl}/images/footer/systems/${systemLower}.svg?v=${imgVersion}`;
-      checkImageExists(imgSrc, systemLower, function(exists) {
-        if (!exists) {
-          let newImgSrc = `${staticUrl}/images/footer/templates/0.svg?v=${imgVersion}`;
-          $(`#ampel-${systemLower} .ampel-img`).attr("src", newImgSrc);          
-        }
-      });
+      // checkImageExists(imgSrc, systemLower, function(exists) {
+      //   if (!exists) {
+      //     let newImgSrc = `${staticUrl}/images/footer/templates/0.svg?v=${imgVersion}`;
+      //     $(`#ampel-${systemLower} .ampel-img`).attr("src", newImgSrc);          
+      //   }
+      // });
       
       ampelHtml = `
         <div id="ampel-${systemLower}" class="text-center"
