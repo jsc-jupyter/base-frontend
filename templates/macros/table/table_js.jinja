@@ -2636,21 +2636,25 @@
             var message = jsonData.message;
             if ( jsonData.phase == "waiting" ) {
               if ( r2dStatus == 0 ) {
+                updateHeaderButtons(serviceId, rowId, "building");
                 progressBarUpdate(serviceId, rowId, "building", 2);
                 r2dStatus = 1;
               }
             } else if ( jsonData.phase == "fetching" ) {
               if ( r2dStatus < 2 ) {
+                updateHeaderButtons(serviceId, rowId, "building");
                 progressBarUpdate(serviceId, rowId, "building", 3);
                 r2dStatus = 2;
               }
             } else if ( jsonData.phase == "building" ) {
               if ( r2dStatus < 3 ) {
+                updateHeaderButtons(serviceId, rowId, "building");
                 progressBarUpdate(serviceId, rowId, "building", 5);
                 r2dStatus = 3;
               }
             } else if ( jsonData.phase == "pushing" ) {
               if ( r2dStatus < 4 ) {
+                updateHeaderButtons(serviceId, rowId, "building");
                 progressBarUpdate(serviceId, rowId, "building", 8);
                 r2dStatus = 4;
               }
