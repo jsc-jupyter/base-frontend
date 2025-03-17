@@ -2184,7 +2184,7 @@
                   var newTab = window.open("about:blank");
                   newTab.location.href = url;
                 } else {
-                  window.open(url);
+                  window.location.href = url;
                 }
                 updateHeaderButtons(serviceId, rowId, "running");
                 progressBarUpdate(serviceId, rowId, "running", 100);
