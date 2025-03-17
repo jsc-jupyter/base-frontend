@@ -733,7 +733,6 @@
             $(`[id^='${serviceValue}-${rowValue}-'][id$='-start-btn-header']`).trigger("click");
           } else {
             $(`[id^='${serviceValue}-${rowValue}-'][id$='-logs-navbar-button']`).trigger("click");
-            updateHeaderButtons(serviceValue, rowValue, status);
             homeHeaderUpdate(serviceValue, rowValue);
             if ( serviceValue === "jupyterlab" && option === "repo2docker" ) {
               updateHeaderButtons(serviceValue, rowValue, "building");
