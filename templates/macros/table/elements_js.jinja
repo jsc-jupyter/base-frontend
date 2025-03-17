@@ -734,13 +734,13 @@
           } else {
             $(`[id^='${serviceValue}-${rowValue}-'][id$='-logs-navbar-button']`).trigger("click");
             updateHeaderButtons(serviceValue, rowValue, status);
-            homeHeaderUpdate(serviceId, rowId);
+            homeHeaderUpdate(serviceValue, rowValue);
             if ( service === "jupyterlab" && option === "repo2docker" ) {
-              updateHeaderButtons(serviceId, rowId, "building");
-              progressBarUpdate(serviceId, rowId, "building", 2);
+              updateHeaderButtons(serviceValue, rowValue, "building");
+              progressBarUpdate(serviceValue, rowValue, "building", 2);
             } else {
-              updateHeaderButtons(serviceId, rowId, "starting");
-              progressBarUpdate(serviceId, rowId, "starting", 10);
+              updateHeaderButtons(serviceValue, rowValue, "starting");
+              progressBarUpdate(serviceValue, rowValue, "starting", 10);
             }
           }
         }
