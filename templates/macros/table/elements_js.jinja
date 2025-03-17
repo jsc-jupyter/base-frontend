@@ -684,7 +684,7 @@
         {%- elif spawner.ready %}
         status = "running";
         {% endif %}
-        updateHeaderButtons(serviceId, name, status);        
+        updateHeaderButtons(serviceId, name, status);
 
         {%- if spawner and spawner.events %}
           fillLogContainer(serviceId, "{{ spawner.name }}", {{ spawner.events | tojson }});
@@ -718,7 +718,8 @@
       if ( rowValue && serviceValue ) { 
         $(`div[id$='-table-div']:not([id^='${serviceValue}-'])`).hide();
         $(`div[id$='-table-div'][id^='${serviceValue}-']`).show();
-
+        let summaryTr = $(`${serviceValue}-${rowValue}-summary-tr`);
+        let option = summaryTr.attr("data-option");
         $(`div[id$='-collapse']:not([id^='${serviceValue}-${rowValue}-collapse'])`).removeClass("show");
         $(`div[id^='${serviceValue}-${rowValue}-collapse']`).addClass("show");
         let x = document.getElementById(`${serviceValue}-${rowValue}-summary-tr`)
@@ -732,8 +733,17 @@
             $(`[id^='${serviceValue}-${rowValue}-'][id$='-start-btn-header']`).trigger("click");
           } else {
             $(`[id^='${serviceValue}-${rowValue}-'][id$='-logs-navbar-button']`).trigger("click");
+            updateHeaderButtons(serviceValue, rowValue, status);
+            homeHeaderUpdate(serviceId, rowId);
+            if ( service === "jupyterlab" && option === "repo2docker" ) {
+              updateHeaderButtons(serviceId, rowId, "building");
+              progressBarUpdate(serviceId, rowId, "building", 2);
+            } else {
+              updateHeaderButtons(serviceId, rowId, "starting");
+              progressBarUpdate(serviceId, rowId, "starting", 10);
+            }
           }
-        }          
+        }
         if ( showlogs ) {
           $(`[id^='${serviceValue}-${rowValue}-'][id$='-logs-navbar-button']`).trigger("click");
         }
