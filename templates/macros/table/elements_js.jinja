@@ -735,7 +735,7 @@
             $(`[id^='${serviceValue}-${rowValue}-'][id$='-logs-navbar-button']`).trigger("click");
             updateHeaderButtons(serviceValue, rowValue, status);
             homeHeaderUpdate(serviceValue, rowValue);
-            if ( service === "jupyterlab" && option === "repo2docker" ) {
+            if ( serviceValue === "jupyterlab" && option === "repo2docker" ) {
               updateHeaderButtons(serviceValue, rowValue, "building");
               progressBarUpdate(serviceValue, rowValue, "building", 2);
             } else {
