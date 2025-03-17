@@ -2183,13 +2183,13 @@
                 if ( blank ) {
                   var newTab = window.open("about:blank");
                   newTab.location.href = url;
+                  showToast("The server should open automatically. If it doesn’t, your browser may be blocking pop-ups for this site.", "warning");
                 } else {
                   window.location.href = url;
                 }
                 updateHeaderButtons(serviceId, rowId, "running");
                 progressBarUpdate(serviceId, rowId, "running", 100);
                 $(`button[id^='${serviceId}-${rowId}-'][id$='-btn']`).prop("disabled", false);
-                showToast("The server should open automatically. If it doesn’t, your browser may be blocking pop-ups for this site.", "warning");
                 return;
               }
             } 
