@@ -5,12 +5,6 @@
 {%- endblock -%}
 
 {%- block main -%}
-{%- if auth_state and "geant:dfn.de:fz-juelich.de:jsc:jupyter:workshop_instructors" in auth_state.get("groups", []) %}
-{% set is_instructor = True %}
-{%- else %}
-{% set is_instructor = False %}
-{%- endif %}
-
 {%- import "macros/table/config/workshop_manager.jinja" as config %}
 {%- import "macros/svgs.jinja" as svg %}
 {%- import "macros/table/variables.jinja" as vars with context %}
