@@ -941,7 +941,6 @@
   {# Workshop Manager --> #}
     {# WorkshopManager.helper --> #}
     function isWorkshopInstructor() {      
-      console.log("{{ auth_state.get("groups", []) | safe }}");
       {%- if auth_state and "geant:dfn.de:fz-juelich.de:jsc:jupyter:workshop_instructors" in auth_state.get("groups", []) %}
       return true;
       {%- else %}
