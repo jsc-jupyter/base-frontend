@@ -223,7 +223,7 @@
           if ( ready ) {
             updateHeaderButtons(serviceId, rowId, "waiting");
             const url = data[rowId]?.url ?? "{{ url }}";
-            checkAndOpenUrl(serviceId, rowId, url, blank=false);
+            checkAndOpenUrl(serviceId, rowId, url, false);
           } else if ( failed ) {
             updateHeaderButtons(serviceId, rowId, "stopped");
             $(`button[id^='${serviceId}-${rowId}-'][id$='-btn']`).prop("disabled", false);
