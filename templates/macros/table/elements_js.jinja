@@ -684,8 +684,6 @@
         {%- elif spawner.ready %}
         status = "running";
         {% endif %}
-        console.log(name);
-        console.log(status);
         updateHeaderButtons(serviceId, name, status);
 
         {%- if spawner and spawner.events %}

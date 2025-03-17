@@ -2172,6 +2172,7 @@
     {# WorkshopManager.button.open --> #}
       async function checkAndOpenUrl(serviceId, rowId, url, blank=true, retries = 50, delay = 500) {
         // wait for 3 successful responses
+        let failed = false;
         let successCounter = 0;
         for (let attempt = 1; attempt <= retries; attempt++) {
           try {
@@ -2194,7 +2195,11 @@
                 $(`button[id^='${serviceId}-${rowId}-'][id$='-btn']`).prop("disabled", false);
                 return;
               }
-            } 
+            } else if ( response.status == 424 ) {
+              failed = true;
+              console.log("Give up");
+              return;
+            }
           } catch (error) {
             console.error(`Attempt ${attempt}: Network error or invalid URL -`, error);
           }
@@ -2202,7 +2207,7 @@
           if (attempt < retries) {
             // Wait for the specified delay before retrying
             await new Promise(resolve => setTimeout(resolve, delay));
-          } else {
+          } else if ( !failed ) {
             updateHeaderButtons(serviceId, rowId, "running");
             progressBarUpdate(serviceId, rowId, "running", 100);
             showToast(`Cannot connect to started Server. Try to open manually. If this does not work try restarting the Server.`);
