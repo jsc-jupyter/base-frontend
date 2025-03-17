@@ -21,6 +21,7 @@
   const notAllowedKeys = ["secret_keys", "defaultvalues", "attachvalues"];
   const mappingDict = {};
   const globalUserOptions = {};
+  const globalFillingOrder = {};
   const initIncidents = {{ frontendCollection.get("incidents", {}) | tojson }};
   const incidentsmapping = {
     "JSCCLOUD": "JSC-Cloud"
@@ -50,6 +51,7 @@
       globalUserOptions["{{ service_id }}"] = {};
       globalUserOptions["{{ service_id }}"]["{{ spawner.name }}"] = {{ spawner.user_options | tojson }};
     {%- endif %}
+    globalFillingOrder["{{ service_id }}"] = {{ service_options.get("fillingOrder", []) | tojson }};
   {%- endfor %}
 
   {% include 'macros/table/helpers/systems_js.jinja' with context %}
