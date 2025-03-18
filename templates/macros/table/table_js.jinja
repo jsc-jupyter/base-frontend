@@ -2170,13 +2170,14 @@
     {# <-- WorkshopManager.button.cancel #}
 
     {# WorkshopManager.button.open --> #}
-      async function checkAndOpenUrl(serviceId, rowId, url, blank=true, retries = 50, delay = 500) {
+      async function checkAndOpenUrl(serviceId, rowId, url, blank=true, api=false, retries = 50, delay = 500) {
         // wait for 3 successful responses
         let failed = false;
         let successCounter = 0;
+        let _url = api ? `${url}/api` : url;
         for (let attempt = 1; attempt <= retries; attempt++) {
           try {
-            const response = await fetch(`${url}/api`, {
+            const response = await fetch(_url, {
               method: 'GET',
               mode: 'no-cors',
             });
@@ -2185,10 +2186,10 @@
               if ( successCounter > 8 ) {
                 if ( blank ) {
                   var newTab = window.open("about:blank");
-                  newTab.location.href = url;
+                  newTab.location.href = _url;
                   showToast("The server should open automatically. If it doesn’t, your browser may be blocking pop-ups for this site.", "warning");
                 } else {
-                  window.location.href = url;
+                  window.location.href = _url;
                 }
                 updateHeaderButtons(serviceId, rowId, "running");
                 progressBarUpdate(serviceId, rowId, "running", 100);
