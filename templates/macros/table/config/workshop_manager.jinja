@@ -94,7 +94,10 @@
                     },
                     "reset": {
                       "firstRow": false,
-                      "trigger": "wmTriggerButtonReset"
+                      "trigger": "wmTriggerButtonReset",
+                      "options": {
+                        "fillingOrder": ["option", "system", "account", "project", "partition", "flavor", "privaterepo"]
+                      }
                     },
                     "delete": {
                       "firstRow": false,
@@ -150,6 +153,17 @@
                   "options": {
                     "group": "repo2docker",
                     "enabled": false
+                  },
+                  "values": {
+                    "gh": "GitHub",
+                    "gist": "GitHub Gist",
+                    "git": "Git repository",
+                    "gl": "GitLab",
+                    "zenodo": "Zenodo DOI",
+                    "figshare": "FigShare DOI",
+                    "hydroshare": "Hydroshare resource",
+                    "dataverse": "Dataverse DOI",
+                    "ckan": "CKAN dataset"
                   }
                 },
                 "label": {
@@ -158,9 +172,6 @@
                   "options": {
                     "default": false
                   }
-                },
-                "trigger": {
-                  "init": "wmTriggerRepoType"
                 },
                 "dependency": {
                   "option": [
@@ -174,8 +185,8 @@
                   "options": {
                     "group": "repo2docker",
                     "enabled": false,
-                    "placeholder": "GitHub repository name or URL",
-                    "patternDisabled": "^([a-zA-Z0-9._-]+\\/[a-zA-Z0-9._-]+(\\.git)?|https?:\\/\\/[a-zA-Z0-9._-]+(\\.[a-z]{2,})?(:\\d+)?\\/[a-zA-Z0-9._-]+\\/[a-zA-Z0-9._-]+(\\.git)?)(\\/)?$"
+                    "placeholder": "example: yuvipanda/requirements or https://github.com/yuvipanda/requirements",
+                    "pattern": "^(https?:\\/\\/github\\.com\\/)?([^\\/]+\\/[^\\/]+)\\/?$"
                   }
                 },
                 "label": {
@@ -184,6 +195,9 @@
                   "options": {
                     "default": false
                   }
+                },
+                "trigger": {
+                  "repotype": "wmTriggerUpdateRepoUrlForType"
                 },
                 "dependency": {
                   "option": [
@@ -197,8 +211,7 @@
                   "options": {
                     "group": "repo2docker",
                     "enabled": false,
-                    "placeholder": "HEAD",
-                    "patternDisabled": "^([a-zA-Z0-9._-]+|([a-f0-9]{7,40})|([a-zA-Z0-9._-]+\\/[a-zA-Z0-9._-]+)|([a-zA-Z0-9._-]+@~\\d+)|@~\\d+)$"
+                    "placeholder": "HEAD"
                   }
                 },
                 "label": {
@@ -211,6 +224,12 @@
                 "dependency": {
                   "option": [
                     "repo2docker"
+                  ],
+                  "repotype": [
+                    "gh",
+                    "gist",
+                    "git",
+                    "gl"
                   ]
                 }
               },
@@ -244,6 +263,10 @@
                     "group": "repo2docker",
                     "enabled": false,
                     "show": false
+                  },
+                  "values": {
+                    "file": "File",
+                    "url": "URL"
                   }
                 },
                 "label": {
@@ -254,7 +277,6 @@
                   }
                 },
                 "trigger": {
-                  "init": "wmTriggerRepoPathTypeInit",
                   "repopath": "wmTriggerRepoPathType"
                 },
                 "dependency": {
@@ -555,8 +577,6 @@
                   "type": "select",
                   "options": {
                     "group": "resources",
-                    "show": false,
-                    "collectstatic": true,
                     "enabled": false,
                     "multiple": true,
                     "size": 4
@@ -567,7 +587,6 @@
                   "options": {
                     "default": false
                   },
-                  "triggerOnChange": "toggleCollectCB",
                   "value": "Reservation"
                 },
                 "trigger": {
@@ -748,7 +767,7 @@
                   "options": {
                     "enabled": false,
                     "required": true,
-                    "show": true,
+                    "show": false,
                     "pattern": "^[A-Za-z_][A-Za-z0-9_]*=[^\\s]+$",
                     "placeholder": "KEY=VALUE"
                   }

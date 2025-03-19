@@ -6,7 +6,7 @@ require(["jquery", "jhapi"], function (
   JHAPI,
 ) {
   "use strict";
-
+  // x
   var base_url = window.jhdata.base_url;
   var user = window.jhdata.user;
   var api = new JHAPI(base_url);

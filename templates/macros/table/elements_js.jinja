@@ -2,6 +2,7 @@
 
 {%- include "macros/table/table_js.jinja" with context %}
 {%- import "macros/table/variables.jinja" as vars with context %}
+{%- include "macros/table/js_additions.jinja" with context %}
 
 <script>
   $(document).ready(function() {
@@ -14,6 +15,18 @@
       var api = new JHAPI(base_url);
       var user = window.jhdata.user;
       const logDebug = false;
+      const observer = new MutationObserver((mutationsList) => {
+        for (let mutation of mutationsList) {
+          if (mutation.type === "attributes") {
+            const attrName = mutation.attributeName;
+            const newValue = mutation.target.getAttribute(attrName);
+            const callbackFunction = mutation.target.dataset[attrName.replace(/^data-/, "") + "Callback"];
+            if (callbackFunction && typeof window[callbackFunction] === "function") {
+              window[callbackFunction]($(mutation.target), newValue);
+            }
+          }
+        }
+      });
 
       let optionElement;
 
@@ -28,6 +41,9 @@
                   {%- if trigger %}
                     {%- set button_options = element_options.get("input", {}).get("options", {}).get(button, {}) %}
                     $(`[id^='{{ service_id }}-'][id$='-{{ button }}-btn']`).on("click", function() {
+                      if (event.target !== this) {
+                        return; // Ignore events bubbling up from child elements
+                      }
                       logDebug && console.log("Button click {{ button }}");
                       const $this = $(this);
                       const serviceId = $this.attr("data-service");
@@ -38,7 +54,28 @@
                   {%- endif %}
                 {%- endfor %}
               {%- else %}
-                {%- set trigger_suffix = element_options.get("triggerSuffix", "input") %}
+                {%- set trigger_suffix = element_options.get("triggerSuffix", "input") %}                
+                {%- if element_options.get("onInputChange", "") %}
+                  $(`[id^='{{ service_id }}-'][id$='-{{ tab_id }}-{{ element_id }}-{{ trigger_suffix}}']`).on("input", function () {
+                    const $this = $(this);
+                    const serviceId = $this.attr("data-service");
+                    const rowId = $this.attr("data-row");
+                    {{ element_options["onInputChange"] }}("onChange", serviceId, rowId, "{{ tab_id }}", "{{ element_id }}", {{ element_options | tojson }});
+                  });
+                {%- endif %}
+                {%- for input_key, input_func in element_options.get("onInput", {}).items() %}
+                  $(`[id^='{{ service_id }}-'][id$='-{{ input_key }}-{{ trigger_suffix}}']`).on("input", function (event) {
+                    if (event.target !== this) {
+                      return; // Ignore events bubbling up from child elements
+                    }
+                    logDebug && console.log("update {{ element_id }}. Triggered by: ({{ input_key }})");
+                    const $this = $(this);
+                    const serviceId = $this.attr("data-service");
+                    const rowId = $this.attr("data-row")
+                    {{ input_func }}("{{ input_key }}", serviceId, rowId, "{{ tab_id }}", "{{ element_id }}", {{ element_options | tojson }});
+                    logDebug && console.log("update {{ element_id }}. Triggered by: ({{ input_key }}) done");
+                  });
+                {%- endfor %}
                 {%- for trigger_key, trigger_func in element_options.get("trigger", {}).items() %}
                   $(`[id^='{{ service_id }}-'][id$='-{{ element_id }}-{{ trigger_suffix}}']`).on("trigger_{{ trigger_key }}", function (event) {
                     if (event.target !== this) {
@@ -79,6 +116,17 @@
                     const rowId = $this.attr("data-row");
                     {{ element_options["triggerOnChange"] }}("onChange", serviceId, rowId, "{{ tab_id }}", "{{ element_id }}", {{ element_options | tojson }});
                   });
+                {%- endif %}
+                {%- if element_options.get("observeAttribute", "") %}
+                  (function() {
+                    let element = $(`[id^='{{ service_id }}-'][id$='-{{ tab_id }}-{{ element_id }}-{{ trigger_suffix}}']`).get(0);
+                    if (element) {
+                      {%- for attr, function_name in element_options.get("observeAttribute", {}).items() %}
+                        element.dataset["{{ attr }}Callback"] = "{{ function_name }}";
+                      {%- endfor %}
+                      observer.observe(element, { attributes: true });
+                    }
+                  })();
                 {%- endif %}
                 {%- set label_options = element_options.get("label", {}) %}
                 {%- if label_options.get("type", "text") in ["textcheckbox", "texticoncheckbox", "texticonclickcheckbox"] %}
@@ -220,6 +268,35 @@
       {%- endfor %}
 
 
+      function dependencyFilter(serviceId, rowId, elementId, objects) {
+        return objects.filter(function() {
+          // Elements that have "data-dependency-${elementId}" AND at least one other dependency
+          const otherDependencies = [...this.attributes].some(attr => 
+            attr.name.startsWith("data-dependency-") && !attr.name.startsWith(`data-dependency-${elementId}`)
+          );
+
+          if ( !otherDependencies ) {
+            return true;
+          } else {
+            // Map each element to a list of its dependencies (excluding elementId)
+            const dependenciesList = [...this.attributes]
+                .map(attr => attr.name)
+                .filter(name => name.startsWith("data-dependency-") && !name.startsWith(`data-dependency-${elementId}`))
+                .map(name => name.replace("data-dependency-", ""));
+
+            return dependenciesList.some(dependency => {
+                const inputValue = $(`[id^='${serviceId}-${rowId}-'][id$='-${dependency}-input']`).val();
+
+                const allowedValues = [...this.attributes]
+                    .filter(attr => attr.name.startsWith(`data-dependency-${dependency}-`))
+                    .map(attr => attr.name.replace(`data-dependency-${dependency}-`, ""));
+
+                return allowedValues.includes(inputValue);
+            });
+          }
+        });
+      }
+
       // show / hide dependent elements
       $(`select[id$='-input']`).change(function (event) {
         const $this = $(this);
@@ -244,27 +321,27 @@
           // Show + set to Active (add collect)
           prefixSelector = `div[id^='${serviceId}-${rowId}-'][id$='-input-div'][data-show='true']`;
           selector = mappedValues.map(value => `${prefixSelector}[data-dependency-${elementId}-${value}]`).join(',');
-          $(`${selector}`).show();
+          dependencyFilter(serviceId, rowId, elementId, $(`${selector}`)).show();
           
           prefixSelector = `[id^='${serviceId}-${rowId}-'][id$='-input']:not([data-collect-static])`;
           selector = mappedValues.map(value => `${prefixSelector}[data-dependency-${elementId}-${value}]`).join(',');
-          $(`${selector}`).attr("data-collect", true);
+          dependencyFilter(serviceId, rowId, elementId, $(`${selector}`)).attr("data-collect", true);
           
           // trigger all new activated label cb, to ensure normally hidden inputs are shown
           prefixSelector = `[id^='${serviceId}-${rowId}-'][id$='-input-cb']`;
           selector = mappedValues.map(value => `${prefixSelector}[data-dependency-${elementId}-${value}]`).join(',');
-          $(`${selector}`).trigger("change");
+          dependencyFilter(serviceId, rowId, elementId, $(`${selector}`)).trigger("change");
 
           // show navbar buttons
           prefixSelector = `button[id^='${serviceId}-${rowId}-'][id$='-navbar-button'][data-show="true"]`;
           selector = mappedValues.map(value => `${prefixSelector}[data-dependency-${elementId}-${value}]`).join(',');
-          $(`${selector}`).trigger("show");
-          $(`${selector}`).trigger("change");
+          dependencyFilter(serviceId, rowId, elementId, $(`${selector}`)).trigger("show");
+          dependencyFilter(serviceId, rowId, elementId, $(`${selector}`)).trigger("change");
 
           // show buttons
           prefixSelector = `button[id^='${serviceId}-${rowId}-'][id$='-btn']`;
           selector = mappedValues.map(value => `${prefixSelector}[data-dependency-${elementId}-${value}]`).join(',');
-          $(`${selector}`).show();
+          dependencyFilter(serviceId, rowId, elementId, $(`${selector}`)).show();
 
         {# Show / Hide dependency values #}
           // hide + ignore
@@ -285,7 +362,89 @@
         }
       });
 
+        $(`[id$='-sharecopy-btn-header']`).on("click", function() {
+          const $this = $(this);
+          const serviceId = $this.attr("data-service");
+          const rowId = $this.attr("data-row");
+          const originalIcon = $this.find(".copy-icon").html();
+          const shareId = globalUserOptions[serviceId][rowId].share_id;
+          let tooltipInstance = bootstrap.Tooltip.getInstance($this);
+          let url = utils.url_path_join(window.origin, "share", shareId).replace("//", "/");
+          console.log(url);
 
+          navigator.clipboard.writeText(url).then(() => {
+            $this.html(`{{ svg.check_svg | safe }}`);
+            setTimeout(function () {
+              if (tooltipInstance) {
+                tooltipInstance.hide();
+              }
+              $this.html(`{{ svg.copy_svg | safe }}`);
+            }, 1000);
+          }).catch(err => {
+            console.error("Failed to copy:", err);
+          });
+
+        });
+
+        $(`[id$='-workshopcopy-btn-header']`).on("click", function() {
+          const $this = $(this);
+          const serviceId = $this.attr("data-service");
+          const rowId = $this.attr("data-row");
+          const originalIcon = $this.find(".copy-icon").html();
+          const workshopId = globalUserOptions[serviceId][rowId].workshop_id;
+          let tooltipInstance = bootstrap.Tooltip.getInstance($this);
+          let url = utils.url_path_join(window.origin, "workshops", workshopId).replace("//", "/");
+
+          navigator.clipboard.writeText(url).then(() => {
+            $this.html(`{{ svg.check_svg | safe }}`);
+            setTimeout(function () {
+              if (tooltipInstance) {
+                tooltipInstance.hide();
+              }
+              $this.html(`{{ svg.copy_svg | safe }}`);
+            }, 1000);
+          }).catch(err => {
+            console.error("Failed to copy:", err);
+          });
+
+        });
+
+        $(`[id$='-text-copybutton']`).on("click", function() {
+          const $this = $(this);
+          const serviceId = $this.attr("data-service");
+          const rowId = $this.attr("data-row");
+          const copyKey = $this.attr("data-copy-key");
+          const valid = validateForm(serviceId, rowId);
+
+          let tooltipInstance = bootstrap.Tooltip.getInstance($this);
+
+          if ( !valid ) {
+            showToast("URL not copied. Please check input.");
+            $this.html(`{{ svg.failed_svg | safe }}`);
+            setTimeout(function () {
+              if (tooltipInstance) {
+                tooltipInstance.hide();
+              }
+            }, 1000);
+            setTimeout(function () {
+              $this.html(`{{ svg.copy_svg | safe }}`);
+            }, 3000);            
+            return;
+          }
+
+          const value = $(`[id^='${serviceId}-${rowId}-'][data-copy-key='${copyKey}']`).val();          
+          navigator.clipboard.writeText(value).then(() => {
+            $this.html(`{{ svg.check_svg | safe }}`);
+            setTimeout(function () {
+              if (tooltipInstance) {
+                tooltipInstance.hide();
+              }
+              $this.html(`{{ svg.copy_svg | safe }}`);
+            }, 1000);
+          }).catch(err => {
+            console.error("Failed to copy:", err);
+          });
+        });
         $(`[id$='-modal-copy-btn']`).on("click", function (){
           const $this = $(this);
           const serviceId = $this.attr("data-service");
@@ -456,10 +615,10 @@
         {%- endfor %}
         {%- if pagetype == vars.pagetype_workshopmanager %}
           {%- for row_id, values in db_workshops.items() %}
-            workshopManagerFillExistingRow("{{ service_id }}", "{{ row_id }}", {{ values | tojson }});
+            workshopManagerFillExistingRow("{{ service_id }}", "{{ row_id }}", {{ values | tojson }}, {{ service_options.get("fillingOrder", []) | tojson }});
           {%- endfor %}
         {%- elif pagetype == vars.pagetype_workshop %}
-          workshopFillExistingRow("{{ service_id }}", "{{ spawner.name }}", {{ workshop_options | tojson }});
+          workshopFillExistingRow("{{ service_id }}", "{{ spawner.name }}", {{ workshop_options | tojson }}, {{ service_options.get("fillingOrder", []) | tojson }});
           {%- if spawner.events %}
             {%- for event in spawner.events %}
               appendToLog("{{ service_id }}", "{{ spawner.name }}", {{ event | tojson }});
@@ -469,7 +628,7 @@
           {%- for s in spawners %}
             {%- set spawner = user.spawners.get(s.name, s) %}
             {%- if spawner.user_options and spawner.user_options.get("name", false) %}
-              homeFillExistingRow("{{ service_id }}", "{{ spawner.name }}", {{ decrypted_user_options.get(spawner.name, spawner.user_options) | tojson }}, {{ service_options.get("fillingOrder", []) | tojson }});
+              homeFillExistingRow("{{ service_id }}", "{{ spawner.name }}", {{ frontendCollection.get("decrypted_user_options").get(spawner.name, spawner.user_options) | tojson }}, {{ service_options.get("fillingOrder", []) | tojson }});
               {%- if spawner.events %}
                 {%- for event in spawner.events %}
                   appendToLog("{{ service_id }}", "{{ spawner.name }}", {{ event | tojson }});
@@ -516,9 +675,6 @@
           }
           appendToLog(serviceId, name, event);
         });
-        if ( updateProgressBar ) {
-          $(`#${serviceId}-${name}-logs-navbar-button`).trigger("click");
-        }
         {# Set Buttons in correct state #}
         let status = "stopped";
         {%- if spawner.cancel_pending %}
@@ -528,7 +684,7 @@
         {%- elif spawner.ready %}
         status = "running";
         {% endif %}
-        updateHeaderButtons(serviceId, name, status);        
+        updateHeaderButtons(serviceId, name, status);
 
         {%- if spawner and spawner.events %}
           fillLogContainer(serviceId, "{{ spawner.name }}", {{ spawner.events | tojson }});
@@ -539,32 +695,61 @@
 
       const queryString = window.location.search;
       const urlParams = new URLSearchParams(queryString);
+      let serviceValue = "";
+      let rowValue = "";
+      let start = false;
+      let showlogs = false;
       if (urlParams.has('row') && urlParams.has('service')) {
+        serviceValue = urlParams.get('service');
+        rowValue = urlParams.get('row');
+        start = urlParams.has('start')
+        showlogs = urlParams.has('showlogs');
+      } else if (localStorage.getItem('row') && localStorage.getItem('service')) {
         // Get the value of the "row" parameter
-        const serviceValue = urlParams.get('service');
-        let rowValue = urlParams.get('row');
-        
+        serviceValue = localStorage.getItem('service');
+        rowValue = localStorage.getItem('row');
+        localStorage.removeItem('service');
+        localStorage.removeItem('row');
+        start = localStorage.getItem("start") === "true";
+        if ( start ) localStorage.removeItem('start');
+        showlogs = localStorage.getItem("showlogs") === "true";
+        if ( showlogs ) localStorage.removeItem('showlogs');
+      }
+      if ( rowValue && serviceValue ) { 
         $(`div[id$='-table-div']:not([id^='${serviceValue}-'])`).hide();
         $(`div[id$='-table-div'][id^='${serviceValue}-']`).show();
-
+        let summaryTr = $(`${serviceValue}-${rowValue}-summary-tr`);
+        let option = summaryTr.attr("data-option");
         $(`div[id$='-collapse']:not([id^='${serviceValue}-${rowValue}-collapse'])`).removeClass("show");
         $(`div[id^='${serviceValue}-${rowValue}-collapse']`).addClass("show");
         let x = document.getElementById(`${serviceValue}-${rowValue}-summary-tr`)
         if ( x ) x.scrollIntoView();
-        if ( urlParams.has('start') ) {
-          const ready = $(`#${serviceValue}-${rowValue}-summary-tr`).attr("data-ready");
-          const active = $(`#${serviceValue}-${rowValue}-summary-tr`).attr("data-active");
-          if ( ready ) {
-            window.open(`/user/{{ user.name}}/${rowId}`, "_blank");
-          } else if ( !active ) {
+        if ( start ) {
+          const ready = $(`#${serviceValue}-${rowValue}-summary-tr`).attr("data-spawner-ready");
+          const active = $(`#${serviceValue}-${rowValue}-summary-tr`).attr("data-spawner-active");
+          if ( ready === "true" ) {
+            window.open(`/user/{{ user.name }}/${rowValue}`, "_blank");
+          } else if ( active === "false" ) {
             $(`[id^='${serviceValue}-${rowValue}-'][id$='-start-btn-header']`).trigger("click");
           } else {
             $(`[id^='${serviceValue}-${rowValue}-'][id$='-logs-navbar-button']`).trigger("click");
+            homeHeaderUpdate(serviceValue, rowValue);
+            if ( serviceValue === "jupyterlab" && option === "repo2docker" ) {
+              updateHeaderButtons(serviceValue, rowValue, "building");
+              progressBarUpdate(serviceValue, rowValue, "building", 2);
+            } else {
+              updateHeaderButtons(serviceValue, rowValue, "starting");
+              progressBarUpdate(serviceValue, rowValue, "starting", 10);
+            }
           }
         }
-          
-        if ( urlParams.has('showlogs') ) $(`[id^='${serviceValue}-${rowValue}-'][id$='-logs-navbar-button']`).trigger("click");
+        if ( showlogs ) {
+          $(`[id^='${serviceValue}-${rowValue}-'][id$='-logs-navbar-button']`).trigger("click");
+        }
       }
     });
   });
+  {%- if pagetype == vars.pagetype_workshop %}
+  const workshop_options = {{ workshop_options | tojson }};
+  {%- endif %}
 </script>

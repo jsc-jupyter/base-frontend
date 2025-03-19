@@ -1,10 +1,17 @@
 {%- extends "page.html" -%}
 
+{%- block meta -%}
+{%- if message and message == "OAuth error: Access denied by resource owner or authorization server" %}
+  <meta http-equiv="refresh" content="0; url=https://{{frontendCollection.get('hostname')}}{{ base_url }}login" />
+{%- endif %}
+
+{%- endblock %}
 {%- block stylesheet -%}
 <link rel="stylesheet" href='{{static_url("css/error.css")}}' type="text/css" />
 {%- endblock -%}
 
 {%- block main -%}
+{%- if not message or message != "OAuth error: Access denied by resource owner or authorization server" %}
 <div class="d-flex text-center h-100 p-4">
   <div class="m-auto">
     {%- block h1_error %}
@@ -26,6 +33,7 @@
     <a href="{{ base_url }}home" class="btn btn-light" role="button">Return to Home</a>
   </div>
 </div>
+{%- endif %}
 {%- endblock -%}
 
 {%- block script -%}

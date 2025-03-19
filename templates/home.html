@@ -2,6 +2,9 @@
 
 {%- block stylesheet -%}
   <link rel="stylesheet" href='{{static_url("css/home.css")}}' type="text/css"/>
+  
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm/css/xterm.css" />
+  <script src="https://cdn.jsdelivr.net/npm/xterm/lib/xterm.js"></script>
 {%- endblock -%}
 
 {%- block main -%}
@@ -15,13 +18,12 @@
 
 {%- for spawner in spawners %}
   {%- if ( spawner != None and spawner.user_options != None and spawner.user_options.get("name", false) ) %}
-    {%- set _ = table_rows.update({spawner.name: decrypted_user_options.get(spawner.name, spawner.user_options)}) %}
+    {%- set _ = table_rows.update({spawner.name: frontendCollection.get("decrypted_user_options").get(spawner.name, spawner.user_options)}) %}
   {%- endif %}
 {%- endfor %}
 
 {%- from "macros/table/table.jinja" import tables with context %}
 {%- import "macros/table/content.jinja" as functions with context %}
-<div id="toastContainer" class="position-fixed top-0 end-0 p-3"></div>
 {{ tables(
   config.frontend_config,
   functions.home_description,

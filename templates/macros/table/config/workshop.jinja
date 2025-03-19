@@ -1,9 +1,9 @@
 {%- set frontend_config = {
   "services": {
     "default": "jupyterlab",
-    "options": {      
+    "options": {
       "jupyterlab": {
-        "fillingOrder": ["option", "system", "account", "project", "partition"],
+        "fillingOrder": ["option", "system", "account", "project", "partition", "flavor", "privaterepo"],
         "navbar": {
           "labconfig": {
             "show": true,
@@ -94,21 +94,63 @@
                   "option": "wTriggerSystem"
                 }
               },
+              "repo2dockerdirectlink": {
+                "input": {
+                  "type": "text",
+                  "options": {
+                    "collect": false,
+                    "enabled": false,
+                    "copy": true
+                  }
+                },
+                "label": {
+                  "type": "text",
+                  "width": 4,
+                  "value": "Direct Link for this configuration"
+                },
+                "onInput": {
+                  "repourl": "homeTriggerUpdateDirectLinks",
+                  "reporef": "homeTriggerUpdateDirectLinks",
+                  "repopath": "homeTriggerUpdateDirectLinks",
+                  "localstoragepath": "homeTriggerUpdateDirectLinks"
+                },
+                "trigger": {
+                  "repotype": "homeTriggerUpdateDirectLinks",
+                  "system": "homeTriggerUpdateDirectLinks",
+                  "flavor": "homeTriggerUpdateDirectLinks",
+                  "repopathtype": "homeTriggerUpdateDirectLinks",
+                  "localstoragepath": "homeTriggerUpdateDirectLinks"
+                },
+                "dependency": {
+                  "option": [
+                    "repo2docker"
+                  ]
+                }
+              },
               "repotype": {
                 "input": {
                   "type": "select",
                   "options": {
                     "group": "repo2docker",
                     "enabled": true
+                  },
+                  "values": {
+                    "gh": "GitHub",
+                    "gist": "GitHub Gist",
+                    "git": "Git repository",
+                    "gl": "GitLab",
+                    "zenodo": "Zenodo DOI",
+                    "figshare": "FigShare DOI",
+                    "hydroshare": "Hydroshare resource",
+                    "dataverse": "Dataverse DOI",
+                    "ckan": "CKAN dataset"
                   }
                 },
                 "label": {
                   "type": "text",
                   "value": "Repository Type"
                 },
-                "trigger": {
-                  "init": "wTriggerRepoType"
-                },
+                "triggerOnChange": "homeTriggerRepoTypeChanged",
                 "dependency": {
                   "option": [
                     "repo2docker"
@@ -120,14 +162,19 @@
                   "type": "text",
                   "options": {
                     "group": "repo2docker",
+                    "required": true,
                     "enabled": "show",
-                    "placeholder": "GitHub repository name or URL",
-                    "patternDisabled": "^([a-zA-Z0-9._-]+\\/[a-zA-Z0-9._-]+(\\.git)?|https?:\\/\\/[a-zA-Z0-9._-]+(\\.[a-z]{2,})?(:\\d+)?\\/[a-zA-Z0-9._-]+\\/[a-zA-Z0-9._-]+(\\.git)?)(\\/)?$"
+                    "placeholder": "example: yuvipanda/requirements or https://github.com/yuvipanda/requirements",
+                    "pattern": "^(https?:\\/\\/github\\.com\\/)?([^\\/]+\\/[^\\/]+)\\/?$"
                   }
                 },
                 "label": {
                   "type": "text",
-                  "value": "Repository name or URL"
+                  "value": "GitHub repository name or URL"
+                },
+                "onInputChange": "repoUrlChanged",
+                "trigger": {
+                  "repotype": "wTriggerUpdateRepoUrlForType"
                 },
                 "dependency": {
                   "option": [
@@ -141,8 +188,7 @@
                   "options": {
                     "group": "repo2docker",
                     "enabled": true,
-                    "placeholder": "HEAD",
-                    "patternDisabled": "^([a-zA-Z0-9._-]+|([a-f0-9]{7,40})|([a-zA-Z0-9._-]+\\/[a-zA-Z0-9._-]+)|([a-zA-Z0-9._-]+@~\\d+)|@~\\d+)$"
+                    "placeholder": "HEAD"
                   }
                 },
                 "label": {
@@ -152,6 +198,12 @@
                 "dependency": {
                   "option": [
                     "repo2docker"
+                  ],
+                  "repotype": [
+                    "gh",
+                    "gist",
+                    "git",
+                    "gl"
                   ]
                 }
               },
@@ -183,20 +235,19 @@
                   "type": "select",
                   "options": {
                     "group": "repo2docker",
-                    "enabled": false,
                     "show": false
+                  },
+                  "values": {
+                    "file": "File",
+                    "url": "URL"
                   }
                 },
                 "label": {
-                  "type": "textcheckbox",
-                  "value": "Notebook Type",
-                  "options": {
-                    "default": false
-                  }
+                  "type": "text",
+                  "value": "Notebook Type"
                 },
                 "trigger": {
-                  "init": "wTriggerRepoPathTypeInit",
-                  "repopath": "wTriggerRepoPathType"
+                  "repopath": "homeTriggerRepoPathType"
                 },
                 "dependency": {
                   "option": [
@@ -278,6 +329,7 @@
                 "input": {
                   "type": "text",
                   "options": {
+                    "secret": true,
                     "group": "custom",
                     "show": false,
                     "placeholder": "Enter your password"
@@ -392,8 +444,7 @@
                 "input": {
                   "type": "select",
                   "options": {
-                    "group": "resources",
-                    "show": false
+                    "group": "resources"
                   }
                 },
                 "label": {
@@ -405,7 +456,15 @@
                   "project": "wTriggerReservation",
                   "system": "wTriggerReservation"
                 },
-                "triggerOnChange": "wTriggerReservation"
+                "observeAttribute": {
+                  "collect": "wTriggerReservationObserveCollect"
+                },
+                "triggerOnChange": "wTriggerReservation",
+                "dependency": {
+                  "system": [
+                    "unicore"
+                  ]
+                }
               },
               "reservationinfo": {
                 "input": {
@@ -417,6 +476,11 @@
                 "triggerSuffix": "input-div",
                 "trigger": {
                   "reservation": "wTriggerReservationInfo"
+                },
+                "dependency": {
+                  "system": [
+                    "unicore"
+                  ]
                 }
               },
               "flavor": {
@@ -562,7 +626,14 @@
                 "input": {
                   "type": "selecthelper"
                 },
-                "triggerSuffix": "input-div"
+                "options": {
+                  "show": true
+                },
+                "dependency": {
+                  "option": [
+                    "lmod"
+                  ]
+                }
               }
             },
           },
@@ -685,7 +756,10 @@
                     ],
                     "reset": {
                       "firstRow": false,
-                      "trigger": "wTriggerButtonReset"
+                      "trigger": "wTriggerButtonReset",
+                      "options": {
+                        "fillingOrder": ["option", "system", "account", "project", "partition", "flavor", "privaterepo"]
+                      }
                     }
                   }
                 }
@@ -702,7 +776,7 @@
         },
         "summaryButtons": {
           "stop": "homeSummaryButtonStop",
-          "start": "homeSummaryButtonStart",
+          "start": "wSummaryButtonStart",
           "open": "homeSummaryButtonOpen",
           "cancel": "homeSummaryButtonCancel"
         }

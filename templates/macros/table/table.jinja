@@ -1,3 +1,4 @@
+{%- import "macros/table/config/announcement_all.jinja" as announcement_all %}
 {%- import "macros/table/config/announcement.jinja" as announcement %}
 
 {%- macro tables(
@@ -8,7 +9,12 @@
   macro_firstheader,
   macro_row_content
 )%}
-  <div id="global-content-div" class="container-fluid p-4">
+
+  <div id="toastContainer" class="position-fixed top-0 end-0 p-3"></div>
+  <div id="global-content-div" class="container-fluid p-4" data-sse-reservations>
+    {%- if announcement_all.show_announcement %}
+      {{ announcement_all.announcement() }}
+    {%- endif %}
     {%- if announcement.show_announcement %}
       {{ announcement.announcement() }}
     {%- endif %}
@@ -196,6 +202,9 @@
       {%- endfor %}      
       
       $(`[data-sse-progress][id$='-summary-tr']`).on("sse", function (event, data) {
+        if (event.target !== this) {
+          return; // Ignore events bubbling up from child elements
+        }
         const $this = $(this);
         const serviceId = $this.attr("data-service");
         const rowId = $this.attr("data-row");
@@ -214,7 +223,7 @@
           if ( ready ) {
             updateHeaderButtons(serviceId, rowId, "waiting");
             const url = data[rowId]?.url ?? "{{ url }}";
-            checkAndOpenUrl(serviceId, rowId, url);
+            checkAndOpenUrl(serviceId, rowId, url, false);
           } else if ( failed ) {
             updateHeaderButtons(serviceId, rowId, "stopped");
             $(`button[id^='${serviceId}-${rowId}-'][id$='-btn']`).prop("disabled", false);
@@ -230,8 +239,19 @@
         }
       });
 
+      $(`[data-sse-reservations]`).on("sse", function (event, data) {
+        if (event.target !== this) {
+          return; // Ignore events bubbling up from child elements
+        }
+        setReservations(data);
+        $(`[id$='-reservation-input']`).trigger("change");
+      });
+
 
       $(`[data-sse-servers][id$='-summary-tr']`).on("sse", function (event, data) {
+        if (event.target !== this) {
+          return; // Ignore events bubbling up from child elements
+        }
         const $this = $(this);
         const serviceId = $this.attr("data-service");
         const rowId = $this.attr("data-row");

@@ -29,7 +29,7 @@
         ret.push(...Object.keys(allFlavors)
           .filter(key => allFlavors[key].max != 0) // do not use flavor.max == 0
           .filter(key => allFlavors[key].current < allFlavors[key].max || allFlavors[key].max == -1 ) // must be room for new jupyterlabs
-          .sort((a, b) => allFlavors[a].weight - allFlavors[b].weight) // sort by weight
+          .sort((a, b) => allFlavors[b].weight - allFlavors[a].weight) // sort by weight
           .map(key => [key, allFlavors[key].display_name])); // get keyname + displayname
       }
     });
@@ -46,7 +46,7 @@
         ret.push(...Object.keys(allFlavors)
           .filter(key => allFlavors[key].max != 0) // do not use flavor.max == 0
           .filter(key => allFlavors[key].current >= allFlavors[key].max && allFlavors[key].max != -1)
-          .sort((a, b) => allFlavors[a].weight - allFlavors[b].weight)
+          .sort((a, b) => allFlavors[b].weight - allFlavors[a].weight)
           .map(key => [key, allFlavors[key].display_name]));
       }
     });
@@ -60,12 +60,20 @@
   #}
 
   const resPattern = /^urn:(?<namespace>.+?(?=:res:)):res:(?<systempartition>[^:]+):(?<project>[^:]+):act:(?<account>[^:]+):(?<accounttype>[^:]+)$/;
-  const unicoreEntitlements = {{ auth_state.entitlements | list | tojson }};
+  const unicoreEntitlements = {{ auth_state.oauth_user.entitlements | list | tojson }};
   const unicorePreferredUsername = {{ auth_state.preferred_username | default("none", true) | tojson }};
-  const unicoreReservations = {{ reservations | default({}, true) | tojson }};
-  const unicoreMapSystems = {{ custom_config.mapSystems | default({}, true) | tojson }};
-  const unicoreMapPartitions = {{ custom_config.mapPartitions | default({}, true) | tojson }};
-  const unicoreDefaultPartitions = {{ custom_config.defaultPartitions | default({}, true) | tojson }};
+  let unicoreReservations = {{ frontendCollection.get("reservations", {}) | tojson }};
+  const unicoreMapSystems = {{ frontendCollection.get("mapSystems", {}) | tojson }};
+  const unicoreMapPartitions = {{ frontendCollection.get("mapPartitions", {}) | tojson }};
+  const unicoreDefaultPartitions = {{ frontendCollection.get("defaultPartitions", {}) | tojson }};
+
+  function setReservations(data) {
+    if (data) {
+      unicoreReservations = data;
+    } else {
+      unicoreReservations = {};
+    }
+  }
 
   function extractEntitlementResources(entitlement) {
     const match = resPattern.exec(entitlement);
@@ -522,9 +530,17 @@
 
   function getPartitionAndInteractivePartition(serviceId, rowId) {
     const systems = val(getInputElement(serviceId, rowId, "system"));
-    const partitions = getPartitionOptions(serviceId, rowId);
+    let partitions = getPartitionOptions(serviceId, rowId);
     let interactivePartitionsLength = 0;
+    {%- if pagetype == vars.pagetype_workshop %}
+      const presetValues = {{ workshop_options.get("hpc", {}).get("partition", false) | tojson }};
+    {%- else %}
+      const presetValues = false;
+    {%- endif %}
     let interactivePartitionAdded = [];
+    if ( presetValues ) {
+      partitions = partitions.filter( ([item, _]) => presetValues.includes(item));
+    }
     partitions.forEach(partition => {
       let partition_ = partition[0];
       systems.forEach(system => {

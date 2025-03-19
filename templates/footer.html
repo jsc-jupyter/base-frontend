@@ -1,13 +1,19 @@
 {%- import "macros/svgs.jinja" as svg -%}
 
+{%- if frontendCollection.get("hostname", "jupyter.jsc.fz-juelich.de") == "portal.gauss-centre.eu" %}
+{%- set jupyter_name = "GaussCentre Portal" -%}
+{%- elif frontendCollection.get("hostname", "jupyter.jsc.fz-juelich.de") == "portal-staging.gauss-centre.eu" %}
+{%- set jupyter_name = "GaussCentre StagingPortal" -%}
+{%- else %}
 {%- set jupyter_name = "Jupyter-JSC" -%}
+{%- endif %}
 
 {#- Get all systems configured for this hub,
     sort them by weight and assign status ids -#}
 {#- Jupyter should always be first -#}
-{%- set incident_services = custom_config.get("incidentCheck", {}).get("services", {}) -%}
+{%- set incident_services = frontendCollection.get("incidentCheck", {}).get("services", {}) -%}
 {%- set systems_default_order = [["JUPYTER", incident_services.get("JUPYTER", 40)]] -%}
-{%- for system in custom_config.get("systems", {}) | sort(attribute='weight') -%}
+{%- for system in frontendCollection.get("systemConfig", {}) | sort(attribute='weight') -%}
   {%- set system = system.upper().replace("-", '') -%}
   {%- set status_id = incident_services.get(system, 0) -%}
   {%- do systems_default_order.append([system, status_id]) -%}
@@ -43,7 +49,7 @@
       <span class="{{ footer_margin }}">|</span>
       <a href="{{ base_url }}terms">Terms of Service</a>
       <span class="{{ footer_margin }}">|</span>
-      <a href="mailto:ds-support@fz-juelich.de?subject=Jupyter-JSC Support&amp;body=Please describe your problem here. (english or german)">Support</a>
+      <a href="mailto:ds-support@fz-juelich.de?subject={{ jupyter_name }} Support&amp;body=Please describe your problem here. (english or german)">Support</a>
     </div>
     <div class="py-4 {{div_classes}}">
       <a href="https://www.helmholtz.de/en/" target="_blank">
@@ -116,7 +122,7 @@ require(["jquery"], function (
         <a class="system-users d-inline-block text-muted ms-1" 
            data-bs-toggle="tooltip" data-bs-placement="top" 
            title="${tooltipTitle}" 
-           href="https://{{hostname | safe}}/grafana/?${urlSuffix}" 
+           href="https://{{frontendCollection.get('hostname')}}/grafana/?${urlSuffix}" 
            target="_blank">
            <span id="${system}-users">0</span>
            <span>${systemSvg}</span>
@@ -144,24 +150,25 @@ require(["jquery"], function (
     var base_url = window.jhdata.base_url;
     const staticUrl = base_url + "static";
 
-    let displayName;
-    if (system === "JUPYTER") {
-        displayName = {{ jupyter_name | tojson | safe }};
-    } else if (system === "JSCCLOUD") {
-        displayName = "JSC-Cloud";
-    } else {
-        displayName = system;
-    }
+    const nameMapping = {
+      "JUPYTER": {{ jupyter_name | tojson | safe }},
+      "JSCCLOUD": "JSC-Cloud",
+      "DENBICLOUD": "deNBI-Cloud",
+      "TUDSTAGING": "TUD-Staging",
+      "HLRSSTAGING": "HLRS-Staging",
+      "LRZSTAGING": "LRZ-Staging"
+    };
+    const displayName = nameMapping[system] || system;
 
     let ampelHtml = "";
     if ( ["JUPYTER", "JUWELS", "JURECA", "JEDI", "JUSUF", "DEEP", "JSCCLOUD"].includes(system) ) {
       let imgSrc = `${staticUrl}/images/footer/systems/${systemLower}.svg?v=${imgVersion}`;
-      checkImageExists(imgSrc, systemLower, function(exists) {
-        if (!exists) {
-          let newImgSrc = `${staticUrl}/images/footer/templates/0.svg?v=${imgVersion}`;
-          $(`#ampel-${systemLower} .ampel-img`).attr("src", newImgSrc);          
-        }
-      });
+      // checkImageExists(imgSrc, systemLower, function(exists) {
+      //   if (!exists) {
+      //     let newImgSrc = `${staticUrl}/images/footer/templates/0.svg?v=${imgVersion}`;
+      //     $(`#ampel-${systemLower} .ampel-img`).attr("src", newImgSrc);          
+      //   }
+      // });
       
       ampelHtml = `
         <div id="ampel-${systemLower}" class="text-center"
@@ -263,6 +270,7 @@ require(["jquery"], function (
 
     var carousel_exists = $("#footerSystemsCarousel").length;
     // Recreate footer with systems in the sorted order
+    const itemsPerPage = getItemsPerPage(); 
     for (const [index, system] of systemsSorted.entries()) {
       let ampel = $(`#ampel-${system.toLowerCase()}`);
       ampel.remove();
@@ -270,8 +278,9 @@ require(["jquery"], function (
         $("#systems-page-1").append(ampel);
       }
       else {
-        if (index < 4) $("#systems-page-1").append(ampel);
-        else $("#systems-page-2").append(ampel);
+        if (index < itemsPerPage) $("#systems-page-1").append(ampel);
+        else if (index < 2*itemsPerPage) $("#systems-page-2").append(ampel);
+        else $("#systems-page-3").append(ampel);
       }
     }
   }
@@ -284,7 +293,7 @@ require(["jquery"], function (
     createCarouselPages();
   })
 
-  const incidentsThresholdInteractiveFooter = {{ custom_config.get("incidentCheck", {}).get("healthThreshold", {}).get("interactive", 50) | tojson }};
+  const incidentsThresholdInteractiveFooter = {{ frontendCollection.get("incidentCheck", {}).get("healthThreshold", {}).get("interactive", 50) | tojson }};
 
   $(`[data-sse-incidents]`).on("sse", function (event, incidents) {
     $(`[id^='ampel-'][id$='-tooltip']`).tooltip("dispose");
