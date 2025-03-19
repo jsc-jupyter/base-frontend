@@ -918,6 +918,7 @@
       const r2dId = globalUserOptions?.[serviceId]?.[rowId]?.["r2d_id"] ?? false;
       if ( r2dId ) {
         ret["r2d_id"] = r2dId;
+        ret["option"] = "repo2docker"
       }
       ret["secret_keys"] = secret_keys;
 
