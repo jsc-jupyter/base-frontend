@@ -2278,7 +2278,7 @@
         const options = val(getInputElement(serviceId, rowId, "option"));
         let values = [];
 
-        let systems = $(`input[id^='${serviceId}-${rowId}-'][id$='system-input']`).val();
+        let systems = $(`input[id^='${serviceId}-${rowId}-'][id$='-system-input']`).val();
         systems = Array.isArray(systems) ? systems : [systems];
         
         let keys = new Set();
