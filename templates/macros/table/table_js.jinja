@@ -2277,25 +2277,33 @@
       function getModuleValues(serviceId, rowId, name, setName) {
         const options = val(getInputElement(serviceId, rowId, "option"));
         let values = [];
+
+        let systems = $(`select[id^='${serviceId}-${rowId}-'][id$='-system-input']`).val();
+        systems = Array.isArray(systems) ? systems : [systems];
+        
         let keys = new Set();
-        options.forEach(option => {
-          if (getServiceConfig(serviceId)?.options?.[option]?.[setName]) {
-            const nameSet = getServiceConfig(serviceId)?.options[option]?.[setName];
-            Object.entries(userModulesConfig[name])
-              .filter(([key, value]) => value.sets && value.sets.includes(nameSet))
-              .forEach( ([key, value]) => {
-                if ( !keys.has(key) ) {
-                  keys.add(key);
-                  values.push([
-                    key,
-                    value.displayName,
-                    typeof value.default === 'object' && value.default !== null ? value.default.default : value.default,
-                    value.href,
-                    value.weight ?? 10
-                  ]);
-                }
-              });
-          }
+        systems.forEach(system => {
+          options.forEach(option => {
+            if (getServiceConfig(serviceId)?.options?.[option]?.[setName]) {
+              const nameSet = getServiceConfig(serviceId)?.options[option]?.[setName];
+              Object.entries(userModulesConfig[name])
+                .filter(([key, value]) => 
+                  (value.sets && value.sets.includes(nameSet)) &&
+                  (!value.allowed_systems || value.allowed_systems.includes(system))
+                ).forEach( ([key, value]) => {
+                  if ( !keys.has(key) ) {
+                    keys.add(key);
+                    values.push([
+                      key,
+                      value.displayName,
+                      typeof value.default === 'object' && value.default !== null ? value.default.default : value.default,
+                      value.href,
+                      value.weight ?? 10
+                    ]);
+                  }
+                });
+            }
+          });
         });
         return values.sort((a, b) => b[4] - a[4]);
       }
