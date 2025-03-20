@@ -302,7 +302,7 @@ require(["jquery"], function (
       if (systemInfo.incident) {
         $(`#ampel-${system.toLowerCase()}-tooltip`)
           .attr('data-bs-original-title', systemInfo.incident);
-        if ( systemInfo.health > incidentsThresholdInteractiveFooter ) {
+        if ( systemInfo.health >= incidentsThresholdInteractiveFooter ) {
           const _system = incidentsmapping[system] ?? system;
           if ( !newMaintenanceList.includes(_system) ) {
             newMaintenanceList.push(_system);
