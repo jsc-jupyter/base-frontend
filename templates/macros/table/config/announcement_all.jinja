@@ -1,13 +1,14 @@
 {%- import "macros/svgs.jinja" as svg -%}
 
-{%- set show_announcement = false %}
+{%- set show_announcement = true %}
 {%- macro announcement() %}
 <div class="alert bg-info alert-dismissible fade show" style="color: #023d6b;" role="alert">
   <h4 class="alert-heading">       
     {{ svg.announcement_svg | safe }}
-    <span class="align-middle">This is the announcement title</span>
+    <span class="align-middle">JupyterLab Configurations Reset</span>
   </h4>
-  This is my announcement text.
+  Due to some backend restructure, all existing JupyterLab configurations have been removed. Previously created configurations would no longer function correctly and could have led to various issues.
+  We apologize for any inconvenience this may cause.
   <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
 </div>
 {%- endmacro %}
