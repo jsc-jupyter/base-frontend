@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "build": "tsc -b && vite build",
+    "dev": "tsc -b && vite build --mode development",
     "eslint": "npm run eslint:check -- --fix",
     "eslint:check": "eslint . --cache --ext .ts,.tsx",
     "lint": "npm run eslint && npm run prettier",

@@ -1,7 +1,8 @@
 from json import loads
 from pathlib import Path
 
-from flask import Flask, render_template, redirect, send_file
+from flask import Flask, render_template, redirect, send_file, Response
+from sse import sse_stream
 
 HERE = Path(__file__).parent
 
@@ -26,6 +27,9 @@ app.jinja_env.globals["user"] = loads((HERE / "user.json").read_bytes())
 def root():
     return redirect("/home.html")
 
+@app.route("/api/sse")
+def sse():
+    return Response(sse_stream(), mimetype="text/event-stream")
 
 @app.route("/favicon.ico")
 def favicon():
@@ -38,3 +42,7 @@ def assets(path):
 @app.route("/<path>")
 def templates(path):
     return render_template(path)
+
+
+if __name__ == '__main__':
+    app.run(debug=True, threaded=True)

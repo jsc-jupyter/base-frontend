@@ -88,7 +88,3 @@ Footer */
   width: 16px;
   transition: 0.25s;
 }
-
-.system-users:hover .system-users-link {
-  left: 0;
-}

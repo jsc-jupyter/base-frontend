@@ -1,11 +1,11 @@
 import { useState } from 'react';
 
 let eventSource: EventSource | null = null;
-const callbacks: Map<string, (data: object) => void> = new Map();
+const callbacks: Map<string, (data: unknown) => void> = new Map();
 
-export function useSseEvent(name: string): object | undefined {
-  const [data, setData] = useState<object>({});
-  callbacks.set(name, setData);
+export function useSseEvent<T>(name: string, initialValue: T): T {
+  const [data, setData] = useState<T>(initialValue);
+  callbacks.set(name, setData as (data: unknown) => void);
   return data;
 }
 
@@ -23,18 +23,21 @@ export function initSse(baseUrl: string, user?: string, xsrfToken?: string) {
   }
 
   eventSource = new EventSource(sseUrl);
+  eventSource.onopen = () => {
+    console.log('SSE Connection established');
+  };
   eventSource.onmessage = (event: MessageEvent) => {
     try {
-      const jsonData = JSON.parse(event.data) as object;
+      const jsonData = JSON.parse(event.data);
       for (const [key, value] of Object.entries(jsonData)) {
         callbacks.get(key)?.call(null, value);
       }
-    } catch (event) {
-      console.error(`Failed to parse SSE Message: ${event}`);
+    } catch (error) {
+      console.error('Failed to parse SSE Message:', error);
     }
   };
-  eventSource.onerror = (event: Event) => {
-    console.error(`SSE Error: ${event}`);
+  eventSource.onerror = event => {
+    console.error('SSE Error: ', event);
   };
 }
 
