@@ -2619,7 +2619,7 @@
       term.write("\x1b[2K\r");
       terminalDiv.fadeIn();
       const type = userOptions.repo2docker.repotype;
-      const repourl = userOptions.repo2docker.repourl;
+      let repourl = userOptions.repo2docker.repourl;
 
       // build api url to call the build process
       let url = "";
