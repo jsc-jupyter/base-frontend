@@ -2621,9 +2621,12 @@
       term.write("\x1b[2K\r");
       terminalDiv.fadeIn();
       const type = userOptions.repo2docker.repotype;
-      const repourl = userOptions.repo2docker.repourl;
+      let repourl = userOptions.repo2docker.repourl;
 
       // build api url to call the build process
+      if ( ["git", "gl", "hydroshare", "ckan"].includes(type) ) {
+        repourl = encodeURIComponent(repourl);
+      }
       let url = "";
       if ( Object.keys(userOptions.repo2docker).includes("reporef") ) {
         const reporef = userOptions.repo2docker?.reporef || "HEAD";        
