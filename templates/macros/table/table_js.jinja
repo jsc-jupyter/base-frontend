@@ -2220,7 +2220,7 @@
       }
 
       function homeSummaryButtonOpen(serviceId, rowId, buttonId, button_options, user, api, base_url, utils) {
-        let url = new URL(utils.url_path_join(window.origin, "user", encodeURIComponent(user), rowId).replace("//", "/") + '/');
+        let url = new URL(utils.url_path_join(window.origin, "user", user, rowId).replace("//", "/") + '/');
         console.log(`Open ${url}`);
         window.open(url, "_blank");
       }
