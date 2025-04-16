@@ -666,6 +666,7 @@
 
       if ( !isWorkshopInstructor() ) {
         console.log("No Instructor");
+        const form = $(`form[id='${serviceId}-${rowId}-form']`);
         // double check to hide / disable the instructor elements.
         form.find(`input[data-instructor]`).prop("disabled", true);
         form.find(`div[data-instructor="show"][id$="-input-div"]`).hide();
