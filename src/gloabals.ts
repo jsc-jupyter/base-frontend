@@ -22,6 +22,12 @@ type SystemConfiguration = {
   };
 };
 
+export type SpawnerOptions = {
+  name: string;
+  system: string;
+  option: string;
+};
+
 type FrontendCollection = {
   hostname: string;
   incidentCheck: IncidentCheck;
@@ -30,6 +36,7 @@ type FrontendCollection = {
   mapPartitions: Record<string, string>;
   defaultPartitions: Record<string, [string]>;
   serviceConfig: Record<string, object>;
+  decrypted_user_options: Record<string, SpawnerOptions>;
 };
 
 export const frontendCollection: FrontendCollection = JSON.parse(

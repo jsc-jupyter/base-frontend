@@ -1,0 +1,9 @@
+#sidebar {
+  width: 280px;
+}
+
+#sidebar img {
+  height: 60px;
+  width: 60px;
+  aspect-ratio: 1;
+}
