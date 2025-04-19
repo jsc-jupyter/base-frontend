@@ -1,6 +1,6 @@
 import { Page } from '@/Page.tsx';
 import { ReactNode, useState } from 'react';
-// import { Sidebar } from '@/components/Sidebar.tsx';
+import { Sidebar } from '@/components/Sidebar.tsx';
 import { ServiceTable } from '@/components/table/ServiceTable.tsx';
 import { Accordion, Button, Col, ProgressBar, Row, useAccordionButton } from 'react-bootstrap';
 import { frontendCollection, SpawnerOptions } from '@/gloabals.ts';
@@ -199,7 +199,7 @@ function RowSummary({ service, id, options }: { service: string; id: string; opt
 }
 
 export function Home() {
-  const [service, _] = useState<string>('jupyterlab');
+  const [service, setService] = useState<string>('jupyterlab');
 
   const rows = Object.entries(frontendCollection.decrypted_user_options);
   // const description = <p>You can configure your existing JupyterLabs by expanding the corresponding table row.</p>;
@@ -208,7 +208,7 @@ export function Home() {
   return (
     <Page>
       <Row className="h-100">
-        {/*<Sidebar width={240} onSelected={setService} />*/}
+        <Sidebar onSelected={setService} />
         <Col className="h-100">
           <ServiceTable service={service} description={description} header={<HomeTableHeader />}>
             {rows.map(([rowId, rowOptions]) => (

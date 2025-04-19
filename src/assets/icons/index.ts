@@ -2,6 +2,7 @@
 
 export { default as AnnouncementIcon } from './announcement.svg?react';
 export { default as CheckIcon } from './check.svg?react';
+export { default as ChevronIcon } from './chevron.svg?react';
 export { default as CopyIcon } from './copy.svg?react';
 export { default as DeleteIcon } from './delete.svg?react';
 export { default as FailedIcon } from './failed.svg?react';

@@ -1,9 +1,35 @@
 #sidebar {
-  width: 280px;
+  width: 300px;
+  padding: 20px;
+  transition: width 0.3s;
+}
+
+#sidebar.sidebar-collapsed {
+  width: max-content;
 }
 
 #sidebar img {
   height: 60px;
   width: 60px;
   aspect-ratio: 1;
+}
+
+#sidebar-header {
+  white-space: nowrap;
+}
+
+#sidebar-header button {
+  transition: transform 0.3s;
+}
+
+#sidebar.sidebar-collapsed #sidebar-header button svg {
+  transform: rotate(-180deg);
+}
+
+.sidebar-collapsed .sidebar-item-text {
+  display: none;
+}
+
+.sidebar-collapsed #sidebar-header span {
+  display: none;
 }
