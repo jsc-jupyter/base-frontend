@@ -1466,13 +1466,8 @@
     "DEEP": []
   },
   "decrypted_user_options": {
-    "": {},
-    "k4u8p1n7lm903hlppmwtisjpgnyw7hsy": {
-      "workshop_id": "juwels"
-    },
     "v8e94bef6cca4d8a9b871a7e1f02070e": {
       "name": "r2d example",
-      "option": "repo2docker",
       "system": "JSC-Cloud",
       "repo2dockerdirectlink": "https://jupyter-jsc-dev2.fz-juelich.de/v2/gh/FZJ-JSC/jupyter-jsc-notebooks/HEAD?system=JSC-Cloud&flavor=m1",
       "repo2docker": {
@@ -1484,12 +1479,11 @@
       },
       "flavor": "m1",
       "profile": "repo2docker",
-      "service": "jupyterlab",
+      "service": "repo2docker",
       "secret_keys": []
     },
     "zc3d39ee528247a4913d3728ce182a16": {
       "name": "Unnamed jupyterlab",
-      "option": "repo2docker",
       "system": "JSC-Cloud",
       "repo2dockerdirectlink": "https://jupyter-jsc-dev2.fz-juelich.de/v2/zenodo/10.5281/zenodo.3242074/?system=JSC-Cloud&flavor=m1",
       "repo2docker": {
@@ -1500,12 +1494,11 @@
       },
       "flavor": "m1",
       "profile": "repo2docker",
-      "service": "jupyterlab",
+      "service": "repo2docker",
       "secret_keys": []
     },
     "v9fds2tjadee7suhzuz810jz35at4lw1": {
       "name": "FZJ-JSC",
-      "option": "repo2docker",
       "system": "JSC-Cloud",
       "repo2dockerdirectlink": "https://jupyter-jsc-dev2.fz-juelich.de/v2/gh/FZJ-JSC/jupyter-jsc-notebooks/HEAD?system=JSC-Cloud&flavor=l1",
       "repo2docker": {
@@ -1517,7 +1510,7 @@
       },
       "flavor": "l1",
       "profile": "repo2docker",
-      "service": "jupyterlab",
+      "service": "repo2docker",
       "r2d_id": "6bb91c9324dcf2abeb305104d7c5303c0af2b8c3eeb8f0d329f45330b0bfe9d4",
       "secret_keys": []
     },

@@ -22,11 +22,13 @@ type SystemConfiguration = {
   };
 };
 
-export type SpawnerOptions = {
+export interface SpawnerOptions {
   name: string;
+  service: string;
+  profile: string;
   system: string;
-  option: string;
-};
+  secret_keys?: unknown[];
+}
 
 type FrontendCollection = {
   hostname: string;

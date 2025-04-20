@@ -1,21 +1,17 @@
-import * as JupyterLab from './jupyterlab.ts';
-import * as Xpra from './xpra.ts';
+import * as JupyterLab from './jupyterlab.tsx';
+import * as Xpra from './xpra.tsx';
+import * as Repo2Docker from './repo2docker.tsx';
+import { ReactNode } from 'react';
+import { SpawnerOptions } from '@/gloabals.ts';
 
 type ServiceProperties = {
   displayName: string;
   iconPath: string;
-  config: unknown;
+  createConfigSummary: (id: string, options: SpawnerOptions) => ReactNode;
 };
 
 export const services: Record<string, ServiceProperties> = {
-  jupyterlab: {
-    displayName: 'JupyterLab',
-    iconPath: JupyterLab.iconpath,
-    config: JupyterLab.config,
-  },
-  xpra: {
-    displayName: 'Xpra',
-    iconPath: Xpra.iconpath,
-    config: {},
-  },
+  jupyterlab: JupyterLab,
+  xpra: Xpra,
+  repo2docker: Repo2Docker,
 };

@@ -1,5 +1,5 @@
 import { Page } from '@/Page.tsx';
-import { ReactNode, useState } from 'react';
+import { ReactNode, useMemo, useState } from 'react';
 import { Sidebar } from '@/components/Sidebar.tsx';
 import { ServiceTable } from '@/components/table/ServiceTable.tsx';
 import { Accordion, Button, Col, ProgressBar, Row, useAccordionButton } from 'react-bootstrap';
@@ -8,6 +8,8 @@ import { DeleteIcon, NaIcon, OpenIcon, StartIcon, StopIcon } from '@/assets/icon
 import { createRoot } from 'react-dom/client';
 import { ButtonVariant } from 'react-bootstrap/types';
 import '@/assets/css/Home.css';
+import { services } from '@/services';
+import { ConfigItem } from '@/components/table/ConfigItem.tsx';
 
 function HomeTableHeader() {
   return (
@@ -24,18 +26,6 @@ function HomeTableHeader() {
         Action
       </th>
     </>
-  );
-}
-
-function ConfigItem({ name, value, id, hidden }: { name: string; value: string; id: string; hidden?: boolean }) {
-  return (
-    <Col lg={3} hidden={hidden} id={`${id}-div`} className="text-lg-center">
-      <span className="text-muted" style={{ fontSize: 'smaller' }}>
-        {name}
-      </span>
-      <br />
-      <span id={id}>{value}</span>
-    </Col>
   );
 }
 
@@ -129,17 +119,7 @@ function RowSummary({ service, id, options }: { service: string; id: string; opt
           style={{ maxHeight: '152px', overflow: 'auto' }}
         >
           <ConfigItem name="System" value={options.system} id={`${service}-${id}-config-td-system`} />
-          <ConfigItem name="Option" value={options.option} id={`${service}-${id}-config-td-option`} />
-          <ConfigItem name="Project" value="ToDo" id={`${service}-${id}-config-td-project`} hidden={true} />
-          {/*spawner.user_options.get("hpc", {}).get("project", "")*/}
-          <ConfigItem name="Partition" value="ToDo" id={`${service}-${id}-config-td-partition`} hidden={true} />
-          {/*spawner.user_options.get("hpc", {}).get("partition", "")*/}
-          <ConfigItem name="Repository Tye" value="ToDo" id={`${service}-${id}-config-td-repotype`} hidden={true} />
-          {/*repotypeMapping.get(repotype, repotype)*/}
-          <ConfigItem name="Value" value="ToDo" id={`${service}-${id}-config-td-repourl`} hidden={true} />
-          {/*{%- set repourl = spawner.user_options.get("repo2docker", {}).get("repourl", "") %}*/}
-          {/*{%- set repourlVal = repourl.split('/') | select('string') | list | last %}*/}
-          {/*repourlVal*/}
+          {services[service].createConfigSummary(id, options)}
         </Row>
       </td>
 
@@ -200,8 +180,12 @@ function RowSummary({ service, id, options }: { service: string; id: string; opt
 
 export function Home() {
   const [service, setService] = useState<string>('jupyterlab');
+  const spawners = useMemo(
+    () =>
+      Object.entries(frontendCollection.decrypted_user_options).filter(([_, options]) => options.service === service),
+    [service],
+  );
 
-  const rows = Object.entries(frontendCollection.decrypted_user_options);
   // const description = <p>You can configure your existing JupyterLabs by expanding the corresponding table row.</p>;
   const description = <p>Selected Service: {service}</p>;
 
@@ -211,7 +195,7 @@ export function Home() {
         <Sidebar onSelected={setService} />
         <Col className="h-100">
           <ServiceTable service={service} description={description} header={<HomeTableHeader />}>
-            {rows.map(([rowId, rowOptions]) => (
+            {spawners.map(([rowId, rowOptions]) => (
               <>
                 <RowSummary service={service} id={rowId} options={rowOptions} />
                 <Accordion.Collapse eventKey={rowId}>
