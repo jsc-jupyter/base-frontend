@@ -60,7 +60,8 @@
   #}
 
   const resPattern = /^urn:(?<namespace>.+?(?=:res:)):res:(?<systempartition>[^:]+):(?<project>[^:]+):act:(?<account>[^:]+):(?<accounttype>[^:]+)$/;
-  const unicoreEntitlements = {{ auth_state.oauth_user.entitlements | list | tojson }};
+  {% set entitlements = auth_state.oauth_user.entitlements %}
+  const unicoreEntitlements = {{ (entitlements if entitlements is sequence and not entitlements is string else [entitlements]) | tojson }};
   const unicorePreferredUsername = {{ auth_state.preferred_username | default("none", true) | tojson }};
   let unicoreReservations = {{ frontendCollection.get("reservations", {}) | tojson }};
   const unicoreMapSystems = {{ frontendCollection.get("mapSystems", {}) | tojson }};
