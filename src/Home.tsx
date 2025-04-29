@@ -1,15 +1,31 @@
 import { Page } from '@/Page.tsx';
-import { ReactNode, useMemo, useState } from 'react';
+import { CSSProperties, ReactNode, useMemo, useState } from 'react';
 import { Sidebar } from '@/components/Sidebar.tsx';
 import { ServiceTable } from '@/components/table/ServiceTable.tsx';
-import { Accordion, Button, Col, ProgressBar, Row, useAccordionButton } from 'react-bootstrap';
+import {
+  Accordion,
+  Button,
+  Col,
+  Form,
+  Nav,
+  ProgressBar,
+  Row,
+  TabContent,
+  TabPane,
+  useAccordionButton,
+} from 'react-bootstrap';
 import { frontendCollection, SpawnerOptions } from '@/gloabals.ts';
-import { DeleteIcon, NaIcon, OpenIcon, StartIcon, StopIcon } from '@/assets/icons';
+import { DeleteIcon, NaIcon, OpenIcon, StartIcon, StopIcon, WarningIcon } from '@/assets/icons';
 import { createRoot } from 'react-dom/client';
 import { ButtonVariant } from 'react-bootstrap/types';
 import '@/assets/css/Home.css';
 import { services } from '@/services';
 import { ConfigItem } from '@/components/table/ConfigItem.tsx';
+import { type ServiceConfig } from '@/components/table/config.ts';
+
+// ToDo
+import { default as config } from '@/assets/configs/jupyterlab_config.json';
+import { InputElement } from '@/components/input';
 
 function HomeTableHeader() {
   return (
@@ -96,7 +112,13 @@ function SpawnerButton({
   );
 }
 
-function RowSummary({ service, id, options }: { service: string; id: string; options: SpawnerOptions }) {
+type RowProps = {
+  service: string;
+  id: string;
+  options: SpawnerOptions;
+};
+
+function RowSummary({ service, id, options }: RowProps) {
   const [collapsed, setCollapsed] = useState<boolean>(true);
   const openDetails = useAccordionButton(id, () => setCollapsed(!collapsed));
 
@@ -178,6 +200,71 @@ function RowSummary({ service, id, options }: { service: string; id: string; opt
   );
 }
 
+// @ts-expect-error Allow unused
+function RowDetails({ service, id, options }: RowProps) {
+  // Instead of just .hide() it, we want to keep the width of the buttons, so the interface
+  // does not wabble around when showing / hiding buttons.
+  const styleHide: CSSProperties = {
+    height: '0 !important',
+    overflow: 'hidden !important',
+    paddingTop: '0 !important',
+    paddingBottom: '0 !important',
+    border: 'none !important',
+    margin: '0 !important',
+  };
+
+  const navItems = Object.entries((config as ServiceConfig).navbar).map(([name, navOptions], index) => {
+    // ToDo: firstRow and defaultRow
+    return (
+      <Nav.Link
+        as="button"
+        active={index == 0}
+        id={`${service}-${id}-${name}-navbar-button`}
+        className={`${navOptions.margins ?? 'mb-3'}`}
+        style={navOptions.show ? {} : styleHide}
+      >
+        <span>{navOptions.displayName}</span>
+        <span className="d-flex invisible">
+          <WarningIcon />
+          <span className="visually-hidden">settings changed</span>
+        </span>
+      </Nav.Link>
+    );
+  });
+
+  const tabs = Object.entries((config as ServiceConfig).tabs).map(([tabName, tabOptions], index) => {
+    const elements = Object.entries(tabOptions.center).map(([elementId, elementOptions]) => {
+      return (
+        <InputElement service={service} id={id} tab={tabName} elementId={elementId} elementOptions={elementOptions} />
+      );
+    });
+
+    return (
+      <TabPane active={index == 0 || tabName === 'buttonrow'}>
+        {/* table_elements.create_element */}
+        <Row className="col-12">{...elements}</Row>
+      </TabPane>
+    );
+  });
+
+  return (
+    <tr>
+      <td colSpan={100} className="p-0">
+        <Accordion.Collapse eventKey={id}>
+          <div className="d-flex align-items-start m-3">
+            <Nav variant="pills" className="flex-column p-3 ps-0" style={{ minWidth: '15% !important' }}>
+              {...navItems}
+            </Nav>
+            <TabContent className="w-100">
+              <Form>{...tabs}</Form>
+            </TabContent>
+          </div>
+        </Accordion.Collapse>
+      </td>
+    </tr>
+  );
+}
+
 export function Home() {
   const [service, setService] = useState<string>('jupyterlab');
   const spawners = useMemo(
@@ -198,13 +285,7 @@ export function Home() {
             {spawners.map(([rowId, rowOptions]) => (
               <>
                 <RowSummary service={service} id={rowId} options={rowOptions} />
-                <Accordion.Collapse eventKey={rowId}>
-                  <tr>
-                    <td colSpan={100} className="p-0">
-                      Hello!
-                    </td>
-                  </tr>
-                </Accordion.Collapse>
+                <RowDetails service={service} id={rowId} options={rowOptions} />
               </>
             ))}
           </ServiceTable>

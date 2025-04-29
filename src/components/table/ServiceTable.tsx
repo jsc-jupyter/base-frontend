@@ -16,6 +16,7 @@ export function ServiceTable({ service, description, header, children }: TablesP
     return <></>;
   }
 
+  // ToDo: Start first row open if no spawners exist
   return (
     <Container fluid id="global-content-div" className="p-4">
       {description}
