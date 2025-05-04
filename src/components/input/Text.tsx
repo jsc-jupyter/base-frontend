@@ -1,37 +1,38 @@
-import { Button, FormControl, InputGroup, Row } from 'react-bootstrap';
-import { elementParameters, Options } from '@/components/input/utils.ts';
-import { InputLabel, InputLabelProps } from '@/components/input/Label.tsx';
+import { z } from 'zod';
+import { Button, Form, FormControlProps, InputGroup } from 'react-bootstrap';
+import { commonInputOptions, commonParameters } from '@/components/input/utils.ts';
 import { CopyIcon } from '@/assets/icons';
+import { InputElementPropsBase } from '@/components/input/index.tsx';
+import { InputFormElement } from '@/components/input/FormElement.tsx';
 
-export type InputTextProps = {
-  service: string;
-  id: string;
-  elementId: string;
-  elementOptions: Options & {
-    input: {
-      options?: {
-        secret?: boolean;
-        copy?: boolean;
-        name?: string;
-      };
-    };
-    label?: {
-      width?: number;
-    };
-  };
-};
+export const textOptions = z.object({
+  type: z.literal('text'),
+  options: commonInputOptions
+    .extend({
+      secret: z.boolean().optional(),
+      copy: z.boolean().optional(),
+      name: z.string().optional(),
+    })
+    .optional(),
+});
 
-export function InputText({ service, id, elementId, elementOptions = { input: {} } }: InputTextProps) {
+export function InputText({
+  prefix,
+  service,
+  row,
+  tab,
+  elementId,
+  elementOptions,
+}: InputElementPropsBase<typeof textOptions>) {
   const secret = !!elementOptions.input.options?.secret;
   const copy = !!elementOptions.input.options?.copy;
 
   const inner = (
     <>
-      {/* @ts-expect-error ToDo */}
-      <FormControl
+      <Form.Control
         type={secret ? 'password' : 'text'}
         name={`${elementOptions.input.options?.name ?? elementId}`}
-        {...elementParameters(elementOptions)}
+        {...commonParameters<FormControlProps>(elementOptions.input.options)}
       />
       {secret ? (
         <>
@@ -56,12 +57,15 @@ export function InputText({ service, id, elementId, elementOptions = { input: {}
   );
 
   return (
-    <Row class="mb-1" {...elementParameters(elementOptions, true)}>
-      {/* @ts-expect-error ToDo */}
-      <InputLabel service={service} id={id} elementId={elementId} elementOptions={elementOptions as InputLabelProps} />
-      <div className={`col-${12 - (elementOptions.label?.width ?? 4)} d-flex flex-column justify-content-center`}>
-        {secret || copy ? <InputGroup>{inner}</InputGroup> : inner}
-      </div>
-    </Row>
+    <InputFormElement
+      prefix={prefix}
+      service={service}
+      row={row}
+      tab={tab}
+      elementId={elementId}
+      elementOptions={elementOptions}
+    >
+      {secret || copy ? <InputGroup>{inner}</InputGroup> : inner}
+    </InputFormElement>
   );
 }

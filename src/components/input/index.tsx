@@ -1,47 +1,102 @@
-import { InputButtons, InputButtonsProps } from './Buttons.tsx';
-import { InputButton, InputButtonProps } from './Button.tsx';
-import { InputLabel, InputLabelProps } from './Label.tsx';
-import { InputModal, InputModalProps } from './Modal.tsx';
-import { InputMultipleCheckboxes, InputMultipleCheckboxesProps } from './MultipleCheckboxes.tsx';
-import { InputText, InputTextProps } from '@/components/input/Text.tsx';
+import { z } from 'zod';
 
-type InputElementProps = {
+import { InputButtonRow, buttonRowOptions } from './ButtonRow.tsx';
+import { InputCheckbox, checkboxOptions } from './Checkbox.tsx';
+import { InputDate, dateOptions } from './Date.tsx';
+import { InputFlavorInfo, flavorInfoOptions } from './FlavorInfo.tsx';
+import { InputFlavorLegend, flavorLegendOptions } from './FlavorLegend.tsx';
+import { InputLabel, labelOptions, labelDetails } from './Label.tsx';
+import { InputLogContainer, logContainerOptions } from './LogContainer.tsx';
+import { InputMultipleCheckboxes, multipleCheckboxesOptions } from './MultipleCheckboxes.tsx';
+import { InputNumber, numberOptions } from './Number.tsx';
+import { InputReservationInfo, reservationInfoOptions } from './ReservationInfo.tsx';
+import { InputSelect, selectOptions } from './Select.tsx';
+import { InputSelectHelper, selectHelperOptions } from './SelectHelper.tsx';
+import { InputText, textOptions } from './Text.tsx';
+import { InputTextGrower, textGrowerOptions } from './TextGrower.tsx';
+
+export type InputElementPropsBase<T extends z.ZodType> = {
+  prefix: string;
   service: string;
-  id: string;
+  row: string;
   tab: string;
   elementId: string;
-  elementOptions: object;
+  elementOptions: {
+    input: z.infer<T>;
+    label?: z.infer<typeof labelDetails>;
+  };
 };
 
-// @ts-expect-error Allow unused
-export function InputElement({ service, id, tab, elementId, elementOptions }: InputElementProps) {
-  // const idPrefix = `${service}-${id}-${tab}`;
+const inputOptions = z.discriminatedUnion('type', [
+  buttonRowOptions,
+  checkboxOptions,
+  dateOptions,
+  flavorInfoOptions,
+  flavorLegendOptions,
+  labelOptions,
+  logContainerOptions,
+  multipleCheckboxesOptions,
+  numberOptions,
+  reservationInfoOptions,
+  selectOptions,
+  selectHelperOptions,
+  textOptions,
+  textGrowerOptions,
+  z.object({ type: z.literal('hr') }),
+]);
 
-  // @ts-expect-error ToDo
-  const type: string = elementOptions.input.type;
-  switch (type) {
-    case 'button':
-      // @ts-expect-error ToDo
-      return <InputButton service={service} id={id} options={elementOptions as InputButtonProps} />;
+export type InputElementProps = Omit<InputElementPropsBase<typeof inputOptions>, 'prefix'>;
+
+export function InputElement({ service, row, tab, elementId, elementOptions }: InputElementProps) {
+  // Parse the element Options based on the type
+  const result = inputOptions.safeParse(elementOptions.input);
+
+  if (!result.success) {
+    console.error(`Error when parsing input`);
+    console.error(elementOptions.input);
+    console.error(result.error.toString());
+    return <></>;
+  }
+
+  const options = result.data!;
+  const props = {
+    prefix: `${service}-${row}-${tab}`,
+    service: service,
+    row: row,
+    tab: tab,
+    elementId: elementId,
+  };
+
+  switch (options.type) {
     case 'buttons':
-      // @ts-expect-error ToDo
-      return <InputButtons service={service} id={id} options={elementOptions as InputButtonsProps} />;
+      return <InputButtonRow {...props} elementOptions={{ input: options, label: elementOptions.label }} />;
+    case 'checkbox':
+      return <InputCheckbox {...props} elementOptions={{ input: options, label: elementOptions.label }} />;
+    case 'date':
+      return <InputDate {...props} elementOptions={{ input: options, label: elementOptions.label }} />;
+    case 'flavorinfo':
+      return <InputFlavorInfo {...props} elementOptions={{ input: options, label: elementOptions.label }} />;
+    case 'flavorlegend':
+      return <InputFlavorLegend {...props} elementOptions={{ input: options, label: elementOptions.label }} />;
     case 'label':
-      // @ts-expect-error ToDo
-      return <InputLabel service={service} id={id} options={elementOptions as InputLabelProps} />;
-    case 'modal':
-      // @ts-expect-error ToDo
-      return <InputModal service={service} id={id} options={elementOptions as InputModalProps} />;
+      return <InputLabel {...props} elementOptions={{ input: options, label: elementOptions.label }} />;
+    case 'logcontainer':
+      return <InputLogContainer {...props} elementOptions={{ input: options, label: elementOptions.label }} />;
     case 'multiple_checkboxes':
-      return (
-        // @ts-expect-error ToDo
-        <InputMultipleCheckboxes service={service} id={id} options={elementOptions as InputMultipleCheckboxesProps} />
-      );
+      return <InputMultipleCheckboxes {...props} elementOptions={{ input: options, label: elementOptions.label }} />;
+    case 'number':
+      return <InputNumber {...props} elementOptions={{ input: options, label: elementOptions.label }} />;
+    case 'reservationinfo':
+      return <InputReservationInfo {...props} elementOptions={{ input: options, label: elementOptions.label }} />;
+    case 'select':
+      return <InputSelect {...props} elementOptions={{ input: options, label: elementOptions.label }} />;
+    case 'selecthelper':
+      return <InputSelectHelper {...props} elementOptions={{ input: options, label: elementOptions.label }} />;
     case 'text':
-      // @ts-expect-error ToDo
-      return <InputText service={service} id={id} options={elementOptions as InputTextProps} />;
-    default: {
-      console.error(`Input ${type} not implemented`);
-    }
+      return <InputText {...props} elementOptions={{ input: options, label: elementOptions.label }} />;
+    case 'textgrower':
+      return <InputTextGrower {...props} elementOptions={{ input: options, label: elementOptions.label }} />;
+    case 'hr':
+      return <hr />;
   }
 }

@@ -1,28 +1,35 @@
-import { elementParameters, type Options } from '@/components/input/utils.ts';
-import { InputLabel, InputLabelProps } from '@/components/input/Label.tsx';
+import { z } from 'zod';
+import { commonInputOptions, commonParameters } from './utils.ts';
+import { InputElementPropsBase } from './index.tsx';
+import { InputFormElement } from './FormElement.tsx';
 
-export type InputMultipleCheckboxesProps = {
-  service: string;
-  id: string;
-  prefix: string;
-  elementId: string;
-  options: Options;
-};
+export const multipleCheckboxesOptions = z.object({
+  type: z.literal('multiple_checkboxes'),
+  options: commonInputOptions.optional(),
+});
 
-export function InputMultipleCheckboxes({ service, id, prefix, elementId, options }: InputMultipleCheckboxesProps) {
+export function InputMultipleCheckboxes({
+  prefix,
+  service,
+  row,
+  tab,
+  elementId,
+  elementOptions,
+}: InputElementPropsBase<typeof multipleCheckboxesOptions>) {
   return (
-    <div id={`${prefix}-${id}-input-div`} {...elementParameters(options)}>
-      <InputLabel
-        service={service}
-        id={id}
-        elementId={elementId}
-        elementOptions={options as unknown as InputLabelProps['elementOptions']}
-      />
+    <InputFormElement
+      prefix={prefix}
+      service={service}
+      row={row}
+      tab={tab}
+      elementId={elementId}
+      elementOptions={elementOptions}
+    >
       <input
         id={`${prefix}-${elementId}-checkboxes-div`}
         className="row g-0"
-        {...elementParameters(options, true)}
+        {...commonParameters(elementOptions.input.options, true)}
       ></input>
-    </div>
+    </InputFormElement>
   );
 }

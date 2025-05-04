@@ -2,18 +2,7 @@ import { Page } from '@/Page.tsx';
 import { CSSProperties, ReactNode, useMemo, useState } from 'react';
 import { Sidebar } from '@/components/Sidebar.tsx';
 import { ServiceTable } from '@/components/table/ServiceTable.tsx';
-import {
-  Accordion,
-  Button,
-  Col,
-  Form,
-  Nav,
-  ProgressBar,
-  Row,
-  TabContent,
-  TabPane,
-  useAccordionButton,
-} from 'react-bootstrap';
+import { Accordion, Button, Col, Form, Nav, ProgressBar, Row, Tab, useAccordionButton } from 'react-bootstrap';
 import { frontendCollection, SpawnerOptions } from '@/gloabals.ts';
 import { DeleteIcon, NaIcon, OpenIcon, StartIcon, StopIcon, WarningIcon } from '@/assets/icons';
 import { createRoot } from 'react-dom/client';
@@ -114,18 +103,18 @@ function SpawnerButton({
 
 type RowProps = {
   service: string;
-  id: string;
+  row: string;
   options: SpawnerOptions;
 };
 
-function RowSummary({ service, id, options }: RowProps) {
+function RowSummary({ service, row, options }: RowProps) {
   const [collapsed, setCollapsed] = useState<boolean>(true);
-  const openDetails = useAccordionButton(id, () => setCollapsed(!collapsed));
+  const openDetails = useAccordionButton(row, () => setCollapsed(!collapsed));
 
   // ToDo: Prevent opening Details when Buttons are clicked
 
   return (
-    <tr onMouseDown={openDetails} id={`${service}-${id}-summary-tr`} className="summary-tr existing-spawner-tr">
+    <tr onMouseDown={openDetails} id={`${service}-${row}-summary-tr`} className="summary-tr existing-spawner-tr">
       <td className="details-td">
         <div className={`d-flex mx-4 accordion-icon ${collapsed ? 'collapsed' : ''}`} />
       </td>
@@ -136,18 +125,18 @@ function RowSummary({ service, id, options }: RowProps) {
         <Row
           md={6}
           lg={12}
-          id={`${service}-${id}-config-td-div`}
+          id={`${service}-${row}-config-td-div`}
           className="mx-3 mb-1 g-0 justify-content-between align-items-center"
           style={{ maxHeight: '152px', overflow: 'auto' }}
         >
-          <ConfigItem name="System" value={options.system} id={`${service}-${id}-config-td-system`} />
-          {services[service].createConfigSummary(id, options)}
+          <ConfigItem name="System" value={options.system} id={`${service}-${row}-config-td-system`} />
+          {services[service].createConfigSummary(row, options)}
         </Row>
       </td>
 
       <th scope="row" className="status-td">
         <div className="d-flex justify-content-center">
-          <SpawnerProgressBar service={service} id={id} progress={0} />
+          <SpawnerProgressBar service={service} id={row} progress={0} />
         </div>
       </th>
 
@@ -156,35 +145,35 @@ function RowSummary({ service, id, options }: RowProps) {
           icon={<OpenIcon />}
           label="Open"
           variant="success"
-          id={`${service}-${id}-open-btn-header`}
+          id={`${service}-${row}-open-btn-header`}
           hidden={true}
         />
         <SpawnerButton
           icon={<StopIcon />}
           label="Stop"
           variant="danger"
-          id={`${service}-${id}-stop-btn-header`}
+          id={`${service}-${row}-stop-btn-header`}
           hidden={true}
         />
         <SpawnerButton
           icon={<StopIcon />}
           label="Cancel"
           variant="danger"
-          id={`${service}-${id}-cancel-btn-header`}
+          id={`${service}-${row}-cancel-btn-header`}
           hidden={true}
         />
         <SpawnerButton
           icon={<StartIcon />}
           label="Start"
           variant="primary"
-          id={`${service}-${id}-start-btn-header`}
+          id={`${service}-${row}-start-btn-header`}
           hidden={false}
         />
         <SpawnerButton
           icon={<NaIcon />}
           label="N/A"
           variant="secondary"
-          id={`${service}-${id}-na-btn-header`}
+          id={`${service}-${row}-na-btn-header`}
           className="btn-na-lab disabled"
           hidden={true}
         />
@@ -192,7 +181,7 @@ function RowSummary({ service, id, options }: RowProps) {
           icon={<DeleteIcon />}
           label="Delete"
           variant="danger"
-          id={`${service}-${id}-del-btn-header`}
+          id={`${service}-${row}-del-btn-header`}
           hidden={true}
         />
       </th>
@@ -201,7 +190,7 @@ function RowSummary({ service, id, options }: RowProps) {
 }
 
 // @ts-expect-error Allow unused
-function RowDetails({ service, id, options }: RowProps) {
+function RowDetails({ service, row, options }: RowProps) {
   // Instead of just .hide() it, we want to keep the width of the buttons, so the interface
   // does not wabble around when showing / hiding buttons.
   const styleHide: CSSProperties = {
@@ -213,13 +202,13 @@ function RowDetails({ service, id, options }: RowProps) {
     margin: '0 !important',
   };
 
-  const navItems = Object.entries((config as ServiceConfig).navbar).map(([name, navOptions], index) => {
+  const navs = Object.entries((config as ServiceConfig).navbar).map(([name, navOptions]) => {
     // ToDo: firstRow and defaultRow
     return (
       <Nav.Link
         as="button"
-        active={index == 0}
-        id={`${service}-${id}-${name}-navbar-button`}
+        eventKey={name}
+        id={`${service}-${row}-${name}-navbar-button`}
         className={`${navOptions.margins ?? 'mb-3'}`}
         style={navOptions.show ? {} : styleHide}
       >
@@ -232,32 +221,33 @@ function RowDetails({ service, id, options }: RowProps) {
     );
   });
 
-  const tabs = Object.entries((config as ServiceConfig).tabs).map(([tabName, tabOptions], index) => {
+  const tabs = Object.entries((config as ServiceConfig).tabs).map(([tab, tabOptions]) => {
     const elements = Object.entries(tabOptions.center).map(([elementId, elementOptions]) => {
       return (
-        <InputElement service={service} id={id} tab={tabName} elementId={elementId} elementOptions={elementOptions} />
+        <InputElement service={service} row={row} tab={tab} elementId={elementId} elementOptions={elementOptions} />
       );
     });
 
     return (
-      <TabPane active={index == 0 || tabName === 'buttonrow'}>
-        {/* table_elements.create_element */}
+      <Tab.Pane eventKey={tab} active={tab == 'buttonrow' ? true : undefined}>
         <Row className="col-12">{...elements}</Row>
-      </TabPane>
+      </Tab.Pane>
     );
   });
 
   return (
     <tr>
       <td colSpan={100} className="p-0">
-        <Accordion.Collapse eventKey={id}>
+        <Accordion.Collapse eventKey={row}>
           <div className="d-flex align-items-start m-3">
-            <Nav variant="pills" className="flex-column p-3 ps-0" style={{ minWidth: '15% !important' }}>
-              {...navItems}
-            </Nav>
-            <TabContent className="w-100">
-              <Form>{...tabs}</Form>
-            </TabContent>
+            <Tab.Container defaultActiveKey={Object.entries((config as ServiceConfig).tabs)[0][0]}>
+              <Nav variant="pills" className="flex-column p-3 ps-0" style={{ minWidth: '15% !important' }}>
+                {...navs}
+              </Nav>
+              <Tab.Content className="w-100">
+                <Form>{...tabs}</Form>
+              </Tab.Content>
+            </Tab.Container>
           </div>
         </Accordion.Collapse>
       </td>
@@ -284,8 +274,8 @@ export function Home() {
           <ServiceTable service={service} description={description} header={<HomeTableHeader />}>
             {spawners.map(([rowId, rowOptions]) => (
               <>
-                <RowSummary service={service} id={rowId} options={rowOptions} />
-                <RowDetails service={service} id={rowId} options={rowOptions} />
+                <RowSummary service={service} row={rowId} options={rowOptions} />
+                <RowDetails service={service} row={rowId} options={rowOptions} />
               </>
             ))}
           </ServiceTable>

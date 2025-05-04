@@ -1,35 +1,34 @@
-import { InputHTMLAttributes } from 'react';
+import { HTMLProps } from 'react';
+import { z } from 'zod';
 
-export type Options = {
-  input: {
-    options?: {
-      size?: number;
-      multiple?: boolean;
-      enabled?: boolean;
-      required?: boolean;
-      pattern?: string;
-      value?: string;
-      show?: boolean;
-    };
-  };
-};
+export const commonInputOptions = z.object({
+  size: z.number().optional(),
+  multiple: z.boolean().optional(),
+  enabled: z.coerce.boolean().optional(),
+  required: z.boolean().optional(),
+  pattern: z.string().optional(),
+  placeholder: z.string().optional(),
+  value: z.string().optional(),
+  show: z.boolean().optional(),
+});
 
-export function elementParameters(options: Options, defineShow: boolean = false) {
-  const params: InputHTMLAttributes<HTMLInputElement> = {};
+export function commonParameters<T>(options?: z.infer<typeof commonInputOptions>, defineShow: boolean = false): T {
+  const params: HTMLProps<HTMLInputElement> = {};
 
-  params.size = options.input.options?.size;
-  params.multiple = options.input.options?.multiple;
-  params.required = options.input.options?.required;
-  params.pattern = options.input.options?.pattern;
-  params.value = options.input.options?.value;
+  params.size = options?.size;
+  params.multiple = options?.multiple;
+  params.required = options?.required;
+  params.pattern = options?.pattern;
+  params.placeholder = options?.placeholder;
+  params.value = options?.value;
 
-  if (options.input.options?.enabled != undefined) {
-    params.disabled = !options.input.options.enabled;
+  if (options?.enabled != undefined) {
+    params.disabled = !options.enabled;
   }
 
-  if (defineShow && !options.input.options?.show) {
+  if (defineShow && !options?.show) {
     params.style = { display: 'none' };
   }
 
-  return params;
+  return params as T;
 }

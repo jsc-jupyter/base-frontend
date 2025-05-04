@@ -1,3 +1,6 @@
+import { Button } from 'react-bootstrap';
+import { z } from 'zod';
+import { InputModal } from './Modal.tsx';
 import {
   DeleteIcon,
   OpenIcon,
@@ -9,7 +12,7 @@ import {
   StartIcon,
   StopIcon,
 } from '@/assets/icons';
-import { Button } from 'react-bootstrap';
+import { InputElementPropsBase } from './index.tsx';
 
 const types = {
   cancel: {
@@ -79,21 +82,23 @@ const types = {
   },
 };
 
-type ButtonType = keyof typeof types;
+const [first, ...other] = Object.keys(types) as (keyof typeof types)[];
+const buttonTypes = z.enum([first, ...other]);
 
-export type InputButtonProps = {
+const buttonOptions = z.object({
+  text: z.string().optional(),
+  alignRight: z.boolean().optional(),
+  textFirst: z.boolean().optional(),
+});
+
+type ButtonProps = {
   service: string;
   id: string;
-  type: ButtonType;
-  options: {
-    text?: string;
-    alignRight?: boolean;
-    textFirst?: boolean;
-    dependency?: object;
-  };
+  type: z.infer<typeof buttonTypes>;
+  options: z.infer<typeof buttonOptions>;
 };
 
-export function InputButton({ service, id, type, options }: InputButtonProps) {
+function InputButton({ service, id, type, options }: ButtonProps) {
   const defaults = types[type];
   const text = options.text ?? defaults.text;
 
@@ -113,5 +118,39 @@ export function InputButton({ service, id, type, options }: InputButtonProps) {
         </>
       )}
     </Button>
+  );
+}
+
+/*
+ ToDo: There is a bug in zod, where we cannot represent the `buttons` array in the options.
+  Issue: https://github.com/colinhacks/zod/issues/2195.
+  Maybe use a custom validator/transform? Using passthrough for now.
+*/
+export const buttonRowOptions = z.object({
+  type: z.literal('buttons'),
+  options: z
+    .object({
+      buttons: z.array(buttonTypes),
+    })
+    .passthrough(),
+});
+
+export function InputButtonRow({ service, row, elementOptions }: InputElementPropsBase<typeof buttonRowOptions>) {
+  const buttons = Object.entries(elementOptions.input.options)
+    .filter(([type, _]) => type !== 'buttons') // Ignore the `buttons` array
+    .map(([type, opts]) => {
+      return (
+        <InputButton service={service} id={row} type={buttonTypes.parse(type)} options={buttonOptions.parse(opts)} />
+      );
+    });
+
+  return (
+    <>
+      <hr />
+      <div className="d-flex" id={`${service}-${row}-buttons-div`}>
+        {...buttons}
+      </div>
+      <InputModal service={service} id={row} />
+    </>
   );
 }
