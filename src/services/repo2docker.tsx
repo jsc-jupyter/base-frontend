@@ -1,9 +1,11 @@
 import { SpawnerOptions, staticUrl } from '@/gloabals.ts';
 import { ReactNode } from 'react';
 import { ConfigItem } from '@/components/table/ConfigItem.tsx';
+import { ServiceConfig } from '@/components/table/config.ts';
 
 export const displayName = 'repo2docker';
 export const iconPath = staticUrl('images', 'services', 'repo2docker.svg');
+export const config: ServiceConfig = { navbar: {}, tabs: {} };
 
 const repotypeMapping = {
   gh: 'GitHub',

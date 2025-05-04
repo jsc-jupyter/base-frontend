@@ -1,11 +1,12 @@
 import { SpawnerOptions, staticUrl } from '@/gloabals.ts';
 import { ConfigItem } from '@/components/table/ConfigItem.tsx';
 import { ReactNode } from 'react';
-
-// export { default as config } from '@/assets/configs/jupyterlab_config.json';
+import { ServiceConfig } from '@/components/table/config.ts';
+import { default as jupyterLabConfig } from '@/assets/configs/jupyterlab_config.json';
 
 export const displayName = 'JupyterLab';
 export const iconPath = staticUrl('images', 'services', 'jupyterlab.svg');
+export const config = jupyterLabConfig as ServiceConfig;
 
 interface JupyterLabCloudOptions extends SpawnerOptions {
   flavor: string;
