@@ -621,6 +621,8 @@
         {%- if pagetype == vars.pagetype_workshopmanager %}
           {%- for row_id, values in db_workshops.items() %}
             workshopManagerFillExistingRow("{{ service_id }}", "{{ row_id }}", {{ values | tojson }}, {{ service_options.get("fillingOrder", []) | tojson }});
+          $('#{{ service_id }}-{{ row_id }}-loading-tr').hide();
+          $('#{{ service_id }}-{{ row_id }}-summary-tr').show();
           {%- endfor %}
         {%- elif pagetype == vars.pagetype_workshop %}
           workshopFillExistingRow("{{ service_id }}", "{{ spawner.name }}", {{ workshop_options | tojson }}, {{ service_options.get("fillingOrder", []) | tojson }});
@@ -629,7 +631,31 @@
               appendToLog("{{ service_id }}", "{{ spawner.name }}", {{ event | tojson }});
             {%- endfor %}
           {%- endif %}
+          $('#{{ service_id }}-{{ spawner.name }}-loading-tr').hide();
+          $('#{{ service_id }}-{{ spawner.name }}-summary-tr').show();
         {%- elif pagetype == vars.pagetype_home %}
+          const queryString = window.location.search;
+          const urlParams = new URLSearchParams(queryString);
+          let serviceValue = "";
+          let rowValue = "";
+          let start = false;
+          let showlogs = false;
+          if (urlParams.has('row') && urlParams.has('service')) {
+            serviceValue = urlParams.get('service');
+            rowValue = urlParams.get('row');
+            start = urlParams.has('start')
+            showlogs = urlParams.has('showlogs');
+          } else if (localStorage.getItem('row') && localStorage.getItem('service')) {
+            // Get the value of the "row" parameter
+            serviceValue = localStorage.getItem('service');
+            rowValue = localStorage.getItem('row');
+            localStorage.removeItem('service');
+            localStorage.removeItem('row');
+            start = localStorage.getItem("start") === "true";
+            if ( start ) localStorage.removeItem('start');
+            showlogs = localStorage.getItem("showlogs") === "true";
+            if ( showlogs ) localStorage.removeItem('showlogs');
+          }
           {%- for active in [True, False] %}
             {%- for s in spawners %}
               {%- set spawner = user.spawners.get(s.name, s) %}
@@ -643,25 +669,59 @@
                         appendToLog("{{ service_id }}", "{{ spawner.name }}", {{ event | tojson }});
                       {%- endfor %}
                     {%- endif %}
+                    $('#{{ service_id }}-{{ spawner.name }}-loading-tr').hide();
                     $('#{{ service_id }}-{{ spawner.name }}-summary-tr').show();
+                    if ( "{{ service_id }}" === serviceValue && "{{ spawner.name }}" === rowValue) {
+                      if ( rowValue && serviceValue ) { 
+                        $(`div[id$='-table-div']:not([id^='${serviceValue}-'])`).hide();
+                        $(`div[id$='-table-div'][id^='${serviceValue}-']`).show();
+                        let summaryTr = $(`${serviceValue}-${rowValue}-summary-tr`);
+                        let option = summaryTr.attr("data-option");
+                        $(`div[id$='-collapse']:not([id^='${serviceValue}-${rowValue}-collapse'])`).removeClass("show");
+                        $(`div[id^='${serviceValue}-${rowValue}-collapse']`).addClass("show");
+                        let x = document.getElementById(`${serviceValue}-${rowValue}-summary-tr`)
+                        if ( x ) x.scrollIntoView();
+                        if ( start ) {
+                          const ready = $(`#${serviceValue}-${rowValue}-summary-tr`).attr("data-spawner-ready");
+                          const active = $(`#${serviceValue}-${rowValue}-summary-tr`).attr("data-spawner-active");
+                          if ( ready === "true" ) {
+                            window.open(`/user/{{ user.name }}/${rowValue}`, "_blank");
+                          } else if ( active === "false" ) {
+                            $(`[id^='${serviceValue}-${rowValue}-'][id$='-start-btn-header']`).trigger("click");
+                          } else {
+                            $(`[id^='${serviceValue}-${rowValue}-'][id$='-logs-navbar-button']`).trigger("click");
+                            homeHeaderUpdate(serviceValue, rowValue);
+                            if ( serviceValue === "jupyterlab" && option === "repo2docker" ) {
+                              updateHeaderButtons(serviceValue, rowValue, "building");
+                              progressBarUpdate(serviceValue, rowValue, "building", 2);
+                            } else {
+                              updateHeaderButtons(serviceValue, rowValue, "starting");
+                              progressBarUpdate(serviceValue, rowValue, "starting", 10);
+                            }
+                          }
+                        }
+                        if ( showlogs ) {
+                          $(`[id^='${serviceValue}-${rowValue}-'][id$='-logs-navbar-button']`).trigger("click");
+                        }
+                      }
+                    }
                   });
                 {%- endif %}
               {%- endif %}
             {%- endfor %}
           {%- endfor %}
+          function runNextTask() {
+            {# Run tasks in background, to have a more visible loading progress, and users can already use loaded rows #}
+            if (rowTasks.length === 0) return;
+            const task = rowTasks.shift();
+            task();
+
+            setTimeout(runNextTask, 20);
+          }
+          setTimeout(runNextTask, 0);
         {%- endif %}
         logDebug && console.log("Set default values ( {{ service_id }} ) done");
       {%- endfor %}
-
-      function runNextTask() {
-        if (rowTasks.length === 0) return;
-        const task = rowTasks.shift();
-        task();
-
-        // Schedule the next row processing after 50ms (adjust as needed)
-        setTimeout(runNextTask, 20);
-      }
-      setTimeout(runNextTask, 0);
 
       {%- if pagetype == vars.pagetype_workshop %}
         let name = "";
@@ -714,61 +774,6 @@
           defaultLogs(serviceId, "{{ spawner.name }}");
         {%- endif %}
       {%- endif %}
-
-      const queryString = window.location.search;
-      const urlParams = new URLSearchParams(queryString);
-      let serviceValue = "";
-      let rowValue = "";
-      let start = false;
-      let showlogs = false;
-      if (urlParams.has('row') && urlParams.has('service')) {
-        serviceValue = urlParams.get('service');
-        rowValue = urlParams.get('row');
-        start = urlParams.has('start')
-        showlogs = urlParams.has('showlogs');
-      } else if (localStorage.getItem('row') && localStorage.getItem('service')) {
-        // Get the value of the "row" parameter
-        serviceValue = localStorage.getItem('service');
-        rowValue = localStorage.getItem('row');
-        localStorage.removeItem('service');
-        localStorage.removeItem('row');
-        start = localStorage.getItem("start") === "true";
-        if ( start ) localStorage.removeItem('start');
-        showlogs = localStorage.getItem("showlogs") === "true";
-        if ( showlogs ) localStorage.removeItem('showlogs');
-      }
-      if ( rowValue && serviceValue ) { 
-        $(`div[id$='-table-div']:not([id^='${serviceValue}-'])`).hide();
-        $(`div[id$='-table-div'][id^='${serviceValue}-']`).show();
-        let summaryTr = $(`${serviceValue}-${rowValue}-summary-tr`);
-        let option = summaryTr.attr("data-option");
-        $(`div[id$='-collapse']:not([id^='${serviceValue}-${rowValue}-collapse'])`).removeClass("show");
-        $(`div[id^='${serviceValue}-${rowValue}-collapse']`).addClass("show");
-        let x = document.getElementById(`${serviceValue}-${rowValue}-summary-tr`)
-        if ( x ) x.scrollIntoView();
-        if ( start ) {
-          const ready = $(`#${serviceValue}-${rowValue}-summary-tr`).attr("data-spawner-ready");
-          const active = $(`#${serviceValue}-${rowValue}-summary-tr`).attr("data-spawner-active");
-          if ( ready === "true" ) {
-            window.open(`/user/{{ user.name }}/${rowValue}`, "_blank");
-          } else if ( active === "false" ) {
-            $(`[id^='${serviceValue}-${rowValue}-'][id$='-start-btn-header']`).trigger("click");
-          } else {
-            $(`[id^='${serviceValue}-${rowValue}-'][id$='-logs-navbar-button']`).trigger("click");
-            homeHeaderUpdate(serviceValue, rowValue);
-            if ( serviceValue === "jupyterlab" && option === "repo2docker" ) {
-              updateHeaderButtons(serviceValue, rowValue, "building");
-              progressBarUpdate(serviceValue, rowValue, "building", 2);
-            } else {
-              updateHeaderButtons(serviceValue, rowValue, "starting");
-              progressBarUpdate(serviceValue, rowValue, "starting", 10);
-            }
-          }
-        }
-        if ( showlogs ) {
-          $(`[id^='${serviceValue}-${rowValue}-'][id$='-logs-navbar-button']`).trigger("click");
-        }
-      }
     });
   });
   {%- if pagetype == vars.pagetype_workshop %}
