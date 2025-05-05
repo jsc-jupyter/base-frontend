@@ -596,7 +596,11 @@
 
 
       logDebug && console.log(`Fill elements ...`);
-      $(`[id*='-{{ vars.first_row_id }}-'][id$='-input']`).trigger("trigger_init");
+      {% if pagetype == vars.pagetype_home %}
+        $(`[id*='-{{ vars.first_row_id }}-'][id$='-input']`).trigger("trigger_init");
+      {% else %}
+        $(`[id$='-input']`).trigger("trigger_init");
+      {% endif %}
       logDebug && console.log(`Fill elements ... done`);
       const rowTasks = [];
 
