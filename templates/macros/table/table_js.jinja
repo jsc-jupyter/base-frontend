@@ -2626,6 +2626,9 @@
         repourl = encodeURIComponent(repourl);
       }
       let url = "";
+      if ( ["git", "gl", "hydroshare", "ckan"].includes(type) ) {
+        repourl = encodeURIComponent(repourl)
+      }
       if ( Object.keys(userOptions.repo2docker).includes("reporef") ) {
         const reporef = userOptions.repo2docker?.reporef || "HEAD";        
         // url = new URL(utils.url_path_join("https://mybinder.org", "build", type, repourl, reporef).replace("//", "/"));

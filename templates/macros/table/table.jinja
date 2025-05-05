@@ -53,7 +53,11 @@
               {%- endif %}
               {%- if (is_first_type and row_id == vars.first_row_id) or (spawnertype == type and row_id != vars.first_row_id) %}
                 <!-- summary of row -->
+                
                 <tr id="{{ service_id }}-{{ row_id }}-summary-tr" data-server-id="{{ service_id }}-{{ row_id }}" 
+                {% if not (is_first_row and is_first_type) %}
+                  style="display: none"
+                {% endif %}
                 class="summary-tr
                 {%- if is_first_row and is_first_type %}
                 new-spawner-tr
@@ -86,7 +90,7 @@
                   data-spawner-active="{{ spawner.active | lower }}"
                   data-spawner-ready="{{ spawner.ready | lower }}"
                 {%- endif %}
-                >
+                >                  
                   <td class="details-td" data-bs-target="#{{ row_id }}-collapse">
                     {%- if loop.first %}
                       <div class="d-flex mx-4">
@@ -100,10 +104,50 @@
                     {{ macro_defaultheader(service_id, row_id, row_options, service_options) }}
                   {%- else %}
                     {%- if macro_firstheader %}
+
                       {{ macro_firstheader(service_id, row_id, row_options, service_options) }}
                     {%- endif %}
                   {%- endif %}
                 </tr>
+                {%- if loop.index0 and macro_defaultheader and pagetype == vars.pagetype_home %}
+                <tr id="{{ service_id }}-{{ row_id }}-loading-tr"
+                class="summary-tr"
+                  data-service="{{ service_id }}"
+                  data-row="{{ row_id }}"
+                >
+                  <th></th>
+                  <th></th>
+<th>
+  <div style="display: flex; align-items: center; justify-content: center; height: 100%;">
+    <div class="spinner-border" role="status" style="margin-right: 10px;">
+      <span class="sr-only">Loading...</span>
+    </div>
+    <p style="margin: 0;">Loading ...</p>
+  </div>
+</th>
+                  <th></th>
+                  <th></th>
+                </tr>
+                {%- endif %}
+                {%- if loop.index0 and macro_defaultheader and pagetype == vars.pagetype_workshopmanager %}
+                <tr id="{{ service_id }}-{{ row_id }}-loading-tr"
+                class="summary-tr"
+                  data-service="{{ service_id }}"
+                  data-row="{{ row_id }}"
+                >
+                  <th></th>
+                  <th></th>
+<th>
+  <div style="display: flex; align-items: center; justify-content: center; height: 100%;">
+    <div class="spinner-border" role="status" style="margin-right: 10px;">
+      <span class="sr-only">Loading...</span>
+    </div>
+    <p style="margin: 0;">Loading ...</p>
+  </div>
+</th>
+                  <th></th>
+                </tr>
+                {%- endif %}
 
                 {%- if pagetype == vars.pagetype_home and row_options.get("workshop_id", false ) %}
                 {%- else %}

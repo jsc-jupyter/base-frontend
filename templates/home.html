@@ -16,10 +16,14 @@
 
 {%- set table_rows = {vars.first_row_id: {}} %}
 
-{%- for spawner in spawners %}
-  {%- if ( spawner != None and spawner.user_options != None and spawner.user_options.get("name", false) ) %}
-    {%- set _ = table_rows.update({spawner.name: frontendCollection.get("decrypted_user_options").get(spawner.name, spawner.user_options)}) %}
-  {%- endif %}
+{%- for active in [True, False] %}
+  {%- for spawner in spawners %}
+    {% if (spawner.name in user.spawners.keys() and user.spawners.get(spawner.name).active == active) or not active %}
+      {%- if ( spawner != None and spawner.user_options != None and spawner.user_options.get("name", false) ) %}
+        {%- set _ = table_rows.update({spawner.name: frontendCollection.get("decrypted_user_options").get(spawner.name, spawner.user_options)}) %}
+      {%- endif %}
+    {%- endif %}
+  {%- endfor %}
 {%- endfor %}
 
 {%- from "macros/table/table.jinja" import tables with context %}
