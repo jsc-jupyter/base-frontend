@@ -109,7 +109,7 @@
                     {%- endif %}
                   {%- endif %}
                 </tr>
-                {%- if loop.index0 and macro_defaultheader %}
+                {%- if loop.index0 and macro_defaultheader and pagetype === vars.pagetype_home %}
                 <tr id="{{ service_id }}-{{ row_id }}-loading-tr"
                 class="summary-tr"
                   data-service="{{ service_id }}"
@@ -126,6 +126,25 @@
   </div>
 </th>
                   <th></th>
+                  <th></th>
+                </tr>
+                {%- endif %}
+                {%- if loop.index0 and macro_defaultheader and pagetype === vars.pagetype_workshopmanager %}
+                <tr id="{{ service_id }}-{{ row_id }}-loading-tr"
+                class="summary-tr"
+                  data-service="{{ service_id }}"
+                  data-row="{{ row_id }}"
+                >
+                  <th></th>
+                  <th></th>
+<th>
+  <div style="display: flex; align-items: center; justify-content: center; height: 100%;">
+    <div class="spinner-border" role="status" style="margin-right: 10px;">
+      <span class="sr-only">Loading...</span>
+    </div>
+    <p style="margin: 0;">Loading ...</p>
+  </div>
+</th>
                   <th></th>
                 </tr>
                 {%- endif %}
