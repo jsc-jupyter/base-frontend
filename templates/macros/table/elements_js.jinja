@@ -596,8 +596,9 @@
 
 
       logDebug && console.log(`Fill elements ...`);
-      $(`[id$='-input']`).trigger("trigger_init");
+      $(`[id*='-{{ vars.first_row_id }}-'][id$='-input']`).trigger("trigger_init");
       logDebug && console.log(`Fill elements ... done`);
+      const rowTasks = [];
 
       // Set Defaults, as configured in config file
       {%- for service_id, service_options in config.frontend_config.get("services", {}).get("options", {}).items() %}
@@ -625,21 +626,38 @@
             {%- endfor %}
           {%- endif %}
         {%- elif pagetype == vars.pagetype_home %}
-          {%- for s in spawners %}
-            {%- set spawner = user.spawners.get(s.name, s) %}
-            {%- if spawner.user_options and spawner.user_options.get("name", false) %}
-              homeFillExistingRow("{{ service_id }}", "{{ spawner.name }}", {{ frontendCollection.get("decrypted_user_options").get(spawner.name, spawner.user_options) | tojson }}, {{ service_options.get("fillingOrder", []) | tojson }});
-              {%- if spawner.events %}
-                {%- for event in spawner.events %}
-                  appendToLog("{{ service_id }}", "{{ spawner.name }}", {{ event | tojson }});
-                {%- endfor %}
+          {%- for active in [True, False] %}
+            {%- for s in spawners %}
+              {%- set spawner = user.spawners.get(s.name, s) %}
+              {% if spawner.active == active %}
+                {%- if spawner.user_options and spawner.user_options.get("name", false) %}
+                  rowTasks.push(() => {
+                    $(`[id^='{{ service_id }}-{{ spawner.name }}-'][id$='-input']`).trigger("trigger_init");
+                    homeFillExistingRow("{{ service_id }}", "{{ spawner.name }}", {{ frontendCollection.get("decrypted_user_options").get(spawner.name, spawner.user_options) | tojson }}, {{ service_options.get("fillingOrder", []) | tojson }});
+                    {%- if spawner.events %}
+                      {%- for event in spawner.events %}
+                        appendToLog("{{ service_id }}", "{{ spawner.name }}", {{ event | tojson }});
+                      {%- endfor %}
+                    {%- endif %}
+                    $('#{{ service_id }}-{{ spawner.name }}-summary-tr').show();
+                  });
+                {%- endif %}
               {%- endif %}
-            {%- endif %}
+            {%- endfor %}
           {%- endfor %}
         {%- endif %}
         logDebug && console.log("Set default values ( {{ service_id }} ) done");
-        
       {%- endfor %}
+
+      function runNextTask() {
+        if (rowTasks.length === 0) return;
+        const task = rowTasks.shift();
+        task();
+
+        // Schedule the next row processing after 50ms (adjust as needed)
+        setTimeout(runNextTask, 20);
+      }
+      setTimeout(runNextTask, 0);
 
       {%- if pagetype == vars.pagetype_workshop %}
         let name = "";
