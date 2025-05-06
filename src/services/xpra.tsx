@@ -1,12 +1,18 @@
 import { SpawnerOptions, staticUrl } from '@/gloabals.ts';
 import { ReactNode } from 'react';
-import { ServiceConfig } from '@/components/table/config.ts';
+import { ServiceProperties } from '@/services/index.ts';
 
-export const displayName = 'Xpra (Remote Desktop)';
-export const iconPath = staticUrl('images', 'services', 'xpra.svg');
-export const config: ServiceConfig = { navbar: {}, tabs: {} };
-
-// @ts-expect-error Allow unused
-export function createConfigSummary(id: string, options: SpawnerOptions): ReactNode {
+// @ts-expect-error Allow Unused
+function createConfigSummary(id: string, options: SpawnerOptions): ReactNode {
   return <></>;
 }
+
+const xpraService: ServiceProperties = {
+  displayName: 'Xpra (Remote Desktop)',
+  iconPath: staticUrl('images', 'services', 'xpra.svg'),
+  config: { navbar: {}, tabs: {} },
+  createConfigSummary: createConfigSummary,
+  summaryButtons: {},
+};
+
+export default xpraService;

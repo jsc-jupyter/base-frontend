@@ -1,18 +1,15 @@
 import { SpawnerOptions, staticUrl } from '@/gloabals.ts';
 import { ConfigItem } from '@/components/table/ConfigItem.tsx';
 import { ReactNode } from 'react';
+import { default as config } from '@/assets/configs/jupyterlab_config.json';
+import { ServiceProperties } from '@/services/index.ts';
 import { ServiceConfig } from '@/components/table/config.ts';
-import { default as jupyterLabConfig } from '@/assets/configs/jupyterlab_config.json';
-
-export const displayName = 'JupyterLab';
-export const iconPath = staticUrl('images', 'services', 'jupyterlab.svg');
-export const config = jupyterLabConfig as ServiceConfig;
 
 interface JupyterLabCloudOptions extends SpawnerOptions {
   flavor: string;
 }
 
-export function JupyterLabCloudConfigSummary({ id, options }: { id: string; options: JupyterLabCloudOptions }) {
+function JupyterLabCloudConfigSummary({ id, options }: { id: string; options: JupyterLabCloudOptions }) {
   return (
     <>
       <ConfigItem name="Option" value={options.profile} id={`jupyterlab-${id}-config-td-option`} />
@@ -38,7 +35,7 @@ export function JupyterLabHpcConfigSummary({ id, options }: { id: string; option
   );
 }
 
-export function createConfigSummary(id: string, options: SpawnerOptions): ReactNode {
+function createConfigSummary(id: string, options: SpawnerOptions): ReactNode {
   // ToDo: Do some proper parsing (maybe with smth like zod?)
   if (options.system === 'JSC-Cloud' || 'flavor' in options) {
     return <JupyterLabCloudConfigSummary id={id} options={options as JupyterLabCloudOptions} />;
@@ -48,3 +45,13 @@ export function createConfigSummary(id: string, options: SpawnerOptions): ReactN
 
   return <></>;
 }
+
+const jupyterLabService: ServiceProperties = {
+  displayName: 'JupyterLab',
+  iconPath: staticUrl('images', 'services', 'jupyterlab.svg'),
+  config: config as ServiceConfig,
+  createConfigSummary: createConfigSummary,
+  summaryButtons: {},
+};
+
+export default jupyterLabService;

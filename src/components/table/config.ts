@@ -6,8 +6,6 @@
 //
 // }
 //
-// type summaryButton = (serviceId: serviceId, rowId: rowId, buttonId: string, button_options: object, user: string, api: any, base_url: string, utils: any) => void;
-//
 
 import { InputElementProps } from '@/components/input';
 
