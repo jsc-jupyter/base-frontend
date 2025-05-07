@@ -51,7 +51,9 @@ export function RowDetails({ service, row }: RowDetailsProps) {
 
     return (
       <Tab.Pane eventKey={tab} active={tab == 'buttonrow' ? true : undefined}>
-        <Row className="col-12">{...elements}</Row>
+        <Row>
+          <div className="col-12">{...elements}</div>
+        </Row>
       </Tab.Pane>
     );
   });
@@ -61,13 +63,13 @@ export function RowDetails({ service, row }: RowDetailsProps) {
       <td colSpan={100} className="p-0">
         <Accordion.Collapse eventKey={row}>
           <div className="d-flex align-items-start m-3">
-            <Tab.Container defaultActiveKey={Object.entries(config.tabs)[0][0]}>
-              <Nav variant="pills" className="flex-column p-3 ps-0" style={{ minWidth: '15% !important' }}>
+            <Tab.Container defaultActiveKey={Object.entries(config.tabs)?.[0]?.[0]}>
+              <Nav variant="pills" className="flex-column p-3 ps-0" style={{ minWidth: '15%' }}>
                 {...navs}
               </Nav>
-              <Tab.Content className="w-100">
-                <Form>{...tabs}</Form>
-              </Tab.Content>
+              <Form className="w-100">
+                <Tab.Content>{...tabs}</Tab.Content>
+              </Form>
             </Tab.Container>
           </div>
         </Accordion.Collapse>

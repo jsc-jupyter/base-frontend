@@ -22,11 +22,11 @@ export function commonParameters<T>(options?: z.infer<typeof commonInputOptions>
   params.placeholder = options?.placeholder;
   params.value = options?.value;
 
-  if (options?.enabled != undefined) {
-    params.disabled = !options.enabled;
+  if (options?.enabled === false) {
+    params.disabled = true;
   }
 
-  if (defineShow && !options?.show) {
+  if (defineShow && options?.show === false) {
     params.style = { display: 'none' };
   }
 

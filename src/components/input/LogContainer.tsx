@@ -23,13 +23,15 @@ export function InputLogContainer({
           ></div>
         </div>
       </div>
-      <Card.Body
-        id={`${prefix}-${elementId}-input`}
-        className="text-black row g-0"
-        {...commonParameters<CardBodyProps>(elementOptions.input.options)}
-      >
-        <div className="log-div">Logs collected during the Start process will be shown here.</div>
-      </Card.Body>
+      <Card>
+        <Card.Body
+          id={`${prefix}-${elementId}-input`}
+          className="text-black row g-0"
+          {...commonParameters<CardBodyProps>(elementOptions.input.options)}
+        >
+          <div className="log-div">Logs collected during the Start process will be shown here.</div>
+        </Card.Body>
+      </Card>
     </>
   );
 }

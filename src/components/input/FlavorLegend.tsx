@@ -26,14 +26,14 @@ export function InputFlavorLegend({
       {...commonParameters<RowProps>(elementOptions.input.options, true)}
     >
       <span className="col-4 fw-bold">Available Flavors</span>
-      <Col class="d-flex align-items-center ms-2">
-        <div style={{ ...boxStyle, backgroundColor: '#198754;' }}></div>
+      <Col className="d-flex align-items-center ms-2">
+        <div style={{ ...boxStyle, backgroundColor: '#198754' }}></div>
         <span className="ms-1">= Free</span>
         <span className="mx-2"></span>
-        <div style={{ ...boxStyle, backgroundColor: '#023d6b;' }}></div>
+        <div style={{ ...boxStyle, backgroundColor: '#023d6b' }}></div>
         <span className="ms-1">= Used</span>
         <span className="mx-2"></span>
-        <div style={{ ...boxStyle, backgroundColor: '#dc3545;' }}></div>
+        <div style={{ ...boxStyle, backgroundColor: '#dc3545' }}></div>
         <span className="ms-1">= Limit exceeded</span>
       </Col>
     </Row>

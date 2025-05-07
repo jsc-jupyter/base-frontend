@@ -4,6 +4,7 @@ import { commonInputOptions, commonParameters } from '@/components/input/utils.t
 import { CopyIcon } from '@/assets/icons';
 import { InputElementPropsBase } from '@/components/input/index.tsx';
 import { InputFormElement } from '@/components/input/FormElement.tsx';
+import { useState } from 'react';
 
 export const textOptions = z.object({
   type: z.literal('text'),
@@ -24,6 +25,9 @@ export function InputText({
   elementId,
   elementOptions,
 }: InputElementPropsBase<typeof textOptions>) {
+  // ToDo: Hack
+  const [enabled, setEnabled] = useState(!elementOptions.label?.type.includes('checkbox'));
+
   const secret = !!elementOptions.input.options?.secret;
   const copy = !!elementOptions.input.options?.copy;
 
@@ -33,6 +37,7 @@ export function InputText({
         type={secret ? 'password' : 'text'}
         name={`${elementOptions.input.options?.name ?? elementId}`}
         {...commonParameters<FormControlProps>(elementOptions.input.options)}
+        disabled={!enabled}
       />
       {secret ? (
         <>
@@ -64,6 +69,7 @@ export function InputText({
       tab={tab}
       elementId={elementId}
       elementOptions={elementOptions}
+      onCheckboxChange={setEnabled}
     >
       {secret || copy ? <InputGroup>{inner}</InputGroup> : inner}
     </InputFormElement>

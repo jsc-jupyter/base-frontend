@@ -50,7 +50,14 @@ export const labelOptions = z.object({
   type: z.literal('label'),
 });
 
-export function InputLabel({ prefix, elementId, elementOptions }: InputElementPropsBase<typeof labelOptions>) {
+export type InputLabelCallbacks = {
+  onInfoClick?: () => void;
+  onCheckboxChange?: (value: boolean) => void;
+};
+
+type InputLabelProps = InputElementPropsBase<typeof labelOptions> & InputLabelCallbacks;
+
+export function InputLabel({ prefix, elementId, elementOptions, onInfoClick, onCheckboxChange }: InputLabelProps) {
   if (!elementOptions.label) {
     return <></>;
   }
@@ -60,7 +67,7 @@ export function InputLabel({ prefix, elementId, elementOptions }: InputElementPr
     <Form.Label
       htmlFor={`${prefix}-${elementId}-input`}
       column={true}
-      className={`col-${label.width ?? 4} d-flex align-items-start justify-content-between`}
+      className={`col-${label.width ?? 4} d-flex align-items-center justify-content-between`}
     >
       {label.type !== 'header' && label.value}
       {(label.type === 'texticon' || label.type === 'texticoncheckbox') && (
@@ -69,7 +76,7 @@ export function InputLabel({ prefix, elementId, elementOptions }: InputElementPr
         </a>
       )}
       {label.type === 'texticonclick' && (
-        <Button title={label.icontext}>
+        <Button title={label.icontext} onClick={onInfoClick}>
           <InfoIcon />
           <span className="text-muted" style={{ fontSize: 'smaller' }}>
             (click me)
@@ -81,6 +88,7 @@ export function InputLabel({ prefix, elementId, elementOptions }: InputElementPr
         label.type === 'texticoncheckbox') && (
         <input
           type="checkbox"
+          onChange={e => onCheckboxChange?.(e.target.checked)}
           style={{ marginLeft: (label.options?.alignRight ?? true) ? 'auto' : '.5em' }}
           name={label.options?.name}
         />

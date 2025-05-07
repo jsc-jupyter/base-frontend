@@ -3,15 +3,16 @@ import { Row, RowProps } from 'react-bootstrap';
 import { ReactNode } from 'react';
 import { InputElementPropsBase } from './index.tsx';
 import { commonInputOptions, commonParameters } from './utils.ts';
-import { InputLabel } from './Label.tsx';
+import { InputLabel, InputLabelCallbacks } from './Label.tsx';
 
 const inputElementOptions = z.object({
   options: commonInputOptions.optional(),
 });
 
-type InputFormElementProps = InputElementPropsBase<typeof inputElementOptions> & {
-  children: ReactNode;
-};
+type InputFormElementProps = InputElementPropsBase<typeof inputElementOptions> &
+  InputLabelCallbacks & {
+    children: ReactNode;
+  };
 
 export function InputFormElement({
   prefix,
@@ -21,6 +22,8 @@ export function InputFormElement({
   elementId,
   elementOptions,
   children,
+  onCheckboxChange,
+  onInfoClick,
 }: InputFormElementProps) {
   const width = 12 - (elementOptions.label?.width ?? 4);
 
@@ -37,6 +40,8 @@ export function InputFormElement({
         tab={tab}
         elementId={elementId}
         elementOptions={{ input: { type: 'label' }, label: elementOptions.label }}
+        onCheckboxChange={onCheckboxChange}
+        onInfoClick={onInfoClick}
       />
       <div className={`col-${width} d-flex flex-column justify-content-center`}>{children}</div>
     </Row>
