@@ -252,6 +252,7 @@
         const $this = $(this);
         const serviceId = $this.attr("data-service");
         const rowId = $this.attr("data-row");
+        const processId = `${serviceId}-${rowId}`;
         if ( Object.keys(data).includes(rowId) ){
           const ready = data[rowId]?.ready ?? false;
           const failed = data[rowId]?.failed ?? false;
@@ -267,9 +268,11 @@
           if ( ready ) {
             updateHeaderButtons(serviceId, rowId, "waiting");
             const url = data[rowId]?.url ?? "{{ url }}";
-            checkAndOpenUrl(serviceId, rowId, url, false);
+            finishedStartingProcess.push({ id: processId, url: url });
+            // checkAndOpenUrl(serviceId, rowId, url, false);
           } else if ( failed ) {
             updateHeaderButtons(serviceId, rowId, "stopped");
+            runningStartingProcesses = runningStartingProcesses.filter(p => p !== processId);
             $(`button[id^='${serviceId}-${rowId}-'][id$='-btn']`).prop("disabled", false);
           } else if ( progress == 99 ) {
             updateHeaderButtons(serviceId, rowId, "cancelling");

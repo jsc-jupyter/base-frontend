@@ -18,6 +18,10 @@
   const resourcesConfig = {{ frontendCollection.get("resourcesConfig", {}) | tojson }};
   const backendServicesConfig = {{ frontendCollection.get("backendServices", {}) | tojson }};
 
+  // These two lists will be used by startClickFunctions + SSE to open new services in new tabs
+  let runningStartingProcesses = [];
+  let finishedStartingProcess = [];
+
   const notAllowedKeys = ["secret_keys", "defaultvalues", "attachvalues"];
   const mappingDict = {};
   const globalUserOptions = {};
@@ -262,7 +266,6 @@
             <li style="color: #333;">Enter the Project id, that was handed out during the workshop invivation. If in doubt, ask the workshop instructor for the project id.</li>
           `
           partitionLinkText = `
-            <li style="color: #333;">Visit <a href="https://judoor.fz-juelich.de" target="_blank">JuDoor</a> and sign in with the credentials you've used to log into here.</li>
             <li style="color: #333;">Click on the project of this workshop.</li>
             <li style="color: #333;">Click on "Request access for resources".</li>
             <img src="{{ static_url("images/workshop/partition_01.png") }}" alt="Login Procedure" style="width: 100%; max-width: 400px; margin-top: 10px; border: 1px solid #ddd; border-radius: 5px;">
@@ -307,7 +310,7 @@
           stepLogin = `
             <details style="margin-bottom: 15px;">
               <summary style="font-weight: bold; margin-left: 10px; font-size: 16px; color: #0056b3; cursor: pointer;">
-                  - Use the correct AAI during the Login process (click here for more information)
+                  - Use the correct AAI during the Login process (click here to expand)
               </summary>
               <div style="margin-left: 20px; margin-top: 10px;">
                 <p style="color: #333;">When using HPC resources, you have to use the JSC Account during the login process.</p>
@@ -328,7 +331,7 @@
           stepProject = `
             <details style="margin-bottom: 15px;">
               <summary style="font-weight: bold; margin-left: 10px; font-size: 16px; color: #0056b3; cursor: pointer;">
-                  - Join Projects
+                  - Join Projects (click here to expand)
               </summary>
               <div style="margin-left: 20px; margin-top: 10px;">
                 <p style="color: #333;">When using HPC resources, you have to join a project, before you're allowed to use resources.</p>
@@ -347,7 +350,7 @@
         stepSystem = `
             <details style="margin-bottom: 15px; ">
               <summary style="font-weight: bold; margin-left: 10px; font-size: 16px; color: #0056b3; cursor: pointer;">
-                  - Accept System Usage Policy
+                  - Accept System Usage Policy (click here to expand)
               </summary>
               <div style="margin-left: 20px; margin-top: 10px;">
                 <p style="color: #333;">When using HPC resources, you have to accept the usage policy of a system, before you're allowed to use resources.</p>
@@ -363,10 +366,10 @@
         stepPartition = `
             <details style="margin-bottom: 15px; ">
               <summary style="font-weight: bold; margin-left: 10px; font-size: 16px; color: #0056b3; cursor: pointer;">
-                  - Request access for resources
+                  - Request access for resources (click here to expand)
               </summary>
               <div style="margin-left: 20px; margin-top: 10px;">
-                <p style="color: #333;">When using HPC resources, you have to accept the usage policy of a system, before you're allowed to use resources.</p>
+                <p style="color: #333;">Access to HPC resources must be requested before use.</p>
                 <ul>
                   <li style="color: #333;">Visit <a href="https://judoor.fz-juelich.de" target="_blank">JuDoor</a> and sign in with the credentials you've used to log into here.</li>
                   ${partitionLinkText}
@@ -385,9 +388,7 @@
           <div style="width: 80%; margin: auto; margin-top: 20px; margin-bottom: 20px; padding: 20px; border: 1px solid #ccc; border-radius: 10px; background-color: #f9f9f9;">
             <h2 style="text-align: center; color: #333;">Workshop "${workshop.workshopid}" not available for you.</h2>
             <h4 style="text-align: center; color: #333;">Reason: ${description}</h4>
-            <p style="text-align: center; color: #666;">Current options: ${currentOptions}</p>
-            <p style="text-align: center; color: #666;">Workshop options: ${JSON.stringify(workshop)}</p>
-            <p style="text-align: center; color: #666;">Your account is not yet ready to access this workshop. Please complete the steps below to proceed. Contact your workshop instructor or support, if this does not help</p>
+            <p style="text-align: center; color: #666; font-weight: bold;">Your account is not yet ready to access this workshop. Please complete the steps below to proceed. Contact your workshop instructor or support, if this does not help</p>
             
             <div style="margin-top: 20px;">
                 ${stepLogin}
@@ -669,6 +670,7 @@
 
       if ( !isWorkshopInstructor() ) {
         console.log("No Instructor");
+        const form = $(`form[id='${serviceId}-${rowId}-form']`);
         // double check to hide / disable the instructor elements.
         form.find(`input[data-instructor]`).prop("disabled", true);
         form.find(`div[data-instructor="show"][id$="-input-div"]`).hide();
@@ -2220,7 +2222,9 @@
       }
 
       function homeSummaryButtonOpen(serviceId, rowId, buttonId, button_options, user, api, base_url, utils) {
-        window.open(`/user/${user}/${rowId}`, "_blank");
+        let url = new URL(utils.url_path_join(window.origin, "user", user, rowId).replace("//", "/") + '/');
+        console.log(`Open ${url}`);
+        window.open(url, "_blank");
       }
 
       function workshopButtonOpen(serviceId, rowId, buttonId, button_options, user, api, base_url, utils) {
@@ -2553,29 +2557,19 @@
 
 
 
-      if ( ! (userOptions.service == "jupyterlab" && userOptions.option == "repo2docker") ) {
-        options["data"] = JSON.stringify(userOptions);
+      options["data"] = JSON.stringify(userOptions);
 
-        options["success"] = function (data, textStatus, jqXHR) {          
-          const url = new URL(window.location.href);
-          localStorage.setItem("service", serviceId);
-          localStorage.setItem("row", newId);
-          localStorage.setItem("showlogs", "true");
-          localStorage.setItem("start", "true");
-          window.location.href = url.toString();
-        }
+      options["success"] = function (data, textStatus, jqXHR) {
+        const url = new URL(window.location.href);
+        localStorage.setItem("service", serviceId);
+        localStorage.setItem("row", newId);
+        localStorage.setItem("showlogs", "true");
+        localStorage.setItem("start", "true");
+        window.location.href = url.toString();
+      }
+      if ( ! (userOptions.service == "jupyterlab" && userOptions.option == "repo2docker") ) {
         api.start_named_server(user, newId, options);
       } else {
-        options["data"] = JSON.stringify(userOptions);
-
-        options["success"] = function (data, textStatus, jqXHR) {
-          const url = new URL(window.location.href);
-          localStorage.setItem("service", serviceId);
-          localStorage.setItem("row", newId);
-          localStorage.setItem("showlogs", "true");
-          localStorage.setItem("start", "true");
-          window.location.href = url.toString();
-        }
         api.update_named_server(user, newId, options);
       }
     }    
@@ -2622,10 +2616,10 @@
       let repourl = userOptions.repo2docker.repourl;
 
       // build api url to call the build process
-      let url = "";
       if ( ["git", "gl", "hydroshare", "ckan"].includes(type) ) {
-        repourl = encodeURIComponent(repourl)
+        repourl = encodeURIComponent(repourl);
       }
+      let url = "";
       if ( Object.keys(userOptions.repo2docker).includes("reporef") ) {
         const reporef = userOptions.repo2docker?.reporef || "HEAD";        
         // url = new URL(utils.url_path_join("https://mybinder.org", "build", type, repourl, reporef).replace("//", "/"));
@@ -2843,6 +2837,27 @@
       } else {
         startRepo2Docker(serviceId, rowId, userOptions, user, api, base_url, utils);
       }
+      // Wait until serviceId-rowId is in finishedStartingProcess
+      const processId = `${serviceId}-${rowId}`;
+      if (!runningStartingProcesses.includes(processId)) runningStartingProcesses.push(processId);
+      const interval = setInterval(() => {
+        if (!runningStartingProcesses.includes(processId)) {
+            clearInterval(interval);
+            return;
+        }
+        const index = finishedStartingProcess.findIndex(p => p.id === processId);
+        if (index !== -1) {
+            const { url } = finishedStartingProcess[index];
+            clearInterval(interval);
+
+            // Remove from both lists
+            runningStartingProcesses = runningStartingProcesses.filter(p => p !== processId);
+            finishedStartingProcess = finishedStartingProcess.filter(p => p.id !== processId);
+
+            // Open the result
+            checkAndOpenUrl(serviceId, rowId, url, blank=true);
+        }
+      }, 200);
     }
 
     function homeTriggerButtonDelete(serviceId, rowId, buttonId, button_options, user, api, base_url, utils) {
