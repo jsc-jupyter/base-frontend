@@ -2861,7 +2861,8 @@
         }, 200);
       });
       const resultUrl = await waitForProcessToFinish;
-      checkAndOpenUrl(serviceId, rowId, resultUrl, blank=true);
+      window.open(resultUrl, "_blank");
+      // checkAndOpenUrl(serviceId, rowId, resultUrl, blank=true);
     }
 
     function homeTriggerButtonDelete(serviceId, rowId, buttonId, button_options, user, api, base_url, utils) {
