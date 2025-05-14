@@ -2840,24 +2840,26 @@
       // Wait until serviceId-rowId is in finishedStartingProcess
       const processId = `${serviceId}-${rowId}`;
       if (!runningStartingProcesses.includes(processId)) runningStartingProcesses.push(processId);
-      const interval = setInterval(() => {
-        if (!runningStartingProcesses.includes(processId)) {
-            clearInterval(interval);
-            return;
-        }
-        const index = finishedStartingProcess.findIndex(p => p.id === processId);
-        if (index !== -1) {
-            const { url } = finishedStartingProcess[index];
-            clearInterval(interval);
+      const waitForProcessToFinish = new Promise((resolve) => {
+        const interval = setInterval(() => {
+          if (!runningStartingProcesses.includes(processId)) {
+              clearInterval(interval);
+              return;
+          }
+          const index = finishedStartingProcess.findIndex(p => p.id === processId);
+          if (index !== -1) {
+              const { url } = finishedStartingProcess[index];
+              clearInterval(interval);
 
-            // Remove from both lists
-            runningStartingProcesses = runningStartingProcesses.filter(p => p !== processId);
-            finishedStartingProcess = finishedStartingProcess.filter(p => p.id !== processId);
+              // Remove from both lists
+              runningStartingProcesses = runningStartingProcesses.filter(p => p !== processId);
+              finishedStartingProcess = finishedStartingProcess.filter(p => p.id !== processId);
 
-            // Open the result
-            checkAndOpenUrl(serviceId, rowId, url, blank=true);
-        }
-      }, 200);
+              // Open the result
+              checkAndOpenUrl(serviceId, rowId, url, blank=true);
+          }
+        }, 200);
+      });
     }
 
     function homeTriggerButtonDelete(serviceId, rowId, buttonId, button_options, user, api, base_url, utils) {
