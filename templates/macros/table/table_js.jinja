@@ -2773,7 +2773,7 @@
       if ( start ) homeSummaryButtonStart(serviceId, rowId, buttonId, button_options, user, api, base_url, utils);
     }
 
-    function homeSummaryButtonStart(serviceId, rowId, buttonId, button_options, user, api, base_url, utils) {
+    async function homeSummaryButtonStart(serviceId, rowId, buttonId, button_options, user, api, base_url, utils) {
       const form = $(`form[id^='${serviceId}-${rowId}-form']`);
       const valid = validateForm(serviceId, rowId);
       if ( !valid ) {
