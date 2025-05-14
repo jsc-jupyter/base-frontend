@@ -2188,8 +2188,8 @@
               successCounter += 1;
               if ( successCounter > 8 ) {
                 if ( blank ) {
-                  var newTab = window.open("about:blank");
-                  newTab.location.href = _url;
+                  console.log(`Open ${_url}`);
+                  window.open(_url, "_blank");
                   showToast("The server should open automatically. If it doesn’t, your browser may be blocking pop-ups for this site.", "warning");
                 } else {
                   window.location.href = _url;
