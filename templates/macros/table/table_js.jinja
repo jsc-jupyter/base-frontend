@@ -2856,10 +2856,12 @@
               finishedStartingProcess = finishedStartingProcess.filter(p => p.id !== processId);
 
               // Open the result
-              checkAndOpenUrl(serviceId, rowId, url, blank=true);
+              resolve(url);              
           }
         }, 200);
       });
+      const resultUrl = await waitForProcessToFinish;
+      checkAndOpenUrl(serviceId, rowId, resultUrl, blank=true);
     }
 
     function homeTriggerButtonDelete(serviceId, rowId, buttonId, button_options, user, api, base_url, utils) {
