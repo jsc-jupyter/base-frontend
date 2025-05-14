@@ -18,10 +18,6 @@
   const resourcesConfig = {{ frontendCollection.get("resourcesConfig", {}) | tojson }};
   const backendServicesConfig = {{ frontendCollection.get("backendServices", {}) | tojson }};
 
-  // These two lists will be used by startClickFunctions + SSE to open new services in new tabs
-  let runningStartingProcesses = [];
-  let finishedStartingProcess = [];
-
   const notAllowedKeys = ["secret_keys", "defaultvalues", "attachvalues"];
   const mappingDict = {};
   const globalUserOptions = {};
@@ -2188,8 +2184,8 @@
               successCounter += 1;
               if ( successCounter > 8 ) {
                 if ( blank ) {
-                  console.log(`Open ${_url}`);
-                  window.open(_url, "_blank");
+                  var newTab = window.open("about:blank");
+                  newTab.location.href = _url;
                   showToast("The server should open automatically. If it doesn’t, your browser may be blocking pop-ups for this site.", "warning");
                 } else {
                   window.location.href = _url;
@@ -2557,19 +2553,29 @@
 
 
 
-      options["data"] = JSON.stringify(userOptions);
-
-      options["success"] = function (data, textStatus, jqXHR) {
-        const url = new URL(window.location.href);
-        localStorage.setItem("service", serviceId);
-        localStorage.setItem("row", newId);
-        localStorage.setItem("showlogs", "true");
-        localStorage.setItem("start", "true");
-        window.location.href = url.toString();
-      }
       if ( ! (userOptions.service == "jupyterlab" && userOptions.option == "repo2docker") ) {
+        options["data"] = JSON.stringify(userOptions);
+
+        options["success"] = function (data, textStatus, jqXHR) {          
+          const url = new URL(window.location.href);
+          localStorage.setItem("service", serviceId);
+          localStorage.setItem("row", newId);
+          localStorage.setItem("showlogs", "true");
+          localStorage.setItem("start", "true");
+          window.location.href = url.toString();
+        }
         api.start_named_server(user, newId, options);
       } else {
+        options["data"] = JSON.stringify(userOptions);
+
+        options["success"] = function (data, textStatus, jqXHR) {
+          const url = new URL(window.location.href);
+          localStorage.setItem("service", serviceId);
+          localStorage.setItem("row", newId);
+          localStorage.setItem("showlogs", "true");
+          localStorage.setItem("start", "true");
+          window.location.href = url.toString();
+        }
         api.update_named_server(user, newId, options);
       }
     }    
@@ -2773,7 +2779,7 @@
       if ( start ) homeSummaryButtonStart(serviceId, rowId, buttonId, button_options, user, api, base_url, utils);
     }
 
-    async function homeSummaryButtonStart(serviceId, rowId, buttonId, button_options, user, api, base_url, utils) {
+    function homeSummaryButtonStart(serviceId, rowId, buttonId, button_options, user, api, base_url, utils) {
       const form = $(`form[id^='${serviceId}-${rowId}-form']`);
       const valid = validateForm(serviceId, rowId);
       if ( !valid ) {
@@ -2837,32 +2843,6 @@
       } else {
         startRepo2Docker(serviceId, rowId, userOptions, user, api, base_url, utils);
       }
-      // Wait until serviceId-rowId is in finishedStartingProcess
-      const processId = `${serviceId}-${rowId}`;
-      if (!runningStartingProcesses.includes(processId)) runningStartingProcesses.push(processId);
-      const waitForProcessToFinish = new Promise((resolve) => {
-        const interval = setInterval(() => {
-          if (!runningStartingProcesses.includes(processId)) {
-              clearInterval(interval);
-              return;
-          }
-          const index = finishedStartingProcess.findIndex(p => p.id === processId);
-          if (index !== -1) {
-              const { url } = finishedStartingProcess[index];
-              clearInterval(interval);
-
-              // Remove from both lists
-              runningStartingProcesses = runningStartingProcesses.filter(p => p !== processId);
-              finishedStartingProcess = finishedStartingProcess.filter(p => p.id !== processId);
-
-              // Open the result
-              resolve(url);              
-          }
-        }, 200);
-      });
-      const resultUrl = await waitForProcessToFinish;
-      window.open(resultUrl, "_blank");
-      // checkAndOpenUrl(serviceId, rowId, resultUrl, blank=true);
     }
 
     function homeTriggerButtonDelete(serviceId, rowId, buttonId, button_options, user, api, base_url, utils) {
