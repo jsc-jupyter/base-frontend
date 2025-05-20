@@ -47,6 +47,9 @@
           globalUserOptions["{{ service_id }}"]["{{ spawner.name }}"] = {{ frontendCollection.get("decrypted_user_options").get(spawner.name, spawner.user_options) | tojson }};
         {%- endif %}
       {%- endfor %}
+    {%- elif pagetype == vars.pagetype_start %}
+      globalUserOptions["{{ service_id }}"] = {};
+      globalUserOptions["{{ service_id }}"]["{{ spawner.name }}"] = {{ spawner.user_options | tojson }};
     {%- elif pagetype == vars.pagetype_workshop %}
       globalUserOptions["{{ service_id }}"] = {};
       globalUserOptions["{{ service_id }}"]["{{ spawner.name }}"] = {{ spawner.user_options | tojson }};
@@ -908,6 +911,8 @@
       }
       {%- if pagetype == vars.pagetype_workshop %}
       ret["workshop_id"] = "{{ workshop_options.get("workshopid") }}";
+      {%- else %}
+      ret["workshop_id"] = globalUserOptions?.[serviceId]?.[rowId]?.["workshop_id"] ?? "";
       {%- endif %}
       const shareId = globalUserOptions?.[serviceId]?.[rowId]?.["share_id"] ?? false;
       if ( shareId ) {
@@ -2169,7 +2174,7 @@
     {# <-- WorkshopManager.button.cancel #}
 
     {# WorkshopManager.button.open --> #}
-      async function checkAndOpenUrl(serviceId, rowId, url, blank=true, api=false, retries = 50, delay = 500) {
+      async function checkAndOpenUrl(serviceId, rowId, url, api=false, retries = 50, delay = 500) {
         // wait for 3 successful responses
         let failed = false;
         let successCounter = 0;
@@ -2183,13 +2188,9 @@
             if (response.ok || response.status == 405) {
               successCounter += 1;
               if ( successCounter > 8 ) {
-                if ( blank ) {
-                  var newTab = window.open("about:blank");
-                  newTab.location.href = _url;
-                  showToast("The server should open automatically. If it doesn’t, your browser may be blocking pop-ups for this site.", "warning");
-                } else {
+                {%- if pagetype == vars.pagetype_start or pagetype == vars.pagetype_spawn %}
                   window.location.href = _url;
-                }
+                {%- endif %}
                 updateHeaderButtons(serviceId, rowId, "running");
                 progressBarUpdate(serviceId, rowId, "running", 100);
                 $(`button[id^='${serviceId}-${rowId}-'][id$='-btn']`).prop("disabled", false);
@@ -2309,8 +2310,8 @@
       }
 
       function homeTriggerModules(trigger, serviceId, rowId, tabId, elementId, elementOptions) {
-        $(`input[id^='${serviceId}-${rowId}-${tabId}-'][id$='-select-all']`).prop("checked", false);
-        $(`input[id^='${serviceId}-${rowId}-${tabId}-'][id$='-select-none']`).prop("checked", false);
+        $(`input[id^='${serviceId}-${rowId}-${tabId}-'][id$='-select-all-input']`).prop("checked", false);
+        $(`input[id^='${serviceId}-${rowId}-${tabId}-'][id$='-select-none-input']`).prop("checked", false);
 
         const containerDiv = $(`div[id^='${serviceId}-${rowId}-'][id$='${elementId}-checkboxes-div']`);
         const inputDiv = $(`div[id^='${serviceId}-${rowId}-'][id$='${elementId}-input-div']`);
@@ -2375,8 +2376,8 @@
             containerDiv.append(newDiv);
             // Add toggle function to each checkbox
             $(`#${idPrefix}-${item[0]}-input`).on("click", function (event) {
-              $(`input[id^='${serviceId}-${rowId}-'][id$='-select-all']`).prop("checked", false);
-              $(`input[id^='${serviceId}-${rowId}-'][id$='-select-none']`).prop("checked", false);
+              $(`input[id^='${serviceId}-${rowId}-'][id$='-select-all-input']`).prop("checked", false);
+              $(`input[id^='${serviceId}-${rowId}-'][id$='-select-none-input']`).prop("checked", false);
             });
           });
         }
@@ -2483,6 +2484,7 @@
 
     {# Workshop.header.progressBar --> #}
       function progressBarUpdate(serviceId, rowId, status, progress) {
+        const progressBarParentElement = $(`#${serviceId}-${rowId}-progress-bar-parent`);
         const progressBarElement = $(`#${serviceId}-${rowId}-progress-bar`);
         const progressTextElement = $(`#${serviceId}-${rowId}-progress-text`);
         const progressTextInfoElement = $(`#${serviceId}-${rowId}-progress-info-text`);
@@ -2514,6 +2516,13 @@
         } else if ( progress == 0 ){
           text = "";
         }
+
+        if ( status === "" ) {
+          progressBarParentElement.css('display', 'none');
+        } else {
+          progressBarParentElement.css('display', 'block');
+        }
+
         progressBarElement.width(progress).removeClass("bg-success bg-danger bg-primary").addClass(background).html("");
         progressTextElement.css('color', color);
         if ( progress == 100 || progress == 0 ) {
@@ -2540,7 +2549,7 @@
 
     function homeTriggerButtonStartGreen(serviceId, rowId, buttonId, button_options, user, api, base_url, utils) {
       const newId = _uuidWithLetterStart();
-      const options = getAPIOptions();      
+      const options = getAPIOptions();
 
       const form = $(`form[id^='${serviceId}-${rowId}-form']`);
       const valid = validateForm(serviceId, rowId);
@@ -2551,37 +2560,39 @@
 
       let userOptions = collectSelectedOptions(serviceId, rowId);
 
-
-
-      if ( ! (userOptions.service == "jupyterlab" && userOptions.option == "repo2docker") ) {
-        options["data"] = JSON.stringify(userOptions);
-
-        options["success"] = function (data, textStatus, jqXHR) {          
-          const url = new URL(window.location.href);
-          localStorage.setItem("service", serviceId);
-          localStorage.setItem("row", newId);
-          localStorage.setItem("showlogs", "true");
-          localStorage.setItem("start", "true");
-          window.location.href = url.toString();
-        }
-        api.start_named_server(user, newId, options);
-      } else {
-        options["data"] = JSON.stringify(userOptions);
-
-        options["success"] = function (data, textStatus, jqXHR) {
-          const url = new URL(window.location.href);
-          localStorage.setItem("service", serviceId);
-          localStorage.setItem("row", newId);
-          localStorage.setItem("showlogs", "true");
-          localStorage.setItem("start", "true");
-          window.location.href = url.toString();
-        }
-        api.update_named_server(user, newId, options);
+      options["data"] = JSON.stringify(userOptions);
+      var newTab = window.open("about:blank");
+      options["success"] = function (data, textStatus, jqXHR) {
+        newTab.location.href = utils.url_path_join(base_url, "start", user, newId);
+        const url = new URL(window.location.href);
+        localStorage.setItem("service", serviceId);
+        localStorage.setItem("row", newId);
+        localStorage.setItem("showlogs", "true"); 
+        window.location.href = url.toString();
       }
+      options["error"] = function (jqXHR, textStatus, errorThrown) {
+        newTab.close();
+        if (jqXHR.status == 503) {
+          this.tryCount--;
+          if (this.tryCount >= 0) {
+            $.ajax(this);
+            return;
+          }
+          showToast("Request to Server failed. Try refreshing website");
+          console.error("API Request failed:", textStatus, errorThrown);
+          return;
+        }
+        if (jqXHR.status == 403) {                
+          return;
+        }
+        showToast("Request to Server failed. Try refreshing website");
+        console.error("API Request failed:", textStatus, errorThrown);
+      }
+      api.update_named_server(user, newId, options);
     }    
 
     // Build repo2docker image and send start request afterwards
-    function startRepo2Docker(serviceId, rowId, userOptions, user, api, base_url, utils) {
+    function startRepo2Docker(serviceId, rowId, userOptions, user, api, base_url, utils, callStart=true) {
       $(`button[id^='${serviceId}-${rowId}-'][id$='-btn']`).prop("disabled", true);
       homeHeaderUpdate(serviceId, rowId);
       updateHeaderButtons(serviceId, rowId, "building");
@@ -2594,10 +2605,12 @@
       const summaryTr = $(`tr[id^='${serviceId}-${rowId}-summary-tr']`);
       const accordionIcon = summaryTr.find(".accordion-icon");
       const collapse = $(`.collapse[id^='${serviceId}-${rowId}-collapse']`);
-      const shown = collapse.hasClass("show");
-      if ( ! shown ) {
-        accordionIcon.removeClass("collapsed");
-        new bootstrap.Collapse(collapse);
+      if ( collapse.length > 0 ) {
+        const shown = collapse.hasClass("show");
+        if ( (! shown) && collapse ) {
+          accordionIcon.removeClass("collapsed");
+          new bootstrap.Collapse(collapse);
+        }
       }
       const navbarLogsButton = $(`[id^='${serviceId}-${rowId}-'][id$='-logs-navbar-button']`);
       if ( navbarLogsButton ) {
@@ -2652,7 +2665,6 @@
       r2dEvtSource.onmessage = (event) => {
         try {
             const jsonData = JSON.parse(event.data);
-            console.log(jsonData);
             var message = jsonData.message;
             if ( jsonData.phase == "waiting" ) {
               if ( r2dStatus == 0 ) {
@@ -2679,30 +2691,32 @@
                 r2dStatus = 4;
               }
             } else if ( ["ready", "built", "launching"].includes(jsonData.phase) ) {
-              const options = getAPIOptions();
-              userOptions["repo2docker"]["image"] = jsonData.imageName;
-              options["data"] = JSON.stringify(userOptions);
-              options["success"] = function (data, textStatus, jqXHR) {
-                updateHeaderButtons(serviceId, rowId, "starting");
-                if ( !Object.keys(globalUserOptions).includes(serviceId) ){
-                  globalUserOptions[serviceId] = {};
-                }
-                globalUserOptions[serviceId][rowId] = userOptions;
-                clearLogs(serviceId, rowId);
-
-                setTimeout(function() {
-                  const logInputElement = $(`[id^='${serviceId}-${rowId}-logs'][id$='-logcontainer-input']`);
-                  if ( logInputElement.html() == "" ) {
-                    console.log("Logs not fetched. Reload website");
-                    const url = new URL(window.location.href);
-                    localStorage.setItem("service", serviceId);
-                    localStorage.setItem("row", rowId);
-                    localStorage.setItem("showlogs", "true");
-                    window.location.href = url.toString();
+              if ( callStart ) {
+                const options = getAPIOptions();
+                userOptions["repo2docker"]["image"] = jsonData.imageName;
+                options["data"] = JSON.stringify(userOptions);
+                options["success"] = function (data, textStatus, jqXHR) {
+                  updateHeaderButtons(serviceId, rowId, "starting");
+                  if ( !Object.keys(globalUserOptions).includes(serviceId) ){
+                    globalUserOptions[serviceId] = {};
                   }
-                }, 1000);
+                  globalUserOptions[serviceId][rowId] = userOptions;
+                  clearLogs(serviceId, rowId);
+
+                  setTimeout(function() {
+                    const logInputElement = $(`[id^='${serviceId}-${rowId}-logs'][id$='-logcontainer-input']`);
+                    if ( logInputElement.html() == "" ) {
+                      console.log("Logs not fetched. Reload website");
+                      const url = new URL(window.location.href);
+                      localStorage.setItem("service", serviceId);
+                      localStorage.setItem("row", rowId);
+                      localStorage.setItem("showlogs", "true");
+                      window.location.href = url.toString();
+                    }
+                  }, 1000);
+                }
+                api.start_named_server(user, rowId, options);
               }
-              api.start_named_server(user, rowId, options);
                     
               const toView = document.getElementById(`${serviceId}-${rowId}-summary-tr`)
               if ( toView ) toView.scrollIntoView();
@@ -2711,10 +2725,12 @@
               const summaryTr = $(`tr[id^='${serviceId}-${rowId}-summary-tr']`);
               const accordionIcon = summaryTr.find(".accordion-icon");
               const collapse = $(`.collapse[id^='${serviceId}-${rowId}-collapse']`);
-              const shown = collapse.hasClass("show");
-              if ( ! shown ) {
-                accordionIcon.removeClass("collapsed");
-                new bootstrap.Collapse(collapse);
+              if ( collapse.length > 0 ) {
+                const shown = collapse.hasClass("show");
+                if ( ! shown ) {
+                  accordionIcon.removeClass("collapsed");
+                  new bootstrap.Collapse(collapse);
+                }
               }
               const navbarLogsButton = $(`[id^='${serviceId}-${rowId}-'][id$='-logs-navbar-button']`);
               if ( navbarLogsButton ) {
@@ -2778,6 +2794,8 @@
       {%- endif %}
       if ( start ) homeSummaryButtonStart(serviceId, rowId, buttonId, button_options, user, api, base_url, utils);
     }
+
+    {%- if pagetype == vars.pagetype_start %}
 
     function homeSummaryButtonStart(serviceId, rowId, buttonId, button_options, user, api, base_url, utils) {
       const form = $(`form[id^='${serviceId}-${rowId}-form']`);
@@ -2844,6 +2862,87 @@
         startRepo2Docker(serviceId, rowId, userOptions, user, api, base_url, utils);
       }
     }
+
+    {%- else %}
+
+    function homeSummaryButtonStart(serviceId, rowId, buttonId, button_options, user, api, base_url, utils) {
+      const form = $(`form[id^='${serviceId}-${rowId}-form']`);
+      const valid = validateForm(serviceId, rowId);
+      if ( !valid ) {
+        console.log(`Invalid Form for ${serviceId}-${rowId}`);
+        return;
+      }
+
+      let userOptions = collectSelectedOptions(serviceId, rowId);
+      clearLogs(serviceId, rowId);
+      defaultLogs(serviceId, rowId);
+      updateHeaderButtons(serviceId, rowId, "stopped");
+      progressBarUpdate(serviceId, rowId, "", 0);
+      
+      const terminalElement = $(`[id^='${serviceId}-${rowId}-'][id$='-terminal-container']`);
+      terminalElement.html("");
+      
+      // if it's a repo2DockerBuild, we handle the starting procedure in the startRepo2Docker function
+      const newTab = window.open("about:blank");
+      const options = getAPIOptions();
+      options["error"] = function (jqXHR, textStatus, errorThrown) {
+        newTab.close();
+        if (jqXHR.status == 503) {
+          this.tryCount--;
+          if (this.tryCount >= 0) {
+            $.ajax(this);
+            return;
+          }
+          showToast("Request to Server failed. Try refreshing website");
+          console.error("API Request failed:", textStatus, errorThrown);
+          return;
+        }
+        if (jqXHR.status == 403) {                
+          return;
+        }
+        showToast("Request to Server failed. Try refreshing website");
+        console.error("API Request failed:", textStatus, errorThrown);
+      }
+      options["data"] = JSON.stringify(userOptions);
+      options["success"] = function (data, textStatus, jqXHR) {
+        $(`button[id^='${serviceId}-${rowId}-'][id$='-btn']`).prop("disabled", true);
+        // updateHeaderButtons(serviceId, rowId, "starting");
+        if ( !Object.keys(globalUserOptions).includes(serviceId) ){
+          globalUserOptions[serviceId] = {};
+        }
+        globalUserOptions[serviceId][rowId] = userOptions;
+        homeHeaderUpdate(serviceId, rowId);
+        clearLogs(serviceId, rowId);
+        if ( newTab ) {
+          newTab.location.href = utils.url_path_join(base_url, "start", user, rowId);
+        } else {
+          window.location.href = utils.url_path_join(base_url, "start", user, rowId);
+        }
+      }
+      api.update_named_server(user, rowId, options);
+              
+      const toView = document.getElementById(`${serviceId}-${rowId}-summary-tr`)
+      if ( toView ) toView.scrollIntoView();
+
+      // show summary-tr
+      const summaryTr = $(`tr[id^='${serviceId}-${rowId}-summary-tr']`);
+      const accordionIcon = summaryTr.find(".accordion-icon");
+      const collapse = $(`.collapse[id^='${serviceId}-${rowId}-collapse']`);
+      const shown = collapse.hasClass("show");
+      if ( ! shown ) {
+        accordionIcon.removeClass("collapsed");
+        new bootstrap.Collapse(collapse);
+      }
+      const navbarLogsButton = $(`[id^='${serviceId}-${rowId}-'][id$='-logs-navbar-button']`);
+      if ( navbarLogsButton ) {
+        navbarLogsButton.trigger("click");
+      }
+      if ( userOptions.service == "jupyterlab" && userOptions.option == "repo2docker") {
+        startRepo2Docker(serviceId, rowId, userOptions, user, api, base_url, utils, callStart=false);
+      }
+    }
+
+    {%- endif %}
 
     function homeTriggerButtonDelete(serviceId, rowId, buttonId, button_options, user, api, base_url, utils) {
       updateHeaderButtons(serviceId, rowId, "disable");

@@ -687,12 +687,12 @@
     {{ element_parameters(service_id, row_id, tab_id, element_id, element_options, define_show=true) }}
   >
     <div class="form-check col-sm-6 col-md-4 col-lg-3">
-      <input class="form-check-input module-selector" data-service="{{ service_id }}" data-row="{{ row_id }}" data-tab="{{ tab_id }}" type="checkbox" id="{{ id_prefix }}-{{ element_id }}-select-all">
-      <label class="form-check-label" for="{{ id_prefix }}-{{ element_id }}-select-all">Select all</label>
+      <input class="form-check-input module-selector" data-service="{{ service_id }}" data-row="{{ row_id }}" data-tab="{{ tab_id }}" type="checkbox" id="{{ id_prefix }}-{{ element_id }}-select-all-input">
+      <label class="form-check-label" for="{{ id_prefix }}-{{ element_id }}-select-all-input">Select all</label>
     </div>
     <div class="form-check col-sm-6 col-md-4 col-lg-3">
-      <input class="form-check-input module-selector" data-service="{{ service_id }}" data-row="{{ row_id }}" data-tab="{{ tab_id }}" type="checkbox" id="{{ id_prefix }}-{{ element_id }}-select-none">
-      <label class="form-check-label" for="{{ id_prefix }}-{{ element_id }}-select-none">Deselect all</label>
+      <input class="form-check-input module-selector" data-service="{{ service_id }}" data-row="{{ row_id }}" data-tab="{{ tab_id }}" type="checkbox" id="{{ id_prefix }}-{{ element_id }}-select-none-input">
+      <label class="form-check-label" for="{{ id_prefix }}-{{ element_id }}-select-none-input">Deselect all</label>
     </div>
   </div>
 {# create_trigger suffix: input-div #}

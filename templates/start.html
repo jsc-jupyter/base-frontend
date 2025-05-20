@@ -12,7 +12,7 @@
 {%- import "macros/svgs.jinja" as svg -%}
 {%- import "macros/table/variables.jinja" as vars with context %}
 
-{%- set pagetype = vars.pagetype_spawn %}
+{%- set pagetype = vars.pagetype_start %}
 
 {%- set table_rows = {
     spawner.name: frontendCollection.get("decrypted_user_options").get(spawner.name, spawner.user_options)
@@ -36,7 +36,7 @@
 
 {%- block script -%}
 {%- import "macros/table/variables.jinja" as vars with context %}
-{%- set pagetype = vars.pagetype_spawn %}
+{%- set pagetype = vars.pagetype_start %}
 {%- import "macros/table/config/home.jinja" as config with context %}
 {%- include "macros/table/elements_js.jinja" with context %}
 {%- endblock %}

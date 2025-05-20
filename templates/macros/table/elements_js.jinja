@@ -557,24 +557,24 @@
         }
       });
 
-      $(`input[id$='-select-all']`).on("click", function () {
+      $(`input[id$='-select-all-input']`).on("click", function () {
         const $this = $(this);
         const serviceId = $this.attr("data-service");
         const rowId = $this.attr("data-row");
         const tabId = $this.attr("data-tab");
         if ( $this.prop("checked") ) {
           $(`input[id^='${serviceId}-${rowId}-${tabId}-'][id$='-input']`).prop("checked", true);
-          $(`[id^='${serviceId}-${rowId}-${tabId}-'][id$='-select-none']`).prop("checked", false);
+          $(`[id^='${serviceId}-${rowId}-${tabId}-'][id$='-select-none-input']`).prop("checked", false);
         }
       })
-      $(`input[id$='-select-none']`).on("click", function () {
+      $(`input[id$='-select-none-input']`).on("click", function () {
         const $this = $(this);
         const serviceId = $this.attr("data-service");
         const rowId = $this.attr("data-row");
         const tabId = $this.attr("data-tab");
         if ( $this.prop("checked") ) {
-          $(`input[id^='${serviceId}-${rowId}-${tabId}-'][id$='-input']`).prop("checked", false);
-          $(`[id^='${serviceId}-${rowId}-${tabId}-'][id$='-select-all']`).prop("checked", false);
+          $(`input[id^='${serviceId}-${rowId}-${tabId}-'][id$='-input']:not([id$='-select-none-input'])`).prop("checked", false);
+          $(`[id^='${serviceId}-${rowId}-${tabId}-'][id$='-select-all-input']`).prop("checked", false);
         }
       })
 
@@ -604,7 +604,7 @@
       logDebug && console.log(`Fill elements ... done`);
       const rowTasks = [];
 
-      // Set Defaults, as configured in config file
+      // Set Defaults, as configured in config file {{ pagetype }}
       {%- for service_id, service_options in config.frontend_config.get("services", {}).get("options", {}).items() %}
         logDebug && console.log("Set default values ( {{ service_id }} ) ...");
         {%- set default_tab_id = service_options.get("default", {}).get("tab", "default") %}
@@ -624,8 +624,55 @@
           $('#{{ service_id }}-{{ row_id }}-loading-tr').hide();
           $('#{{ service_id }}-{{ row_id }}-summary-tr').show();
           {%- endfor %}
+        {%- elif pagetype == vars.pagetype_spawn %}
+          homeFillExistingRow("{{ service_id }}", "{{ spawner.name }}", {{ spawner.user_options | tojson }}, {{ service_options.get("fillingOrder", []) | tojson }});
+          $(`[id^='{{ service_id }}-{{ spawner.name }}'][id$='-input']`).prop("disabled", true);
+          {%- if spawner.events %}
+            {%- for event in spawner.events %}
+              appendToLog("{{ service_id }}", "{{ spawner.name }}", {{ event | tojson }});
+            {%- endfor %}
+          {%- endif %}
+          $('#{{ service_id }}-{{ spawner.name }}-loading-tr').hide();
+          $('#{{ service_id }}-{{ spawner.name }}-summary-tr').show();
+        {%- elif pagetype == vars.pagetype_start %}
+          homeFillExistingRow("{{ service_id }}", "{{ spawner.name }}", {{ spawner.user_options | tojson }}, {{ service_options.get("fillingOrder", []) | tojson }});
+          $(`[id^='{{ service_id }}-{{ spawner.name }}'][id$='-input']`).prop("disabled", true);
+          {%- if spawner.events %}
+            {%- for event in spawner.events %}
+              appendToLog("{{ service_id }}", "{{ spawner.name }}", {{ event | tojson }});
+            {%- endfor %}
+          {%- endif %}
+          $('#{{ service_id }}-{{ spawner.name }}-summary-tr').show();
+          $('#{{ service_id }}-{{ spawner.name }}-loading-tr').hide();
+          let option = $('#{{ service_id }}-{{ spawner.name }}-summary-tr').attr("data-option");
+          $(`div[id$='-collapse']:not([id^='{{ service_id }}-{{ spawner.name }}-collapse'])`).removeClass("show");
+          $(`div[id^='{{ service_id }}-{{ spawner.name }}-collapse']`).addClass("show");
+          let x = document.getElementById(`{{ service_id }}-{{ spawner.name }}-summary-tr`)
+          if ( x ) x.scrollIntoView();
+
+          if ( "{{ spawner.ready | lower }}" === "true" ) {
+            window.location.href = `/user/{{ user.name }}/{{ spawner.name }}`;
+          } else if ( "{{ spawner.active | lower }}" === "false" ) {
+            $(`[id^='{{ service_id }}-{{ spawner.name }}-'][id$='-start-btn-header']`).trigger("click");
+          } else {
+            $(`[id^='{{ service_id }}-{{ spawner.name }}-'][id$='-logs-navbar-button']`).trigger("click");
+            homeHeaderUpdate("{{ service_id }}", "{{ spawner.name }}");
+            if ( "{{ service_id }}" === "jupyterlab" && option === "repo2docker" ) {
+              updateHeaderButtons("{{ service_id }}", "{{ spawner.name }}", "building");
+              progressBarUpdate("{{ service_id }}", "{{ spawner.name }}", "building", 2);
+            } else {
+              updateHeaderButtons("{{ service_id }}", "{{ spawner.name }}", "starting");
+              progressBarUpdate("{{ service_id }}", "{{ spawner.name }}", "starting", 10);
+            }
+          }        
+          $(`[id^='{{ service_id }}-{{ spawner.name }}-'][id$='-logs-navbar-button']`).trigger("click");
         {%- elif pagetype == vars.pagetype_workshop %}
+          {%- if spawner.active or spawner.ready %}
+          homeFillExistingRow("{{ service_id }}", "{{ spawner.name }}", {{ frontendCollection.get("decrypted_user_options").get(spawner.name, spawner.user_options) | tojson }}, {{ service_options.get("fillingOrder", []) | tojson }});
+          // $(`[id^='{{ service_id }}-{{ spawner.name }}-'][id$='-input']`).prop("disabled", true);
+          {%- else %}
           workshopFillExistingRow("{{ service_id }}", "{{ spawner.name }}", {{ workshop_options | tojson }}, {{ service_options.get("fillingOrder", []) | tojson }});
+          {%- endif %}
           {%- if spawner.events %}
             {%- for event in spawner.events %}
               appendToLog("{{ service_id }}", "{{ spawner.name }}", {{ event | tojson }});
@@ -638,13 +685,13 @@
           const urlParams = new URLSearchParams(queryString);
           let serviceValue = "";
           let rowValue = "";
-          let start = false;
           let showlogs = false;
+          let start = false;
           if (urlParams.has('row') && urlParams.has('service')) {
             serviceValue = urlParams.get('service');
             rowValue = urlParams.get('row');
-            start = urlParams.has('start')
             showlogs = urlParams.has('showlogs');
+            start = urlParams.has('start');
           } else if (localStorage.getItem('row') && localStorage.getItem('service')) {
             // Get the value of the "row" parameter
             serviceValue = localStorage.getItem('service');
@@ -672,7 +719,7 @@
                     $('#{{ service_id }}-{{ spawner.name }}-loading-tr').hide();
                     $('#{{ service_id }}-{{ spawner.name }}-summary-tr').show();
                     if ( "{{ service_id }}" === serviceValue && "{{ spawner.name }}" === rowValue) {
-                      if ( rowValue && serviceValue ) { 
+                      if ( rowValue && serviceValue ) {
                         $(`div[id$='-table-div']:not([id^='${serviceValue}-'])`).hide();
                         $(`div[id$='-table-div'][id^='${serviceValue}-']`).show();
                         let summaryTr = $(`${serviceValue}-${rowValue}-summary-tr`);
@@ -702,6 +749,9 @@
                         }
                         if ( showlogs ) {
                           $(`[id^='${serviceValue}-${rowValue}-'][id$='-logs-navbar-button']`).trigger("click");
+                          if ( serviceValue == "jupyterlab" && "{{ frontendCollection.get("decrypted_user_options").get(spawner.name, spawner.user_options).get("option", "default") }}" == "repo2docker") {
+                            startRepo2Docker(serviceValue, rowValue, {{ frontendCollection.get("decrypted_user_options").get(spawner.name, spawner.user_options) | tojson }}, user, api, base_url, utils, callStart=false);
+                          }
                         }
                       }
                     }

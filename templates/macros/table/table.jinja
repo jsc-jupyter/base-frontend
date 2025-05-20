@@ -160,7 +160,8 @@
                             <div class="nav flex-column nav-pills p-3 ps-0" style="min-width: 15% !important" id="{{ service_id }}-{{ row_id }}-tab-button-div" role="tablist">
                               {%- for button_id, button_options in service_options.navbar.items() %}
                                 {%- if ( is_first_row and button_options.get("firstRow", true) ) or 
-                                      ( (not is_first_row) and button_options.get("defaultRow", true) )
+                                      ( (not is_first_row) and button_options.get("defaultRow", true) ) or
+                                      ( pagetype == vars.pagetype_spawn or pagetype == vars.pagetype_start )
                                 %}
                                   {%- set style_hide = 'height: 0 !important; overflow: hidden !important; padding-top: 0 !important; padding-bottom: 0 !important; border: none !important; margin: 0 !important;' %}
                                   <button
@@ -267,7 +268,7 @@
           if ( ready ) {
             updateHeaderButtons(serviceId, rowId, "waiting");
             const url = data[rowId]?.url ?? "{{ url }}";
-            checkAndOpenUrl(serviceId, rowId, url, false);
+            checkAndOpenUrl(serviceId, rowId, url);
           } else if ( failed ) {
             updateHeaderButtons(serviceId, rowId, "stopped");
             $(`button[id^='${serviceId}-${rowId}-'][id$='-btn']`).prop("disabled", false);
