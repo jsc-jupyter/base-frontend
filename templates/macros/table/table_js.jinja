@@ -912,7 +912,7 @@
       {%- if pagetype == vars.pagetype_workshop %}
       ret["workshop_id"] = "{{ workshop_options.get("workshopid") }}";
       {%- else %}
-      ret["workshop_id"] = globalUserOptions?.[serviceId]?.[rowId]?.["workshop_id"] ?? "";
+      ret["workshop_id"] = globalUserOptions?.[serviceId]?.[rowId]?.["workshop_id"] ?? false;
       {%- endif %}
       const shareId = globalUserOptions?.[serviceId]?.[rowId]?.["share_id"] ?? false;
       if ( shareId ) {
