@@ -72,7 +72,7 @@
                 {%- if pagetype == vars.pagetype_home %}
                   {%- if "r2d_id" in row_options.keys() %}
                     data-spawner-type="r2d"
-                  {%- elif "workshop_id" in row_options.keys() %}
+                  {%- elif row_options.get("workshop_id", false) %}
                     data-spawner-type="workshop"
                   {%- elif "share_id" in row_options.keys() %}
                     data-spawner-type="share"
