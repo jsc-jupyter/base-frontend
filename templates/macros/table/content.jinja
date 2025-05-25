@@ -53,12 +53,14 @@
   <th scope="row" class="description-td text-center">{{ workshop_options.get("description") }}</th>
   <th scope="row" class="status-td">
     <div class="d-flex justify-content-center">
-      <div class="d-flex flex-column">
-        <div class="d-flex justify-content-center progress" style="background-color: #d3e4f4; height: 20px; min-width: 100px;">
-          <div id="{{ service_id }}-{{ row_id }}-progress-bar" data-service="{{ service_id }}"  data-row="{{ row_id }}" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0px; margin-right: auto;"></div>
-          <span id="{{ service_id }}-{{ row_id }}-progress-text" style="position: absolute; width: 100px; text-align: center; line-height: 20px; color: black"></span>
+      <div id="{{ service_id }}-{{ row_id }}-progress-bar-parent" style="display: none">
+        <div class="d-flex flex-column">
+          <div class="d-flex justify-content-center progress" style="background-color: #d3e4f4; height: 20px; min-width: 100px;">
+            <div id="{{ service_id }}-{{ row_id }}-progress-bar" data-service="{{ service_id }}"  data-row="{{ row_id }}" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0px; margin-right: auto;"></div>
+            <span id="{{ service_id }}-{{ row_id }}-progress-text" style="position: absolute; width: 100px; text-align: center; line-height: 20px; color: black"></span>
+          </div>
+          <span id="{{ service_id }}-{{ row_id }}-progress-info-text" class="progress-info-text text-center text-muted" style="font-size: smaller;"></span>
         </div>
-        <span id="{{ service_id }}-{{ row_id }}-progress-info-text" class="progress-info-text text-center text-muted" style="font-size: smaller;"></span>
       </div>
     </div>
   </th>
@@ -121,6 +123,8 @@
   <p>You can configure your existing JupyterLabs by expanding the corresponding table row.</p>
 {% endmacro %}
 
+{% macro spawn_description() %}
+{% endmacro %}
 
 {% macro home_headerlayout() %}
   <th scope="col" width="1%"></th>
@@ -203,46 +207,48 @@
 
       <th scope="row" class="status-td">
         <div class="d-flex justify-content-center">
-          <div class="d-flex flex-column">
-            <div class="d-flex justify-content-center progress" style="background-color: #d3e4f4; height: 20px; min-width: 100px;">
-              <div id="{{ service_id }}-{{ row_id }}-progress-bar"
-                data-service="{{ service_id }}"
-                data-row="{{ row_id }}"
-                class="
-                {%- if ready %}
-                bg-success
-                {%- endif %}
-                progress-bar progress-bar-striped progress-bar-animated
-                "
-                role="progressbar"
-                style="width: {{ progress }}px; margin-right: auto;"
-              ></div>
-              <span id="{{ service_id }}-{{ row_id }}-progress-text"
-                style="position: absolute;
-                  width: 100px;
-                  text-align: center;
-                  line-height: 20px;
-                  {% if progress >= 60 %}
-                  color: white
-                  {% else %}
-                  color: black
-                  {% endif -%}
+          <div id="{{ service_id }}-{{ row_id }}-progress-bar-parent" style="display: none">
+            <div class="d-flex flex-column">
+              <div class="d-flex justify-content-center progress" style="background-color: #d3e4f4; height: 20px; min-width: 100px;">
+                <div id="{{ service_id }}-{{ row_id }}-progress-bar"
+                  data-service="{{ service_id }}"
+                  data-row="{{ row_id }}"
+                  class="
+                  {%- if ready %}
+                  bg-success
+                  {%- endif %}
+                  progress-bar progress-bar-striped progress-bar-animated
                   "
-              >
-              {%- if progress > 0 and progress < 100 %}
-              {{ progress }}%
-              {%- endif %}
+                  role="progressbar"
+                  style="width: {{ progress }}px; margin-right: auto;"
+                ></div>
+                <span id="{{ service_id }}-{{ row_id }}-progress-text"
+                  style="position: absolute;
+                    width: 100px;
+                    text-align: center;
+                    line-height: 20px;
+                    {% if progress >= 60 %}
+                    color: white
+                    {% else %}
+                    color: black
+                    {% endif -%}
+                    "
+                >
+                {%- if progress > 0 and progress < 100 %}
+                {{ progress }}%
+                {%- endif %}
+                </span>
+              </div>
+              <span id="{{ service_id }}-{{ row_id }}-progress-info-text" class="progress-info-text text-center text-muted" style="font-size: smaller;">
+                {%- if ready %}
+                running
+                {%- elif active %}
+                starting
+                {%- elif progress == 99 %}
+                cancelling
+                {%- endif %}
               </span>
             </div>
-            <span id="{{ service_id }}-{{ row_id }}-progress-info-text" class="progress-info-text text-center text-muted" style="font-size: smaller;">
-              {%- if ready %}
-              running
-              {%- elif active %}
-              starting
-              {%- elif progress == 99 %}
-              cancelling
-              {%- endif %}
-            </span>
           </div>
         </div>
       </th>
@@ -360,50 +366,80 @@
 
       <th scope="row" class="status-td">
         <div class="d-flex justify-content-center">
-          <div class="d-flex flex-column">
-            <div class="d-flex justify-content-center progress" style="background-color: #d3e4f4; height: 20px; min-width: 100px;">
-              <div id="{{ service_id }}-{{ row_id }}-progress-bar"
-                data-service="{{ service_id }}"
-                data-row="{{ row_id }}"
-                class="
-                {%- if ready %}
-                bg-success
-                {%- endif %}
-                progress-bar progress-bar-striped progress-bar-animated
-                "
-                role="progressbar"
-                style="width: {{ progress }}px; margin-right: auto;"
-              ></div>
-              <span id="{{ service_id }}-{{ row_id }}-progress-text"
-                style="position: absolute;
-                  width: 100px;
-                  text-align: center;
-                  line-height: 20px;
-                  {% if progress >= 60 %}
-                  color: white
-                  {% else %}
-                  color: black
-                  {% endif -%}
+          <div id="{{ service_id }}-{{ row_id }}-progress-bar-parent" style="display: none">
+            <div class="d-flex flex-column">
+              <div class="d-flex justify-content-center progress" style="background-color: #d3e4f4; height: 20px; min-width: 100px;">
+                <div id="{{ service_id }}-{{ row_id }}-progress-bar"
+                  data-service="{{ service_id }}"
+                  data-row="{{ row_id }}"
+                  class="
+                  {%- if ready %}
+                  bg-success
+                  {%- endif %}
+                  progress-bar progress-bar-striped progress-bar-animated
                   "
-              >
-              {%- if progress > 0 and progress < 100 %}
-              {{ progress }}%
-              {%- endif %}
+                  role="progressbar"
+                  style="width: {{ progress }}px; margin-right: auto;"
+                ></div>
+                <span id="{{ service_id }}-{{ row_id }}-progress-text"
+                  style="position: absolute;
+                    width: 100px;
+                    text-align: center;
+                    line-height: 20px;
+                    {% if progress >= 60 %}
+                    color: white
+                    {% else %}
+                    color: black
+                    {% endif -%}
+                    "
+                >
+                {%- if progress > 0 and progress < 100 %}
+                {{ progress }}%
+                {%- endif %}
+                </span>
+              </div>
+              <span id="{{ service_id }}-{{ row_id }}-progress-info-text" class="progress-info-text text-center text-muted" style="font-size: smaller;">
+                {%- if ready %}
+                running
+                {%- elif active %}
+                starting
+                {%- elif progress == 99 %}
+                cancelling
+                {%- endif %}
               </span>
             </div>
-            <span id="{{ service_id }}-{{ row_id }}-progress-info-text" class="progress-info-text text-center text-muted" style="font-size: smaller;">
-              {%- if ready %}
-              running
-              {%- elif active %}
-              starting
-              {%- elif progress == 99 %}
-              cancelling
-              {%- endif %}
-            </span>
           </div>
         </div>
       </th>
       <th scope="row" class="url-td text-center" style="white-space: nowrap">
+        {% if pagetype == vars.pagetype_start %}
+
+        <button type="button"
+          id="{{ service_id }}-{{row_id}}-start-btn-header"
+          class="btn btn-primary"
+          data-service="{{ service_id }}"
+          data-row="{{ row_id }}"
+          data-element="start"
+          {%- if spawner.active %}
+          style="display: none"
+          {%- endif %}
+          >
+          {{ svg.start_svg | safe }} Start
+        </button>
+
+        <button type="button"
+          id="{{ service_id }}-{{row_id}}-cancel-btn-header"
+          class="btn btn-danger"
+          data-service="{{ service_id }}"
+          data-row="{{ row_id }}"
+          data-element="cancel"
+          {%- if spawner.ready or not spawner.active %}
+          style="display: none"
+          {%- endif %}
+          >
+          {{ svg.stop_svg | safe }} Cancel
+        </button>
+        {%- else %}
         <button type="button"
           id="{{ service_id }}-{{row_id}}-workshopcopy-btn-header"
           data-service="{{ service_id }}"
@@ -419,6 +455,7 @@
         >
           {{ svg.copy_svg | safe }}
         </button>
+        {%- endif %}
         <button type="button"
           id="{{ service_id }}-{{row_id}}-manage-btn-header"
           class="btn btn-primary"
@@ -508,46 +545,48 @@
 
       <th scope="row" class="status-td">
         <div class="d-flex justify-content-center">
-          <div class="d-flex flex-column">
-            <div class="d-flex justify-content-center progress" style="background-color: #d3e4f4; height: 20px; min-width: 100px;">
-              <div id="{{ service_id }}-{{ row_id }}-progress-bar"
-                data-service="{{ service_id }}"
-                data-row="{{ row_id }}"
-                class="
-                {%- if ready %}
-                bg-success
-                {%- endif %}
-                progress-bar progress-bar-striped progress-bar-animated
-                "
-                role="progressbar"
-                style="width: {{ progress }}px; margin-right: auto;"
-              ></div>
-              <span id="{{ service_id }}-{{ row_id }}-progress-text"
-                style="position: absolute;
-                  width: 100px;
-                  text-align: center;
-                  line-height: 20px;
-                  {% if progress >= 60 %}
-                  color: white
-                  {% else %}
-                  color: black
-                  {% endif -%}
+          <div id="{{ service_id }}-{{ row_id }}-progress-bar-parent" style="display: none">
+            <div class="d-flex flex-column">
+              <div class="d-flex justify-content-center progress" style="background-color: #d3e4f4; height: 20px; min-width: 100px;">
+                <div id="{{ service_id }}-{{ row_id }}-progress-bar"
+                  data-service="{{ service_id }}"
+                  data-row="{{ row_id }}"
+                  class="
+                  {%- if ready %}
+                  bg-success
+                  {%- endif %}
+                  progress-bar progress-bar-striped progress-bar-animated
                   "
-              >
-              {%- if progress > 0 and progress < 100 %}
-              {{ progress }}%
-              {%- endif %}
+                  role="progressbar"
+                  style="width: {{ progress }}px; margin-right: auto;"
+                ></div>
+                <span id="{{ service_id }}-{{ row_id }}-progress-text"
+                  style="position: absolute;
+                    width: 100px;
+                    text-align: center;
+                    line-height: 20px;
+                    {% if progress >= 60 %}
+                    color: white
+                    {% else %}
+                    color: black
+                    {% endif -%}
+                    "
+                >
+                {%- if progress > 0 and progress < 100 %}
+                {{ progress }}%
+                {%- endif %}
+                </span>
+              </div>
+              <span id="{{ service_id }}-{{ row_id }}-progress-info-text" class="progress-info-text text-center text-muted" style="font-size: smaller;">
+                {%- if ready %}
+                running
+                {%- elif active %}
+                starting
+                {%- elif progress == 99 %}
+                cancelling
+                {%- endif %}
               </span>
             </div>
-            <span id="{{ service_id }}-{{ row_id }}-progress-info-text" class="progress-info-text text-center text-muted" style="font-size: smaller;">
-              {%- if ready %}
-              running
-              {%- elif active %}
-              starting
-              {%- elif progress == 99 %}
-              cancelling
-              {%- endif %}
-            </span>
           </div>
         </div>
       </th>
@@ -679,46 +718,48 @@
 
       <th scope="row" class="status-td">
         <div class="d-flex justify-content-center">
-          <div class="d-flex flex-column">
-            <div class="d-flex justify-content-center progress" style="background-color: #d3e4f4; height: 20px; min-width: 100px;">
-              <div id="{{ service_id }}-{{ row_id }}-progress-bar"
-                data-service="{{ service_id }}"
-                data-row="{{ row_id }}"
-                class="
-                {%- if ready %}
-                bg-success
-                {%- endif %}
-                progress-bar progress-bar-striped progress-bar-animated
-                "
-                role="progressbar"
-                style="width: {{ progress }}px; margin-right: auto;"
-              ></div>
-              <span id="{{ service_id }}-{{ row_id }}-progress-text"
-                style="position: absolute;
-                  width: 100px;
-                  text-align: center;
-                  line-height: 20px;
-                  {% if progress >= 60 %}
-                  color: white
-                  {% else %}
-                  color: black
-                  {% endif -%}
+          <div id="{{ service_id }}-{{ row_id }}-progress-bar-parent" style="display: none">
+            <div class="d-flex flex-column">
+              <div class="d-flex justify-content-center progress" style="background-color: #d3e4f4; height: 20px; min-width: 100px;">
+                <div id="{{ service_id }}-{{ row_id }}-progress-bar"
+                  data-service="{{ service_id }}"
+                  data-row="{{ row_id }}"
+                  class="
+                  {%- if ready %}
+                  bg-success
+                  {%- endif %}
+                  progress-bar progress-bar-striped progress-bar-animated
                   "
-              >
-              {%- if progress > 0 and progress < 100 %}
-              {{ progress }}%
-              {%- endif %}
+                  role="progressbar"
+                  style="width: {{ progress }}px; margin-right: auto;"
+                ></div>
+                <span id="{{ service_id }}-{{ row_id }}-progress-text"
+                  style="position: absolute;
+                    width: 100px;
+                    text-align: center;
+                    line-height: 20px;
+                    {% if progress >= 60 %}
+                    color: white
+                    {% else %}
+                    color: black
+                    {% endif -%}
+                    "
+                >
+                {%- if progress > 0 and progress < 100 %}
+                {{ progress }}%
+                {%- endif %}
+                </span>
+              </div>
+              <span id="{{ service_id }}-{{ row_id }}-progress-info-text" class="progress-info-text text-center text-muted" style="font-size: smaller;">
+                {%- if ready %}
+                running
+                {%- elif active %}
+                starting
+                {%- elif progress == 99 %}
+                cancelling
+                {%- endif %}
               </span>
             </div>
-            <span id="{{ service_id }}-{{ row_id }}-progress-info-text" class="progress-info-text text-center text-muted" style="font-size: smaller;">
-              {%- if ready %}
-              running
-              {%- elif active %}
-              starting
-              {%- elif progress == 99 %}
-              cancelling
-              {%- endif %}
-            </span>
           </div>
         </div>
       </th>
@@ -792,6 +833,18 @@
         </button>
       </th>
       
+{%- endmacro %}
+
+{% macro spawn_defaultheader(service_id, row_id, row_options, service_options) %}
+  {%- if spawner.user_options.get("workshop_id", false) %}
+    {{ home_defaultheaderTypeWorkshop(spawner, service_id, row_id, row_options, service_options) }}
+  {%- elif spawner.user_options.get("share_id", false) %}
+    {{ home_defaultheaderTypeShare(spawner, service_id, row_id, row_options, service_options) }}
+  {%- elif spawner.user_options.get("r2d_id", false) %}
+    {{ home_defaultheaderTypeR2D(spawner, service_id, row_id, row_options, service_options) }}
+  {%- else %}
+    {{ home_defaultheaderTypeNormal(spawner, service_id, row_id, row_options, service_options) }}
+  {%- endif %}
 {%- endmacro %}
 
 {% macro home_defaultheader(service_id, row_id, row_options, service_options) %}

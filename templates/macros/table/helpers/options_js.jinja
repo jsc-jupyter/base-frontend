@@ -78,8 +78,8 @@
         containerDiv.append(newDiv);
         // Add toggle function to each checkbox
         $(`#${idPrefix}-${item[0]}-input`).on("click", function (event) {
-          $(`input[id^='${serviceId}-${rowId}-${modulesTabName}-'][id$='-select-all']`).prop("checked", false);
-          $(`input[id^='${serviceId}-${rowId}-${modulesTabName}-'][id$='-select-none']`).prop("checked", false);
+          $(`input[id^='${serviceId}-${rowId}-${modulesTabName}-'][id$='-select-all-input']`).prop("checked", false);
+          $(`input[id^='${serviceId}-${rowId}-${modulesTabName}-'][id$='-select-none-input']`).prop("checked", false);
         });
       });
     }
