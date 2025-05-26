@@ -2517,7 +2517,7 @@
           text = "";
         }
 
-        if ( status === "" ) {
+        if ( status === "" && progress != 100 ) {
           progressBarParentElement.css('display', 'none');
         } else {
           progressBarParentElement.css('display', 'block');
@@ -2563,7 +2563,11 @@
       options["data"] = JSON.stringify(userOptions);
       var newTab = window.open("about:blank");
       options["success"] = function (data, textStatus, jqXHR) {
-        newTab.location.href = utils.url_path_join(base_url, "start", user, newId);
+        try {
+          newTab.location.href = utils.url_path_join(base_url, "start", user, newId);
+        } catch (e) {
+          window.location.href = utils.url_path_join(base_url, "start", user, newId);
+        }
         const url = new URL(window.location.href);
         localStorage.setItem("service", serviceId);
         localStorage.setItem("row", newId);
@@ -2571,7 +2575,11 @@
         window.location.href = url.toString();
       }
       options["error"] = function (jqXHR, textStatus, errorThrown) {
-        newTab.close();
+        try {
+          newTab.close();
+        } catch (e) {
+          console.error("Could not close new tab");
+        }
         if (jqXHR.status == 503) {
           this.tryCount--;
           if (this.tryCount >= 0) {
@@ -2913,9 +2921,9 @@
         globalUserOptions[serviceId][rowId] = userOptions;
         homeHeaderUpdate(serviceId, rowId);
         clearLogs(serviceId, rowId);
-        if ( newTab ) {
+        try {
           newTab.location.href = utils.url_path_join(base_url, "start", user, rowId);
-        } else {
+        } catch (e) {
           window.location.href = utils.url_path_join(base_url, "start", user, rowId);
         }
       }
