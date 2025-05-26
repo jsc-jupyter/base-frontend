@@ -2922,9 +2922,9 @@
         homeHeaderUpdate(serviceId, rowId);
         clearLogs(serviceId, rowId);
         try {
-          newTab.location.href = utils.url_path_join(base_url, "start", user, newId);
+          newTab.location.href = utils.url_path_join(base_url, "start", user, rowId);
         } catch (e) {
-          window.location.href = utils.url_path_join(base_url, "start", user, newId);
+          window.location.href = utils.url_path_join(base_url, "start", user, rowId);
         }
       }
       api.update_named_server(user, rowId, options);
