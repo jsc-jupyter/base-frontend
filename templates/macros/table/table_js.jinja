@@ -2788,11 +2788,13 @@
                 recursiveCheck(serviceId, rowId, value);
               } else {
                 const currentVal = $(`[id^='${serviceId}-${rowId}-'][id$='-${key}-input']`).val();
-                let allowedValues = Array.isArray(value) ? value : [value];
-                if ( allowedValues && allowedValues.length > 0 && !allowedValues.includes(currentVal) ) {
-                  showToast(`${key} ${currentVal} not allowed. Allowed values: ${allowedValues}`);
-                  console.log(`${key} ${currentVal} not allowed. Allowed values: ${allowedValues}`);
-                  start = false;
+                if (typeof currentVal !== 'undefined') {
+                  let allowedValues = Array.isArray(value) ? value : [value];
+                  if ( allowedValues && allowedValues.length > 0 && !allowedValues.includes(currentVal) ) {
+                    showToast(`${key} ${currentVal} not allowed. Allowed values: ${allowedValues}`);
+                    console.log(`${key} ${currentVal} not allowed. Allowed values: ${allowedValues}`);
+                    start = false;
+                  }
                 }
               }
             }
