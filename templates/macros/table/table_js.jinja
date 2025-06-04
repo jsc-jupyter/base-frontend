@@ -22,6 +22,7 @@
   const mappingDict = {};
   const globalUserOptions = {};
   const globalFillingOrder = {};
+  const globalStorageCounter = {};
   const initIncidents = {{ frontendCollection.get("incidents", {}) | tojson }};
   const incidentsmapping = {
     "JSCCLOUD": "JSC-Cloud"
@@ -99,6 +100,636 @@
     all["options"] = sortedOptionsObj;
     return all;
   }
+
+  function createStorageRow(serviceId, rowId, tabId) {
+    let currentCount;
+    const key = `${serviceId}-${rowId}`;
+    if (globalStorageCounter.hasOwnProperty(key)) {
+      globalStorageCounter[key] += 1;
+      currentCount = globalStorageCounter[key];
+    } else {
+      globalStorageCounter[key] = 1;
+      currentCount = 1;
+    }
+
+    return `
+      <tr id="${serviceId}-${rowId}-${tabId}-${currentCount}-summary-tr"
+        class="summary-tr existing-spawner-tr data-mount-summary-tr">
+        <td class="details-td" data-bs-target="#${serviceId}-${rowId}-${tabId}-${currentCount}-collapse">
+          <div class="d-flex mx-auto accordion-icon mx-4"></div>
+        </td>
+        <td id="${serviceId}-${rowId}-${tabId}-${currentCount}-summary-template" class="data-mount-summary-template">B2Drop</td>
+        <th class="text-center">
+          <button
+            type="button"
+            id="${serviceId}-${rowId}-${tabId}-${currentCount}-delbtn-input"
+            class="btn btn-danger del-data-mount"
+          >
+            {{ svg.delete_svg | safe }}
+          </button>
+        </th>
+      </tr>
+      <tr class="collapsible-tr" id="${serviceId}-${rowId}-${tabId}-${currentCount}-collapse">
+        <td colspan="100%" class="p-0">
+          <div class="collapse show">
+            <div class="d-flex align-item-starts m-3">
+              <div class="row" style="width: 100%">
+                <div class="col-12">
+                  <div id="${serviceId}-${rowId}-${tabId}-${currentCount}-template-input-div" class="row mb-1 align-items-center">
+                    <div class="col-4 col-form-label d-flex align-items-start justify-content-between"> 
+                      <label for="${serviceId}-${rowId}-${tabId}-${currentCount}-template-input" class="d-flex align-items-center w-100"> 
+                        Template
+                      </label>
+                    </div>
+                    <div class="col-8 d-flex align-items-center">
+                        <select
+                          name="template"
+                          data-collect="true"
+                          data-group="datamount-${currentCount}"
+                          id="${serviceId}-${rowId}-${tabId}-${currentCount}-template-input"
+                          class="form-select data-mount-template-input"
+                        >
+                          <option value="b2drop">B2Drop</option>
+                          <option value="aws">AWS</option>
+                          <option value="s3">S3 Compliant Storage Provider</option>
+                          <option value="webdav">Webdav</option>
+                        </select>
+                    </div>
+                  </div>
+                  <div id="${serviceId}-${rowId}-${tabId}-${currentCount}-mountpath-input-div" class="row mb-1 align-items-center">
+                    <div class="col-4"> 
+                      <label for="${serviceId}-${rowId}-${tabId}-${currentCount}-mountpath-input" class="d-flex align-items-center w-100"> 
+                        Relative Mount Path
+                      </label>
+                    </div>
+                    <div class="col-8">
+                      <input type="text"
+                        class="form-control"
+                        data-collect="true"
+                        data-group="datamount-${currentCount}"
+                        name="path"
+                        id="${serviceId}-${rowId}-${tabId}-${currentCount}-mountpath-input" value="b2drop"
+                      />
+                    </div>
+                  </div>
+                  <div id="${serviceId}-${rowId}-${tabId}-${currentCount}-readonly-input-div" class="row mb-1 align-items-center">
+                    <div class="col-4 d-flex justify-content-between align-items-center">
+                      <label for="${serviceId}-${rowId}-${tabId}-${currentCount}-readonly-input" class="mb-0">
+                        Read Only
+                      </label>
+                      <input
+                        type="checkbox"
+                        name="readonly"
+                        data-collect="true"
+                        data-group="datamount-${currentCount}"
+                        class="form-check-input"
+                        id="${serviceId}-${rowId}-${tabId}-${currentCount}-readonly-input"/>
+                    </div>
+                    <div class="col-8"></div>
+                  </div>
+                  <div data-storage-template="b2drop">
+                    <div id="${serviceId}-${rowId}-${tabId}-${currentCount}-b2drop-remotepath-input-div" class="row mb-1 align-items-center">
+                      <div class="col-4">
+                        <label for="${serviceId}-${rowId}-${tabId}-${currentCount}-b2drop-remotepath-input" class="mb-0">
+                          Path
+                        </label>
+                      </div>
+                      <div class="col-8">
+                        <input type="text"
+                          class="form-control"
+                          data-collect="true"
+                          data-group="datamount-${currentCount}"
+                          name="remotepath"
+                          id="${serviceId}-${rowId}-${tabId}-${currentCount}-b2drop-remotepath-input" value="" placeholder=""
+                        />
+                      </div>
+                    </div>
+                    <div style="display: none" id="${serviceId}-${rowId}-${tabId}-${currentCount}-b2drop-type-input-div" class="row mb-1 align-items-center">
+                      <div class="col-4">
+                        <label for="${serviceId}-${rowId}-${tabId}-${currentCount}-b2drop-type-input" class="mb-0">
+                          Type
+                        </label>
+                      </div>
+                      <div class="col-8">
+                        <input type="text"
+                          class="form-control"
+                          data-collect="true"
+                          data-group="datamount-${currentCount}"
+                          name="type"
+                          disabled
+                          id="${serviceId}-${rowId}-${tabId}-${currentCount}-b2drop-type-input" value="webdav" placeholder=""
+                        />
+                      </div>
+                    </div>
+                    <div style="display: none" id="${serviceId}-${rowId}-${tabId}-${currentCount}-url-input-div" class="row mb-1 align-items-center">
+                      <div class="col-4">
+                        <label for="${serviceId}-${rowId}-${tabId}-${currentCount}-url-input" class="mb-0">
+                          URL
+                        </label>
+                      </div>
+                      <div class="col-8">
+                        <input type="text"
+                          class="form-control"
+                          data-collect="true"
+                          data-group="datamount-${currentCount}"
+                          name="url"
+                          disabled
+                          id="${serviceId}-${rowId}-${tabId}-${currentCount}-url-input" value="https://b2drop.eudat.eu/remote.php/webdav/" placeholder=""
+                        />
+                      </div>
+                    </div>
+                    <div style="display: none" id="${serviceId}-${rowId}-${tabId}-${currentCount}-vendor-input-div" class="row mb-1 align-items-center">
+                      <div class="col-4">
+                        <label for="${serviceId}-${rowId}-${tabId}-${currentCount}-vendor-input" class="mb-0">
+                          Vendor
+                        </label>
+                      </div>
+                      <div class="col-8">
+                        <input type="text"
+                          class="form-control"
+                          data-collect="true"
+                          data-group="datamount-${currentCount}"
+                          name="vendor"
+                          disabled
+                          id="${serviceId}-${rowId}-${tabId}-${currentCount}-vendor-input" value="nextcloud" placeholder=""
+                        />
+                      </div>
+                    </div>
+                    <div id="${serviceId}-${rowId}-${tabId}-${currentCount}-user-input-div" class="row mb-1 align-items-center">
+                      <div class="col-4">
+                        <label for="${serviceId}-${rowId}-${tabId}-${currentCount}-user-input" class="mb-0">
+                          User
+                        </label>
+                      </div>
+                      <div class="col-8">
+                        <input type="text"
+                          class="form-control data-mount-b2drop-user"
+                          data-collect="true"
+                          data-group="datamount-${currentCount}"
+                          name="user"
+                          id="${serviceId}-${rowId}-${tabId}-${currentCount}-username-input" value="" placeholder=""
+                        />
+                      </div>
+                    </div>
+                    <div id="${serviceId}-${rowId}-${tabId}-${currentCount}-password-input-div" class="row mb-1 align-items-center">
+                      <div class="col-4">
+                        <label for="${serviceId}-${rowId}-${tabId}-${currentCount}-password-input" class="mb-0">
+                          Password
+                        </label>
+                      </div>
+                      <div class="col-8">
+                        <div class="input-group">
+                          <input
+                            type="password"
+                            class="form-control"
+                            name="obscure_pass"
+                            data-group="datamount-${currentCount}"
+                            data-collect="true"
+                            data-secret="true"
+                            id="${serviceId}-${rowId}-${tabId}-${currentCount}-password-input"
+                            placeholder=""
+                            value=""
+                          />
+                          <button
+                            class="btn btn-light data-mount-passwd-btn"
+                            type="button"
+                            id="${serviceId}-${rowId}-${tabId}-${currentCount}-password-view-password"
+                          >
+                            <i id="${serviceId}-${rowId}-${tabId}-${currentCount}-password-password-eye" class="fa fa-eye" aria-hidden="true"></i>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div data-storage-template="aws" style="display: none">
+                    <div id="${serviceId}-${rowId}-${tabId}-${currentCount}-aws-remotepath-input-div" class="row mb-1 align-items-center">
+                      <div class="col-4">
+                        <label for="${serviceId}-${rowId}-${tabId}-${currentCount}-aws-remotepath-input" class="mb-0">
+                          Bucket Name
+                        </label>
+                      </div>
+                      <div class="col-8">
+                        <input type="text"
+                          class="form-control"
+                          name="remotepath"
+                          data-collect="false"
+                          data-group="datamount-${currentCount}"
+                          id="${serviceId}-${rowId}-${tabId}-${currentCount}-aws-remotepath-input" value="" placeholder=""
+                        />
+                      </div>
+                    </div>
+                    <div style="display: none" id="${serviceId}-${rowId}-${tabId}-${currentCount}-aws-type-input-div" class="row mb-1 align-items-center">
+                      <div class="col-4">
+                        <label for="${serviceId}-${rowId}-${tabId}-${currentCount}-aws-type-input" class="mb-0">
+                          Type
+                        </label>
+                      </div>
+                      <div class="col-8">
+                        <input type="text"
+                          class="form-control"
+                          data-collect="true"
+                          data-group="datamount-${currentCount}"
+                          name="type"
+                          disabled
+                          id="${serviceId}-${rowId}-${tabId}-${currentCount}-aws-type-input" value="s3" placeholder=""
+                        />
+                      </div>
+                    </div>
+                    <div style="display: none" id="${serviceId}-${rowId}-${tabId}-${currentCount}-awsprovider-div" class="row mb-1 align-items-center">
+                      <div class="col-4">
+                        <label for="${serviceId}-${rowId}-${tabId}-${currentCount}-awsprovider-input" class="mb-0">
+                          Provider
+                        </label>
+                      </div>
+                      <div class="col-8">
+                        <input type="text"
+                          class="form-control"
+                          data-collect="true"
+                          data-group="datamount-${currentCount}"
+                          name="provider"
+                          disabled
+                          id="${serviceId}-${rowId}-${tabId}-${currentCount}-awsprovider-input" value="AWS" placeholder=""
+                        />
+                      </div>
+                    </div>
+                    <div id="${serviceId}-${rowId}-${tabId}-${currentCount}-aws-region-input-div" class="row mb-1 align-items-center">
+                      <div class="col-4 col-form-label d-flex align-items-start justify-content-between"> 
+                        <label for="${serviceId}-${rowId}-${tabId}-${currentCount}-aws-region-input" class="d-flex align-items-center w-100"> 
+                          Region
+                        </label>
+                      </div>
+                      <div class="col-8">
+                        <select
+                          name="region"
+                          data-collect="false"
+                          data-group="datamount-${currentCount}"
+                          id="${serviceId}-${rowId}-${tabId}-${currentCount}-aws-region-input"
+                          class="form-select"
+                        >
+                          <option value="eu-north-1">EU (Stockholm) (eu-north-1)</option>
+                          <option value="eu-central-1">EU (Frankfurt) (eu-central-1)</option>
+                          <option value="eu-west-1">EU (Ireland) (eu-west-1)</option>
+                          <option value="eu-west-2">EU (London) (eu-west-2)</option>
+                          <option value="ca-central-1">Canada (Central) (ca-central-1)</option>
+                          <option value="us-east-1">US East (Northern Virginia) (us-east-1)</option>
+                          <option value="us-east-2">US East (Ohio) (us-east-2)</option>
+                          <option value="us-west-1">US West (Northern California) (us-west-1)</option>
+                          <option value="us-west-2">US West (Oregon) (us-west-2)</option>
+                          <option value="ap-southeast-1">Asia Pacific (Singapore) (ap-southeast-1)</option>
+                          <option value="ap-southeast-2">Asia Pacific (Sydney) (ap-southeast-2)</option>
+                          <option value="ap-northeast-1">Asia Pacific (Tokyo) (ap-northeast-1)</option>
+                          <option value="ap-northeast-2">Asia Pacific (Seoul) (ap-northeast-2)</option>
+                          <option value="ap-south-1">Asia Pacific (Mumbai) (ap-south-1)</option>
+                          <option value="sa-east-1">South America (Sao Paulo) (sa-east-1)</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div id="${serviceId}-${rowId}-${tabId}-${currentCount}-aws-user-input-div" class="row mb-1 align-items-center">
+                      <div class="col-4">
+                        <label for="${serviceId}-${rowId}-${tabId}-${currentCount}-aws-user-input" class="mb-0">
+                          Username
+                        </label>
+                      </div>
+                      <div class="col-8">
+                        <input type="text"
+                          class="form-control"
+                          data-collect="false"
+                          data-group="datamount-${currentCount}"
+                          name="username"
+                          data-name="access_key_id"
+                          id="${serviceId}-${rowId}-${tabId}-${currentCount}-aws-username-input" value="" placeholder=""
+                        />
+                      </div>
+                    </div>
+                    <div id="${serviceId}-${rowId}-${tabId}-${currentCount}-aws-password-input-div" class="row mb-1 align-items-center">
+                      <div class="col-4">
+                        <label for="${serviceId}-${rowId}-${tabId}-${currentCount}-aws-password-input" class="mb-0">
+                          Password
+                        </label>
+                      </div>
+                      <div class="col-8">
+                        <div class="input-group">
+                          <input
+                            type="password"
+                            class="form-control"
+                            data-collect="false"
+                            data-secret="true"
+                            data-group="datamount-${currentCount}"
+                            name="password"
+                            data-name="secret_access_key"
+                            id="${serviceId}-${rowId}-${tabId}-${currentCount}-aws-password-input"
+                            placeholder=""
+                            value=""
+                          />
+                          <button
+                            class="btn btn-light data-mount-passwd-btn"
+                            type="button"
+                            id="${serviceId}-${rowId}-${tabId}-${currentCount}-aws-password-view-password"
+                            data-storage="true"
+                            data-template="aws"
+                          >
+                            <i id="${serviceId}-${rowId}-${tabId}-${currentCount}-aws-password-password-eye" class="fa fa-eye" aria-hidden="true"></i>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div data-storage-template="s3" style="display: none">
+                    <div style="display: none" id="${serviceId}-${rowId}-${tabId}-${currentCount}-s3-type-input-div" class="row mb-1 align-items-center">
+                      <div class="col-4">
+                        <label for="${serviceId}-${rowId}-${tabId}-${currentCount}-s3-type-input" class="mb-0">
+                          Type
+                        </label>
+                      </div>
+                      <div class="col-8">
+                        <input type="text"
+                          class="form-control"
+                          data-collect="true"
+                          data-group="datamount-${currentCount}"
+                          name="type"
+                          disabled
+                          id="${serviceId}-${rowId}-${tabId}-${currentCount}-s3-type-input" value="s3" placeholder=""
+                        />
+                      </div>
+                    </div>
+                    <div id="${serviceId}-${rowId}-${tabId}-${currentCount}-s3-provider-input-div" class="row mb-1 align-items-center">
+                      <div class="col-4 col-form-label d-flex align-items-start justify-content-between"> 
+                        <label for="${serviceId}-${rowId}-${tabId}-${currentCount}-s3-provider-input" class="d-flex align-items-center w-100"> 
+                          Provider
+                        </label>
+                      </div>
+                      <div class="col-8">
+                        <select
+                          name="provider"
+                          data-name="provider"
+                          data-collect="false"
+                          data-group="datamount-${currentCount}"
+                          id="${serviceId}-${rowId}-${tabId}-${currentCount}-s3-provider-input"
+                          class="form-select"
+                        >
+                          <option value="AWS">Amazon Web Services (AWS) S3</option>
+                          <option value="Alibaba">Alibaba Cloud Object Storage System (OSS) formerly Aliyun</option>
+                          <option value="Ceph">Ceph Object Storage</option>
+                          <option value="DigitalOcean">Digital Ocean Spaces</option>
+                          <option value="Dreamhost">Dreamhost DreamObjects</option>
+                          <option value="IBMCOS">IBM COS S3</option>
+                          <option value="Minio">Minio Object Storage</option>
+                          <option value="Netease">Netease Object Storage (NOS)</option>
+                          <option value="Wasabi">Wasabi Object Storage</option>
+                          <option value="Other">Any other S3 compatible provider</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div id="${serviceId}-${rowId}-${tabId}-${currentCount}-s3-remotepath-input-div" class="row mb-1 align-items-center">
+                      <div class="col-4">
+                        <label for="${serviceId}-${rowId}-${tabId}-${currentCount}-s3-remotepath-input" class="mb-0">
+                          Bucket Name
+                        </label>
+                      </div>
+                      <div class="col-8">
+                        <input type="text"
+                          class="form-control"
+                          name="remotepath"
+                          data-collect="false"
+                          data-group="datamount-${currentCount}"
+                          data-name="remotepath"
+                          id="${serviceId}-${rowId}-${tabId}-${currentCount}-s3-remotepath-input" value="bucketname" placeholder=""
+                        />
+                      </div>
+                    </div>
+                    <div id="${serviceId}-${rowId}-${tabId}-${currentCount}-s3-endpoint-input-div" class="row mb-1 align-items-center">
+                      <div class="col-4">
+                        <label for="${serviceId}-${rowId}-${tabId}-${currentCount}-s3-endpoint-input" class="mb-0">
+                          Endpoint for S3 API
+                        </label>
+                      </div>
+                      <div class="col-8">
+                        <input type="text"
+                          class="form-control"
+                          name="endpoint"
+                          data-collect="false"
+                          data-group="datamount-${currentCount}"
+                          data-name="endpoint"
+                          id="${serviceId}-${rowId}-${tabId}-${currentCount}-s3-endpoint-input" value="" placeholder=""
+                        />
+                      </div>
+                    </div>
+                    <div id="${serviceId}-${rowId}-${tabId}-${currentCount}-s3-username-input-div" class="row mb-1 align-items-center">
+                      <div class="col-4">
+                        <label for="${serviceId}-${rowId}-${tabId}-${currentCount}-s3-username-input" class="mb-0">
+                          Username
+                        </label>
+                      </div>
+                      <div class="col-8">
+                        <input type="text"
+                          class="form-control"
+                          name="username"
+                          data-collect="false"
+                          data-group="datamount-${currentCount}"
+                          data-name="access_key_id"
+                          id="${serviceId}-${rowId}-${tabId}-${currentCount}-s3-username-input" value="" placeholder=""
+                        />
+                      </div>
+                    </div>
+                    <div id="${serviceId}-${rowId}-${tabId}-${currentCount}-s3-password-input-div" class="row mb-1 align-items-center">
+                      <div class="col-4">
+                        <label for="${serviceId}-${rowId}-${tabId}-${currentCount}-s3-password-input" class="mb-0">
+                          Password
+                        </label>
+                      </div>
+                      <div class="col-8">
+                        <div class="input-group">
+                          <input
+                            type="password"
+                            class="form-control"
+                            name="password"
+                            data-collect="false"
+                            data-secret="true"
+                            data-group="datamount-${currentCount}"
+                            data-name="secret_access_key"
+                            id="${serviceId}-${rowId}-${tabId}-${currentCount}-s3-password-input"
+                            placeholder=""
+                            value=""
+                          />
+                          <button
+                            class="btn btn-light data-mount-passwd-btn"
+                            type="button"
+                            id="${serviceId}-${rowId}-${tabId}-${currentCount}-s3-password-view-password"
+                            data-storage="true"
+                            data-template="s3"
+                          >
+                            <i id="${serviceId}-${rowId}-${tabId}-${currentCount}-s3-password-password-eye" class="fa fa-eye" aria-hidden="true"></i>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                    <div id="${serviceId}-${rowId}-${tabId}-${currentCount}-s3-region-input-div" class="row mb-1 align-items-center">
+                      <div class="col-4">
+                        <label for="${serviceId}-${rowId}-${tabId}-${currentCount}-s3-region-input" class="mb-0">
+                          Region
+                        </label>
+                      </div>
+                      <div class="col-8">
+                        <input type="text"
+                          class="form-control"
+                          name="region"
+                          data-collect="false"
+                          data-group="datamount-${currentCount}"
+                          data-name="region"
+                          id="${serviceId}-${rowId}-${tabId}-${currentCount}-s3-region-input" value="" placeholder=""
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  <div data-storage-template="webdav" style="display: none">
+                    <div id="${serviceId}-${rowId}-${tabId}-${currentCount}-webdav-remotepath-input-div" class="row mb-1 align-items-center">
+                      <div class="col-4">
+                        <label for="${serviceId}-${rowId}-${tabId}-${currentCount}-webdav-remotepath-input" class="mb-0">
+                          Path
+                        </label>
+                      </div>
+                      <div class="col-8">
+                        <input type="text"
+                          class="form-control"
+                          name="remotepath"
+                          data-collect="false"
+                          data-group="datamount-${currentCount}"
+                          data-name="remotepath"
+                          id="${serviceId}-${rowId}-${tabId}-${currentCount}-webdav-remotepath-input" value="/" placeholder=""
+                        />
+                      </div>
+                    </div>
+                    <div style="display: none" id="${serviceId}-${rowId}-${tabId}-${currentCount}-webdav-type-input-div" class="row mb-1 align-items-center">
+                      <div class="col-4">
+                        <label for="${serviceId}-${rowId}-${tabId}-${currentCount}-webdav-type-input" class="mb-0">
+                          Type
+                        </label>
+                      </div>
+                      <div class="col-8">
+                        <input type="text"
+                          class="form-control"
+                          data-collect="true"
+                          data-group="datamount-${currentCount}"
+                          name="type"
+                          disabled
+                          id="${serviceId}-${rowId}-${tabId}-${currentCount}-webdav-type-input" value="webdav" placeholder=""
+                        />
+                      </div>
+                    </div>
+                    <div id="${serviceId}-${rowId}-${tabId}-${currentCount}-webdav-url-input-div" class="row mb-1 align-items-center">
+                      <div class="col-4">
+                        <label for="${serviceId}-${rowId}-${tabId}-${currentCount}-webdav-url-input" class="mb-0">
+                          URL
+                        </label>
+                      </div>
+                      <div class="col-8">
+                        <input type="text"
+                          class="form-control"
+                          name="url"
+                          data-collect="false"
+                          data-group="datamount-${currentCount}"
+                          data-name="url"
+                          id="${serviceId}-${rowId}-${tabId}-${currentCount}-webdav-url-input" value="https://b2drop.eudat.eu/remote.php/webdav/" placeholder=""
+                        />
+                      </div>
+                    </div>
+                    <div id="${serviceId}-${rowId}-${tabId}-${currentCount}-webdav-vendor-input-div" class="row mb-1 align-items-center">
+                      <div class="col-4 col-form-label d-flex align-items-start justify-content-between"> 
+                        <label for="${serviceId}-${rowId}-${tabId}-${currentCount}-webdav-vendor-input" class="d-flex align-items-center w-100"> 
+                          Vendor
+                        </label>
+                      </div>
+                      <div class="col-8">
+                        <select
+                          name="element_id"
+                          data-collect="false"
+                          data-group="datamount-${currentCount}"
+                          id="${serviceId}-${rowId}-${tabId}-${currentCount}-webdav-vendor-input"
+                          class="form-select"
+                        >
+                          <option value="nextcloud">Nextcloud</option>
+                          <option value="owncloud">Owncloud</option>
+                          <option value="sharepoint">Sharepoint</option>
+                          <option value="other">Other site/service or software</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div id="${serviceId}-${rowId}-${tabId}-${currentCount}-webdav-user-input-div" class="row mb-1 align-items-center">
+                      <div class="col-4">
+                        <label for="${serviceId}-${rowId}-${tabId}-${currentCount}-webdav-user-input" class="mb-0">
+                          User
+                        </label>
+                      </div>
+                      <div class="col-8">
+                        <input type="text"
+                          class="form-control"
+                          name="username"
+                          data-collect="false"
+                          data-group="datamount-${currentCount}"
+                          data-name="user"
+                          id="${serviceId}-${rowId}-${tabId}-${currentCount}-webdav-user-input" value="" placeholder=""
+                        />
+                      </div>
+                    </div>
+                    <div id="${serviceId}-${rowId}-${tabId}-${currentCount}-webdav-password-input-div" class="row mb-1 align-items-center">
+                      <div class="col-4">
+                        <label for="${serviceId}-${rowId}-${tabId}-${currentCount}-webdav-password-input" class="mb-0">
+                          Password
+                        </label>
+                      </div>
+                      <div class="col-8">
+                        <div class="input-group">
+                          <input
+                            type="password"
+                            class="form-control"
+                            name="password"
+                            data-collect="false"
+                            data-secret="true"
+                            data-group="datamount-${currentCount}"
+                            data-name="obscure_pass"
+                            id="${serviceId}-${rowId}-${tabId}-${currentCount}-webdav-password-input"
+                            placeholder=""
+                            value=""
+                          />
+                          <button
+                            class="btn btn-light data-mount-passwd-btn"
+                            type="button"
+                            id="${serviceId}-${rowId}-${tabId}-${currentCount}-webdav-password-view-password"
+                            data-storage="true"
+                            data-template="webdav"
+                          >
+                            <i id="${serviceId}-${rowId}-${tabId}-${currentCount}-webdav-password-password-eye" class="fa fa-eye" aria-hidden="true"></i>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                    <div id="${serviceId}-${rowId}-${tabId}-${currentCount}-webdav-bearer-input-div" class="row mb-1 align-items-center">
+                      <div class="col-4">
+                        <label for="${serviceId}-${rowId}-${tabId}-${currentCount}-webdav-bearer-input" class="mb-0">
+                          Bearer Token (optional)
+                        </label>
+                      </div>
+                      <div class="col-8">
+                        <input type="text"
+                          class="form-control"
+                          name="bearer"
+                          data-collect="false"
+                          data-group="datamount-${currentCount}"
+                          data-name="bearer_token"
+                          id="${serviceId}-${rowId}-${tabId}-${currentCount}-webdav-bearer-input" value="" placeholder=""
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </td>
+      </tr>
+    `;
+  }
+
 
   function val(obj) {
     let ret = "";
@@ -462,7 +1093,7 @@
     function validateForm(serviceId, rowId) {
       const form = $(`form[id='${serviceId}-${rowId}-form']`);
       let ret = true;
-      form.find(`[id$='-input']:not(:disabled):not([data-collect="false"])`).each(function () {
+      form.find(`[id$='-input']:not(:disabled):not([data-collect="false"]):not([type="button"])`).each(function () {
         let $this = $(this);
         let key = $this.attr("data-element");
         let valid = true;
@@ -598,6 +1229,52 @@
         headerDescription.addClass("justify-content-center");
         $(`#${serviceId}-${rowId}-config-td-div`).html(description);
       }
+
+      // Fill Storage Tab
+      let datarows = [];
+      let datarowcount = 1;
+      const storageTabId = "storage";
+
+      for (const [key, value] of Object.entries(user_options)) {
+        if (key.startsWith("datamount-")) {
+          datarows.push(value);
+        }
+      }
+
+      // Loop through datarows
+      for (const row of datarows) {
+        const newRowHtml = createStorageRow(serviceId, rowId, storageTabId);
+        $(`#${serviceId}-${rowId}-${storageTabId}-table tbody`).append(newRowHtml);
+        $(`#${serviceId}-${rowId}-${storageTabId}-table`).show();
+
+        const collapseId = `${serviceId}-${rowId}-${storageTabId}-${datarowcount}-collapse`;
+        const $collapseRow = $(`#${collapseId}`);
+
+        // Set template, path, readonly fields
+        const templateInput = $collapseRow.find('[name="template"]');
+        templateInput.val(row.template || '');
+        templateInput.trigger("change");
+        
+        $collapseRow.find('[name="path"]').val(row.path || '');
+        $collapseRow.find('[name="readonly"]').prop("checked", row.readonly === true);
+
+        // Set attributes inside the template-specific container
+        const $templateContainer = $collapseRow.find(`div[data-storage-template="${row.template}"]`);
+
+        for (const [key, value] of Object.entries(row)) {
+          if (["template", "path", "readonly"].includes(key)) continue;
+
+          // Find element with an attribute named after the key
+
+          const $targetElement = $templateContainer.find(`[name="${key}"], [data-name="${key}"]`);
+          if ($targetElement.length > 0) {
+            $targetElement.val(value);
+          }
+        }
+
+        datarowcount++;
+      }
+
       const shareId = user_options?.share_id ?? false;
       const r2dId = user_options?.r2d_id ?? false;
       if ( shareId || r2dId ) {
@@ -844,7 +1521,7 @@
         let id = $this.prop("id");
         let labelInput = $(`#${id}-cb`);
         let parent = $this.attr("data-parent");
-        let name = parent || $this.attr("name");
+        let name = parent || $this.attr("data-name") || $this.attr("name");
         let secret = $this.attr("data-secret");
         if ( secret == "true" ) {
           secret_keys.push(name);
@@ -2517,7 +3194,7 @@
           text = "";
         }
 
-        if ( status === "" && progress != 100 ) {
+        if ( status === "" ) {
           progressBarParentElement.css('display', 'none');
         } else {
           progressBarParentElement.css('display', 'block');
@@ -2563,11 +3240,7 @@
       options["data"] = JSON.stringify(userOptions);
       var newTab = window.open("about:blank");
       options["success"] = function (data, textStatus, jqXHR) {
-        try {
-          newTab.location.href = utils.url_path_join(base_url, "start", user, newId);
-        } catch (e) {
-          window.location.href = utils.url_path_join(base_url, "start", user, newId);
-        }
+        newTab.location.href = utils.url_path_join(base_url, "start", user, newId);
         const url = new URL(window.location.href);
         localStorage.setItem("service", serviceId);
         localStorage.setItem("row", newId);
@@ -2575,11 +3248,7 @@
         window.location.href = url.toString();
       }
       options["error"] = function (jqXHR, textStatus, errorThrown) {
-        try {
-          newTab.close();
-        } catch (e) {
-          console.error("Could not close new tab");
-        }
+        newTab.close();
         if (jqXHR.status == 503) {
           this.tryCount--;
           if (this.tryCount >= 0) {
@@ -2921,9 +3590,9 @@
         globalUserOptions[serviceId][rowId] = userOptions;
         homeHeaderUpdate(serviceId, rowId);
         clearLogs(serviceId, rowId);
-        try {
+        if ( newTab ) {
           newTab.location.href = utils.url_path_join(base_url, "start", user, rowId);
-        } catch (e) {
+        } else {
           window.location.href = utils.url_path_join(base_url, "start", user, rowId);
         }
       }

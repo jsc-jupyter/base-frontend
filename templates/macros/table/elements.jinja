@@ -155,9 +155,6 @@
   element_id,
   element_options
 )%}
-  {#
-    <label class="col-{{ label.get("width", "4") }} col-form-label" for="{{ id_prefix }}-{{ element_id }}-input">
-  #}
   {%- set label = element_options.get("label", {}) %}
   <div class="col-{{ label.get("width", "4") }} col-form-label d-flex align-items-start justify-content-between"> 
     <label for="{{ id_prefix }}-{{ element_id }}-input" class="d-flex align-items-center w-100"> 
@@ -429,6 +426,48 @@
     </div>
   </div>
 {%- endmacro %}
+
+{%- macro create_storageentry_input(
+  id_prefix,
+  service_id,
+  row_id,
+  tab_id,
+  element_id,
+  element_options
+) %}
+    <p style="justify-self: center">
+      Add Storage Mount
+      <button
+        class="btn btn-success add-data-mount"
+        id="{{ id_prefix }}-addbtn-input"
+        data-btn-type="add"
+        data-service="{{ service_id }}"
+        data-row="{{ row_id }}"
+        data-tab="{{ tab_id }}"
+        data-element="{{ element_id }}"
+        data-collect="false" 
+        type="button"
+        style="margin-left: 8px;"
+      >
+        {{ svg.plus_svg | safe }}
+      </button>
+    </p>
+    <table id="{{ service_id }}-{{ row_id }}-{{ tab_id }}-table" style="display: none; justify-self: center" class="table table-bordered table-striped table-hover table-light align-middle">
+      <thead class="table-secondary" style="width: 50%">
+        <tr>
+          <th scope="col" width="5%"></th>
+          <th scope="col" width="85%">Template</th>
+          <th scope="col" width="10%" class="text-center">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+      </tbody>
+    </table>      
+  {#</div class="col-12">#}
+{#</div class="row">#}
+
+{%- endmacro %}
+
 
 {%- macro create_textgrower_input(
   id_prefix,
@@ -733,6 +772,15 @@
   {% set id_prefix = service_id ~ '-' ~ row_id ~ '-' ~ tab_id %}
   {%- if element_options.get("input", {}).get("type", "") == "text" %}
     {{ create_text_input(
+      id_prefix,
+      service_id,
+      row_id,
+      tab_id,
+      element_id,
+      element_options
+    )}}
+  {%- elif element_options.get("input", {}).get("type", "") == "storageentry" %}
+    {{ create_storageentry_input(
       id_prefix,
       service_id,
       row_id,

@@ -594,6 +594,23 @@
         }
       });
 
+      
+
+      // Storage Logic >
+      $('.add-data-mount').on('click', function(event) {
+        const $this = $(this);
+        const serviceId = $this.data('service');
+        const rowId = $this.data('row');
+        const tabId = $this.data('tab');
+        const newRowHtml = createStorageRow(serviceId, rowId, tabId);
+        $(`#${serviceId}-${rowId}-${tabId}-table`).show();
+        $(`#${serviceId}-${rowId}-${tabId}-table tbody`).append(newRowHtml);
+        console.log("Add Row");
+      });
+
+
+      // < Storage Logic
+
 
       logDebug && console.log(`Fill elements ...`);
       {% if pagetype == vars.pagetype_home %}
@@ -625,7 +642,7 @@
           $('#{{ service_id }}-{{ row_id }}-summary-tr').show();
           {%- endfor %}
         {%- elif pagetype == vars.pagetype_spawn %}
-          homeFillExistingRow("{{ service_id }}", "{{ spawner.name }}", {{ spawner.user_options | tojson }}, {{ service_options.get("fillingOrder", []) | tojson }});
+          homeFillExistingRow("{{ service_id }}", "{{ spawner.name }}", {{ frontendCollection.get("decrypted_user_options").get(spawner.name, spawner.user_options) | tojson }}, {{ service_options.get("fillingOrder", []) | tojson }});
           $(`[id^='{{ service_id }}-{{ spawner.name }}'][id$='-input']`).prop("disabled", true);
           {%- if spawner.events %}
             {%- for event in spawner.events %}
@@ -635,7 +652,7 @@
           $('#{{ service_id }}-{{ spawner.name }}-loading-tr').hide();
           $('#{{ service_id }}-{{ spawner.name }}-summary-tr').show();
         {%- elif pagetype == vars.pagetype_start %}
-          homeFillExistingRow("{{ service_id }}", "{{ spawner.name }}", {{ spawner.user_options | tojson }}, {{ service_options.get("fillingOrder", []) | tojson }});
+          homeFillExistingRow("{{ service_id }}", "{{ spawner.name }}", {{ frontendCollection.get("decrypted_user_options").get(spawner.name, spawner.user_options) | tojson }}, {{ service_options.get("fillingOrder", []) | tojson }});
           $(`[id^='{{ service_id }}-{{ spawner.name }}'][id$='-input']`).prop("disabled", true);
           {%- if spawner.events %}
             {%- for event in spawner.events %}
@@ -710,6 +727,8 @@
                 {%- if spawner.user_options and spawner.user_options.get("name", false) %}
                   rowTasks.push(() => {
                     $(`[id^='{{ service_id }}-{{ spawner.name }}-'][id$='-input']`).trigger("trigger_init");
+                    console.log("{{ spawner.name }}");
+                    console.log({{ frontendCollection.get("decrypted_user_options").get(spawner.name, spawner.user_options) | tojson }});
                     homeFillExistingRow("{{ service_id }}", "{{ spawner.name }}", {{ frontendCollection.get("decrypted_user_options").get(spawner.name, spawner.user_options) | tojson }}, {{ service_options.get("fillingOrder", []) | tojson }});
                     {%- if spawner.events %}
                       {%- for event in spawner.events %}
@@ -829,4 +848,98 @@
   {%- if pagetype == vars.pagetype_workshop %}
   const workshop_options = {{ workshop_options | tojson }};
   {%- endif %}
+
+
+  // Storage Logic 
+  $(document).on('click', '.del-data-mount', function (event) {
+    event.stopPropagation();
+    const $this = $(this);
+    const summaryRow = $this.closest('tr');
+    const collapseRow = summaryRow.next('.collapsible-tr');
+    const table = summaryRow.closest('table');
+    collapseRow.remove();
+    summaryRow.remove();
+
+    if (table.find('tbody tr').length === 0) {
+      table.hide();
+    }
+
+  });
+
+  $(document).on('input', '.data-mount-b2drop-user', function () {
+    const $this = $(this);
+    const userInput = $this.val().trim();
+    const group = $this.data('group');
+
+    if (group && userInput) {
+      const $urlInput = $(`input[name="url"][data-group="${group}"]`);
+      $urlInput.val(`https://b2drop.eudat.eu/remote.php/dav/files/${userInput}/`);
+    }
+  });
+
+  $(document).on('click', '.data-mount-passwd-btn', function () {
+    const $this = $(this);
+    const input = $this.closest('.input-group').find('input[type="password"], input[type="text"]');
+
+    if (input.attr('type') === 'password') {
+      input.attr('type', 'text');
+      $this.find('i').removeClass('fa-eye').addClass('fa-eye-slash');
+    } else {
+      input.attr('type', 'password');
+      $this.find('i').removeClass('fa-eye-slash').addClass('fa-eye');
+    }
+  });
+
+  $(document).on('change', '.data-mount-template-input', function () {
+    const $this = $(this);
+    const selectedText = $this.find('option:selected').text();
+    const row = $this.closest('tr');
+    const val = $this.val();
+
+    const mountPathInput = row.find('input[name="path"]');
+    mountPathInput.val(val);
+
+    const container = $this.closest('tr').prev('.summary-tr');
+
+    // Update the summary cell text via class
+    container.find('.data-mount-summary-template').text(selectedText);
+
+    row.find('[data-storage-template]').each(function () {
+      const container = $(this);
+      const isMatch = container.data('storage-template') === val;
+
+      container.toggle(isMatch); // show if match, hide otherwise
+
+      // Update data-collect on all inputs inside the container
+      container.find('input[data-collect], select[data-collect]').each(function () {
+        $(this).attr('data-collect', isMatch.toString());
+      });
+    });
+  });
+
+  $(document).on('click', '.data-mount-summary-tr', function () {
+    const $this = $(this);
+    const summaryRow = $this.closest('tr');
+    const collapseRow = summaryRow.next('.collapsible-tr');
+    const collapseDiv = collapseRow.find('.collapse'); // assumes you wrapped it in .collapse
+    const accordionIcon = summaryRow.find('.accordion-icon');
+
+    if (collapseDiv.length > 0) {
+      const isShown = collapseDiv.hasClass('show');
+
+      // Toggle icon class
+      accordionIcon.toggleClass('collapsed', isShown);
+
+      // Toggle collapse using Bootstrap API
+      const bsCollapse = bootstrap.Collapse.getInstance(collapseDiv[0]) ||
+                          new bootstrap.Collapse(collapseDiv[0], { toggle: false });
+
+      if (isShown) {
+        bsCollapse.hide();
+      } else {
+        bsCollapse.show();
+      }
+    }
+  });
+  // Storage Logic End
 </script>

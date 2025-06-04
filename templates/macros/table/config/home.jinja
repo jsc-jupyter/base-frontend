@@ -9,6 +9,16 @@
             "show": true,
             "displayName": "Lab Config"
           },
+          "storage": {
+            "show": true,
+            "displayName": "Storage",
+            "dependency": {
+              "system": [
+                "jsccloud",
+                "denbi"
+              ]
+            }
+          },
           "modules": {
             "displayName": "Kernels and Extensions",
             "dependency": {
@@ -539,6 +549,35 @@
               }
             },
           },
+          "storage": {
+            "center": {
+              "storagecb": {
+                "input": {
+                  "type": "storagegrow",
+                  "options": {
+                    "group": "storage",
+                    "default": false,
+                    "collect": false,
+                    "show": true
+                  }
+                },
+                "label": {
+                  "type": "text",
+                  "value": "Add external Storage mount"
+                },
+              },
+              "storage1": {
+                "input": {
+                  "type": "storageentry",
+                  "options": {
+                    "show": true,
+                    "collect": true,
+                    "group": "storage"
+                  }
+                }
+              }
+            }
+          },
           "modules": {
             "center": {
               "extensions": {
@@ -749,12 +788,7 @@
                     "share": {
                       "text": "Share",
                       "trigger": "homeTriggerButtonShare",
-                      "dependency": {
-                        "option": [
-                          "repo2docker",
-                          "custom"
-                        ]
-                      }
+                      "show": true
                     },
                     "startgreen": {
                       "text": "Start",
