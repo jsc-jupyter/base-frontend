@@ -50,10 +50,10 @@
       {%- endfor %}
     {%- elif pagetype == vars.pagetype_start %}
       globalUserOptions["{{ service_id }}"] = {};
-      globalUserOptions["{{ service_id }}"]["{{ spawner.name }}"] = {{ spawner.user_options | tojson }};
+      globalUserOptions["{{ service_id }}"]["{{ spawner.name }}"] = {{ frontendCollection.get("decrypted_user_options").get(spawner.name, spawner.user_options) | tojson }};
     {%- elif pagetype == vars.pagetype_workshop %}
       globalUserOptions["{{ service_id }}"] = {};
-      globalUserOptions["{{ service_id }}"]["{{ spawner.name }}"] = {{ spawner.user_options | tojson }};
+      globalUserOptions["{{ service_id }}"]["{{ spawner.name }}"] = {{ frontendCollection.get("decrypted_user_options").get(spawner.name, spawner.user_options) | tojson }};
     {%- endif %}
     globalFillingOrder["{{ service_id }}"] = {{ service_options.get("fillingOrder", []) | tojson }};
   {%- endfor %}
