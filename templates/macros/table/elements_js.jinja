@@ -727,8 +727,6 @@
                 {%- if spawner.user_options and spawner.user_options.get("name", false) %}
                   rowTasks.push(() => {
                     $(`[id^='{{ service_id }}-{{ spawner.name }}-'][id$='-input']`).trigger("trigger_init");
-                    console.log("{{ spawner.name }}");
-                    console.log({{ frontendCollection.get("decrypted_user_options").get(spawner.name, spawner.user_options) | tojson }});
                     homeFillExistingRow("{{ service_id }}", "{{ spawner.name }}", {{ frontendCollection.get("decrypted_user_options").get(spawner.name, spawner.user_options) | tojson }}, {{ service_options.get("fillingOrder", []) | tojson }});
                     {%- if spawner.events %}
                       {%- for event in spawner.events %}
