@@ -2866,6 +2866,7 @@
               successCounter += 1;
               if ( successCounter > 8 ) {
                 {%- if pagetype == vars.pagetype_start or pagetype == vars.pagetype_spawn %}
+                  await new Promise(resolve => setTimeout(resolve, 10*delay));
                   window.location.href = _url;
                 {%- endif %}
                 updateHeaderButtons(serviceId, rowId, "running");

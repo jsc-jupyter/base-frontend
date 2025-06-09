@@ -370,7 +370,6 @@
           const shareId = globalUserOptions[serviceId][rowId].share_id;
           let tooltipInstance = bootstrap.Tooltip.getInstance($this);
           let url = utils.url_path_join(window.origin, "share", shareId).replace("//", "/");
-          console.log(url);
 
           navigator.clipboard.writeText(url).then(() => {
             $this.html(`{{ svg.check_svg | safe }}`);
@@ -605,7 +604,6 @@
         const newRowHtml = createStorageRow(serviceId, rowId, tabId);
         $(`#${serviceId}-${rowId}-${tabId}-table`).show();
         $(`#${serviceId}-${rowId}-${tabId}-table tbody`).append(newRowHtml);
-        console.log("Add Row");
       });
 
 
