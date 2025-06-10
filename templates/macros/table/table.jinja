@@ -267,8 +267,10 @@
 
           if ( ready ) {
             updateHeaderButtons(serviceId, rowId, "waiting");
+            {%- if pagetype == vars.pagetype_start or pagetype == vars.pagetype_spawn %}
             const url = data[rowId]?.url ?? "{{ url }}";
             checkAndOpenUrl(serviceId, rowId, url);
+            {%- endif %}
           } else if ( failed ) {
             updateHeaderButtons(serviceId, rowId, "stopped");
             $(`button[id^='${serviceId}-${rowId}-'][id$='-btn']`).prop("disabled", false);
