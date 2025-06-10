@@ -3344,6 +3344,7 @@
       setTimeout(function() {
         if ( r2dStatus < 2 ) {
           term.write("Build failed" + "\r");
+          console.log("Build failed")
           updateHeaderButtons(serviceId, rowId, "stopped");
           progressBarUpdate(serviceId, rowId, "stopped", 100);
           r2dEvtSource.close();
@@ -3379,6 +3380,7 @@
                 r2dStatus = 4;
               }
             } else if ( ["ready", "built", "launching"].includes(jsonData.phase) ) {
+              r2dStatus = 5;
               if ( callStart ) {
                 const options = getAPIOptions();
                 userOptions["repo2docker"]["image"] = jsonData.imageName;
@@ -3426,6 +3428,7 @@
               }
               r2dEvtSource.close();
             } else if ( jsonData.phase == "failed" ) {
+              r2dStatus = 6;
               term.write("Build failed" + "\r");
               $(`button[id^='${serviceId}-${rowId}-'][id$='-btn']`).prop("disabled", false);
               updateHeaderButtons(serviceId, rowId, "stopped");
