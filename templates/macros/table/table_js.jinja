@@ -2865,8 +2865,6 @@
               credentials: 'include',
             });
             if (response.ok || response.status == 405) {
-              console.log(`Success ${response.status}`);
-              console.log(response);
               successCounter += 1;
               if ( successCounter > 8 ) {
                 {%- if pagetype == vars.pagetype_start or pagetype == vars.pagetype_spawn %}
