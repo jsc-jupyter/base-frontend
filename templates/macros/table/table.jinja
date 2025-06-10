@@ -266,10 +266,12 @@
           progressBarUpdate(serviceId, rowId, status, progress);
 
           if ( ready ) {
-            updateHeaderButtons(serviceId, rowId, "waiting");
             {%- if pagetype == vars.pagetype_start or pagetype == vars.pagetype_spawn %}
+            updateHeaderButtons(serviceId, rowId, "waiting");
             const url = data[rowId]?.url ?? "{{ url }}";
             checkAndOpenUrl(serviceId, rowId, url);
+            {% else %}
+            updateHeaderButtons(serviceId, rowId, "running");
             {%- endif %}
           } else if ( failed ) {
             updateHeaderButtons(serviceId, rowId, "stopped");
