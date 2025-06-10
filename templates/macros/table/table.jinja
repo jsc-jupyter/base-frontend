@@ -272,6 +272,7 @@
             checkAndOpenUrl(serviceId, rowId, url);
             {% else %}
             updateHeaderButtons(serviceId, rowId, "running");
+            progressBarUpdate(serviceId, rowId, "running", 100);
             {%- endif %}
           } else if ( failed ) {
             updateHeaderButtons(serviceId, rowId, "stopped");
