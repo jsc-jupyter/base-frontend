@@ -229,14 +229,14 @@
                     width: 100px;
                     text-align: center;
                     line-height: 20px;
-                    {% if progress >= 60 %}
+                    {% if progress is number and progress >= 60 %}
                     color: white
                     {% else %}
                     color: black
                     {% endif -%}
                     "
                 >
-                {%- if progress > 0 and progress < 100 %}
+                {%- if progress is number and progress > 0 and progress < 100 %}
                 {{ progress }}%
                 {%- endif %}
                 </span>
@@ -246,7 +246,7 @@
                 running
                 {%- elif active %}
                 starting
-                {%- elif progress == 99 %}
+                {%- elif progress is number and progress == 99 %}
                 cancelling
                 {%- endif %}
               </span>
@@ -388,14 +388,14 @@
                     width: 100px;
                     text-align: center;
                     line-height: 20px;
-                    {% if progress >= 60 %}
+                    {% if progress is number and progress >= 60 %}
                     color: white
                     {% else %}
                     color: black
                     {% endif -%}
                     "
                 >
-                {%- if progress > 0 and progress < 100 %}
+                {%- if progress is number and progress > 0 and progress < 100 %}
                 {{ progress }}%
                 {%- endif %}
                 </span>
@@ -405,7 +405,7 @@
                 running
                 {%- elif active %}
                 starting
-                {%- elif progress == 99 %}
+                {%- elif progress is number and progress == 99 %}
                 cancelling
                 {%- endif %}
               </span>
@@ -567,14 +567,14 @@
                     width: 100px;
                     text-align: center;
                     line-height: 20px;
-                    {% if progress >= 60 %}
+                    {% if progress is number and progress >= 60 %}
                     color: white
                     {% else %}
                     color: black
                     {% endif -%}
                     "
                 >
-                {%- if progress > 0 and progress < 100 %}
+                {%- if progress is number and progress > 0 and progress < 100 %}
                 {{ progress }}%
                 {%- endif %}
                 </span>
@@ -584,7 +584,7 @@
                 running
                 {%- elif active %}
                 starting
-                {%- elif progress == 99 %}
+                {%- elif progress is number and progress == 99 %}
                 cancelling
                 {%- endif %}
               </span>
@@ -740,14 +740,14 @@
                     width: 100px;
                     text-align: center;
                     line-height: 20px;
-                    {% if progress >= 60 %}
+                    {% if progress is number and progress >= 60 %}
                     color: white
                     {% else %}
                     color: black
                     {% endif -%}
                     "
                 >
-                {%- if progress > 0 and progress < 100 %}
+                {%- if progress is number and progress > 0 and progress < 100 %}
                 {{ progress }}%
                 {%- endif %}
                 </span>
@@ -757,7 +757,7 @@
                 running
                 {%- elif active %}
                 starting
-                {%- elif progress == 99 %}
+                {%- elif progress is number and progress == 99 %}
                 cancelling
                 {%- endif %}
               </span>
