@@ -273,6 +273,7 @@
             {% else %}
             updateHeaderButtons(serviceId, rowId, "running");
             progressBarUpdate(serviceId, rowId, "running", 100);
+            $(`button[id^='${serviceId}-${rowId}-'][id$='-btn']`).prop("disabled", false);
             {%- endif %}
           } else if ( failed ) {
             updateHeaderButtons(serviceId, rowId, "stopped");
