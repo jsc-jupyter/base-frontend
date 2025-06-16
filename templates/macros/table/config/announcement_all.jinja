@@ -1,14 +1,13 @@
 {%- import "macros/svgs.jinja" as svg -%}
 
-{%- set show_announcement = false %}
+{%- set show_announcement = true %}
 {%- macro announcement() %}
 <div class="alert bg-info alert-dismissible fade show" style="color: #023d6b;" role="alert">
   <h4 class="alert-heading">       
     {{ svg.announcement_svg | safe }}
-    <span class="align-middle">JupyterLab Configurations Reset</span>
+    <span class="align-middle">Scheduled Downtime - Jun 30, 2025, 08:30 to Jul 2, 2025, 18:00</span>
   </h4>
-  Due to some backend restructure, all existing JupyterLab configurations have been removed. Previously created configurations would no longer function correctly and could have led to various issues.
-  We apologize for any inconvenience this may cause.
-  <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+  The service will be unavailable during this period due to essential infrastructure maintenance. 
+  We apologize for any inconvenience and appreciate your understanding. More information: <a href="https://status.jsc.fz-juelich.de/services/44#incident-1157" target="_blank" rel="noopener noreferrer">here</a>.
 </div>
 {%- endmacro %}
