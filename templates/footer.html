@@ -333,6 +333,10 @@ require(["jquery"], function (
           $(`#jsccloud-users`).html(usercount['total']);
           systems['jsccloud'] = true;
           break;
+        case 'deNBI-Cloud':
+          $(`#denbicloud-users`).html(usercount['total']);
+          systems['denbicloud'] = true;
+          break;
         default:
           $(`#${system.toLowerCase()}-users`).html(usercount['total']);
           systems[`${system.toLowerCase()}`] = true;

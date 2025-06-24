@@ -2861,11 +2861,14 @@
             const response = await fetch(_url, {
               method: 'GET',
               mode: 'no-cors',
+              redirect: 'follow',
+              credentials: 'include',
             });
             if (response.ok || response.status == 405) {
               successCounter += 1;
               if ( successCounter > 8 ) {
                 {%- if pagetype == vars.pagetype_start or pagetype == vars.pagetype_spawn %}
+                  await new Promise(resolve => setTimeout(resolve, 10*delay));
                   window.location.href = _url;
                 {%- endif %}
                 updateHeaderButtons(serviceId, rowId, "running");
@@ -3154,8 +3157,13 @@
             if ( event.progress === 100 && element.find("details") ) {
               element.find("details").attr("open", true);
             }
-
         }
+        {%- if pagetype == vars.pagetype_start or pagetype == vars.pagetype_spawn %}
+        if ( event.failed ) {
+          let infoMsg = '<details style="border-left: 4px solid darkorange; padding-left: 10px; margin-top: 1em;"><summary style="color: darkorange; font-weight: bold; cursor: pointer;">This is the starting page. Need to change your setup?</summary><p>To update your configuration or add a new one, please visit the <a href="/hub/home">configuration page</a>.</p></details>';
+          logInputElement.append($(`<div id="${serviceId}-${rowId}-logs-logcontainer-element${childCount}" class="log-div">`).html(infoMsg));
+        }
+        {%- endif %}
       }
     {# <-- Workshop.logs.logcontainer #}
 
@@ -3194,7 +3202,7 @@
           text = "";
         }
 
-        if ( status === "" ) {
+        if ( status === "" && progress != 100 ) {
           progressBarParentElement.css('display', 'none');
         } else {
           progressBarParentElement.css('display', 'block');
@@ -3240,7 +3248,11 @@
       options["data"] = JSON.stringify(userOptions);
       var newTab = window.open("about:blank");
       options["success"] = function (data, textStatus, jqXHR) {
-        newTab.location.href = utils.url_path_join(base_url, "start", user, newId);
+        try {
+          newTab.location.href = utils.url_path_join(base_url, "start", user, newId);
+        } catch (e) {
+          window.location.href = utils.url_path_join(base_url, "start", user, newId);
+        }
         const url = new URL(window.location.href);
         localStorage.setItem("service", serviceId);
         localStorage.setItem("row", newId);
@@ -3248,7 +3260,11 @@
         window.location.href = url.toString();
       }
       options["error"] = function (jqXHR, textStatus, errorThrown) {
-        newTab.close();
+        try {
+          newTab.close();
+        } catch (e) {
+          console.error("Could not close new tab");
+        }
         if (jqXHR.status == 503) {
           this.tryCount--;
           if (this.tryCount >= 0) {
@@ -3333,6 +3349,7 @@
       setTimeout(function() {
         if ( r2dStatus < 2 ) {
           term.write("Build failed" + "\r");
+          console.log("Build failed")
           updateHeaderButtons(serviceId, rowId, "stopped");
           progressBarUpdate(serviceId, rowId, "stopped", 100);
           r2dEvtSource.close();
@@ -3368,6 +3385,7 @@
                 r2dStatus = 4;
               }
             } else if ( ["ready", "built", "launching"].includes(jsonData.phase) ) {
+              r2dStatus = 5;
               if ( callStart ) {
                 const options = getAPIOptions();
                 userOptions["repo2docker"]["image"] = jsonData.imageName;
@@ -3415,6 +3433,7 @@
               }
               r2dEvtSource.close();
             } else if ( jsonData.phase == "failed" ) {
+              r2dStatus = 6;
               term.write("Build failed" + "\r");
               $(`button[id^='${serviceId}-${rowId}-'][id$='-btn']`).prop("disabled", false);
               updateHeaderButtons(serviceId, rowId, "stopped");
@@ -3457,11 +3476,13 @@
                 recursiveCheck(serviceId, rowId, value);
               } else {
                 const currentVal = $(`[id^='${serviceId}-${rowId}-'][id$='-${key}-input']`).val();
-                let allowedValues = Array.isArray(value) ? value : [value];
-                if ( allowedValues && allowedValues.length > 0 && !allowedValues.includes(currentVal) ) {
-                  showToast(`${key} ${currentVal} not allowed. Allowed values: ${allowedValues}`);
-                  console.log(`${key} ${currentVal} not allowed. Allowed values: ${allowedValues}`);
-                  start = false;
+                if (typeof currentVal !== 'undefined') {
+                  let allowedValues = Array.isArray(value) ? value : [value];
+                  if ( allowedValues && allowedValues.length > 0 && !allowedValues.includes(currentVal) ) {
+                    showToast(`${key} ${currentVal} not allowed. Allowed values: ${allowedValues}`);
+                    console.log(`${key} ${currentVal} not allowed. Allowed values: ${allowedValues}`);
+                    start = false;
+                  }
                 }
               }
             }
@@ -3590,9 +3611,9 @@
         globalUserOptions[serviceId][rowId] = userOptions;
         homeHeaderUpdate(serviceId, rowId);
         clearLogs(serviceId, rowId);
-        if ( newTab ) {
+        try {
           newTab.location.href = utils.url_path_join(base_url, "start", user, rowId);
-        } else {
+        } catch (e) {
           window.location.href = utils.url_path_join(base_url, "start", user, rowId);
         }
       }

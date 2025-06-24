@@ -266,9 +266,15 @@
           progressBarUpdate(serviceId, rowId, status, progress);
 
           if ( ready ) {
+            {%- if pagetype == vars.pagetype_start or pagetype == vars.pagetype_spawn %}
             updateHeaderButtons(serviceId, rowId, "waiting");
             const url = data[rowId]?.url ?? "{{ url }}";
             checkAndOpenUrl(serviceId, rowId, url);
+            {% else %}
+            updateHeaderButtons(serviceId, rowId, "running");
+            progressBarUpdate(serviceId, rowId, "running", 100);
+            $(`button[id^='${serviceId}-${rowId}-'][id$='-btn']`).prop("disabled", false);
+            {%- endif %}
           } else if ( failed ) {
             updateHeaderButtons(serviceId, rowId, "stopped");
             $(`button[id^='${serviceId}-${rowId}-'][id$='-btn']`).prop("disabled", false);

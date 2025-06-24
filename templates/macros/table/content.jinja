@@ -126,6 +126,7 @@
 {% macro spawn_description() %}
   <h2>Your server is starting up.</h2>
   <p>You will be redirected automatically when it's ready for you.</p>
+  <p>If you want to update your configuration or create a new one, please go to the <a href="/hub/home" style="color: white; font-weight: bold;">configuration page</a>.</p>
 {% endmacro %}
 
 {% macro home_headerlayout() %}
@@ -209,7 +210,7 @@
 
       <th scope="row" class="status-td">
         <div class="d-flex justify-content-center">
-          <div id="{{ service_id }}-{{ row_id }}-progress-bar-parent" style="display: none">
+          <div id="{{ service_id }}-{{ row_id }}-progress-bar-parent" {% if not (ready or active) -%} style="display: none" {%- endif -%}>
             <div class="d-flex flex-column">
               <div class="d-flex justify-content-center progress" style="background-color: #d3e4f4; height: 20px; min-width: 100px;">
                 <div id="{{ service_id }}-{{ row_id }}-progress-bar"
@@ -368,7 +369,7 @@
 
       <th scope="row" class="status-td">
         <div class="d-flex justify-content-center">
-          <div id="{{ service_id }}-{{ row_id }}-progress-bar-parent" style="display: none">
+          <div id="{{ service_id }}-{{ row_id }}-progress-bar-parent" {% if not (ready or active) -%} style="display: none" {%- endif -%}>
             <div class="d-flex flex-column">
               <div class="d-flex justify-content-center progress" style="background-color: #d3e4f4; height: 20px; min-width: 100px;">
                 <div id="{{ service_id }}-{{ row_id }}-progress-bar"
@@ -547,7 +548,7 @@
 
       <th scope="row" class="status-td">
         <div class="d-flex justify-content-center">
-          <div id="{{ service_id }}-{{ row_id }}-progress-bar-parent" style="display: none">
+          <div id="{{ service_id }}-{{ row_id }}-progress-bar-parent" {% if not (ready or active) -%} style="display: none" {%- endif -%}>
             <div class="d-flex flex-column">
               <div class="d-flex justify-content-center progress" style="background-color: #d3e4f4; height: 20px; min-width: 100px;">
                 <div id="{{ service_id }}-{{ row_id }}-progress-bar"
@@ -720,7 +721,7 @@
 
       <th scope="row" class="status-td">
         <div class="d-flex justify-content-center">
-          <div id="{{ service_id }}-{{ row_id }}-progress-bar-parent" style="display: none">
+          <div id="{{ service_id }}-{{ row_id }}-progress-bar-parent" {% if not (ready or active) -%} style="display: none" {%- endif -%}>
             <div class="d-flex flex-column">
               <div class="d-flex justify-content-center progress" style="background-color: #d3e4f4; height: 20px; min-width: 100px;">
                 <div id="{{ service_id }}-{{ row_id }}-progress-bar"
