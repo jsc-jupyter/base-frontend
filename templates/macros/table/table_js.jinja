@@ -3150,19 +3150,23 @@
             let logMsg = $(e).html();
             if (htmlMsg == logMsg) exists = true;
           })
-          if (!exists)
+          if (!exists) {
             logInputElement.append($(`<div id="${serviceId}-${rowId}-logs-logcontainer-element${childCount}" class="log-div">`).html(htmlMsg));
             let element = $(`#${serviceId}-${rowId}-logs-logcontainer-element${childCount}`);
             
             if ( event.progress === 100 && element.find("details") ) {
               element.find("details").attr("open", true);
             }
+          }
         }
         {%- if pagetype == vars.pagetype_start or pagetype == vars.pagetype_spawn %}
         if ( event.failed ) {
-          let infoMsg = '<details style="border-left: 4px solid darkorange; padding-left: 10px; margin-top: 1em;"><summary style="color: darkorange; font-weight: bold; cursor: pointer;">This is the starting page. Need to change your setup?</summary><p>To update your configuration or add a new one, please visit the <a href="/hub/home">configuration page</a>.</p></details>';
-          logInputElement.append($(`<div id="${serviceId}-${rowId}-logs-logcontainer-element${childCount}" class="log-div">`).html(infoMsg));
-        }
+          let infoMsg = '<div class="log-info-msg"><details open style="border-left: 4px solid darkorange; padding-left: 10px; margin-top: 1em;"><summary style="color: darkorange; font-weight: bold; cursor: pointer;">This is the starting page, you can\'t update your configuration here.</summary><p>To update your configuration or add a new one, please visit the <a href="/hub/home">configuration page</a>.</p></details></div>';
+          const childCountInfoMsg = logInputElement.children().length;
+          let existsInfoMsg = logInputElement.find('.log-info-msg').length > 0;
+          if ( !existsInfoMsg ) {
+            logInputElement.append($(`<div id="${serviceId}-${rowId}-logs-logcontainer-element${childCountInfoMsg}" class="log-div">`).html(infoMsg));
+          }
         {%- endif %}
       }
     {# <-- Workshop.logs.logcontainer #}
