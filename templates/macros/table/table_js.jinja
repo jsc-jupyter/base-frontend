@@ -2815,13 +2815,15 @@
           progressBarUpdate(serviceId, rowId, "", 0);
           appendToLog(serviceId, rowId, getStopEvent(buttonId));
           
-          const navbarLogsButton = $(`[id^='${serviceId}-${rowId}-'][id$='-logs-navbar-button']`);
-          if ( navbarLogsButton.hasClass("active") ) {
-            const navbarLabConfigButton = $(`[id^='${serviceId}-${rowId}-'][id$='-labconfig-navbar-button']`);
-            if ( navbarLabConfigButton ) {
-              navbarLabConfigButton.trigger("click");
+          {%- if pagetype != vars.pagetype_start and pagetype != vars.pagetype_spawn %}
+            const navbarLogsButton = $(`[id^='${serviceId}-${rowId}-'][id$='-logs-navbar-button']`);
+            if ( navbarLogsButton.hasClass("active") ) {
+              const navbarLabConfigButton = $(`[id^='${serviceId}-${rowId}-'][id$='-labconfig-navbar-button']`);
+              if ( navbarLabConfigButton ) {
+                navbarLabConfigButton.trigger("click");
+              }
             }
-          }
+          {%- endif %}
         }
         updateHeaderButtons(serviceId, rowId, "stopping");
         progressBarUpdate(serviceId, rowId, "stopping", 100);
@@ -2835,14 +2837,15 @@
           updateHeaderButtons(serviceId, rowId, "stopped");
           progressBarUpdate(serviceId, rowId, "", 0);
           appendToLog(serviceId, rowId, getStopEvent(buttonId));    
-          
-          const navbarLogsButton = $(`[id^='${serviceId}-${rowId}-'][id$='-logs-navbar-button']`);
-          if ( navbarLogsButton.hasClass("active") ) {
-            const navbarLabConfigButton = $(`[id^='${serviceId}-${rowId}-'][id$='-labconfig-navbar-button']`);
-            if ( navbarLabConfigButton ) {
-              navbarLabConfigButton.trigger("click");
+          {%- if pagetype != vars.pagetype_start and pagetype != vars.pagetype_spawn %}
+            const navbarLogsButton = $(`[id^='${serviceId}-${rowId}-'][id$='-logs-navbar-button']`);
+            if ( navbarLogsButton.hasClass("active") ) {
+              const navbarLabConfigButton = $(`[id^='${serviceId}-${rowId}-'][id$='-labconfig-navbar-button']`);
+              if ( navbarLabConfigButton ) {
+                navbarLabConfigButton.trigger("click");
+              }
             }
-          }      
+          {%- endif %}
         }
         updateHeaderButtons(serviceId, rowId, "cancelling");
         progressBarUpdate(serviceId, rowId, "cancelling", 99);
