@@ -2416,15 +2416,36 @@
     {# <-- WorkshopManager.default.repo2docker.repopathtype #}
 
     {# Home.default.rtc --> #}
-      function homeTriggerSystemChanged(trigger, serviceId, rowId, tabId, elementId, elementOptions) {
-        const inputElement = getInputElement(serviceId, rowId, elementId);
+      function homeTriggerRTCChanged(trigger, serviceId, rowId, tabId, elementId, elementOptions) {
+        const rtcCheckboxElement = getInputElement(serviceId, rowId, elementId);
         const rtcBtn = $(`#${serviceId}-${rowId}-rtc-btn`);
-        const system = inputElement.length > 0 && inputElement[0].value;
-        const rtc_system_list = elementOptions?.input?.rtc_system_list || [];
-        if ( rtc_system_list.includes(system) && rowId != "__new__" ) {
+        const checked = rtcCheckboxElement.length > 0 && rtcCheckboxElement[0].checked && rtcCheckboxElement[0].attr('data-collect') === "true";
+        if ( checked ) {
           rtcBtn.removeClass('d-none');
         } else {
           rtcBtn.addClass('d-none');
+        }
+
+      }
+
+      function homeTriggerSystemChanged(trigger, serviceId, rowId, tabId, elementId, elementOptions) {
+        const inputElement = getInputElement(serviceId, rowId, elementId);
+        const optionElement = getInputElement(serviceId, rowId, "option");
+        const rtcBtn = $(`#${serviceId}-${rowId}-rtc-btn`);
+        const system = inputElement.length > 0 && inputElement[0].value;
+        const option = optionElement.length > 0 && optionElement[0].value;
+        const rtc_system_list = elementOptions?.input?.rtc_system_list || [];
+        const rtc_option_list = elementOptions?.input?.rtc_option_list || [];
+        if ( rtc_system_list.includes(system) && rowId != "__new__" && rtc_option_list.includes(option) ) {
+          rtcBtn.removeClass('d-none');
+        } else {
+          const rtcCheckboxElement = getInputElement(serviceId, rowId, "rtc");
+          const checked = rtcCheckboxElement.length > 0 && rtcCheckboxElement[0].checked && rtcCheckboxElement[0].attr('data-collect') === "true";
+          if ( checked ) {
+            rtcBtn.removeClass('d-none');
+          } else {
+            rtcBtn.addClass('d-none');
+          }
         }
       }
     {# <-- Home.default.rtc #}

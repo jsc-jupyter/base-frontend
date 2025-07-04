@@ -92,7 +92,8 @@
                     "collect": true,
                     "show": true
                   },
-                  "rtc_system_list": ["JSC-Cloud"]
+                  "rtc_system_list": ["JSC-Cloud", "deNBI-Cloud"],
+                  "rtc_option_list": ["custom", "repo2docker"]
                 },
                 "label": {
                   "type": "text",
@@ -104,6 +105,29 @@
                 },
                 "triggerOnChange": "homeTriggerSystemChanged"
               },
+              "rtc": {
+                "input": {
+                  "type": "checkbox",
+                  "options": {
+                    "enabled": true,
+                    "default": false
+                  },
+                },
+                "label": {
+                  "type": "texticonclick",
+                  "value": "RealTimeCollaboration disables any access/coupling to HPC systems. <a href='https://jupyterlab-realtime-collaboration.readthedocs.io/' target='_blank'>more</a>"
+                },
+                "dependency": {
+                  "option": [
+                    "4.3",
+                    "4.3-juniq"
+                  ],
+                  "system": [
+                    "jsccloud"
+                  ]
+                },
+                "triggerOnChange": "homeTriggerRTCChanged"
+              }
               "repo2dockerdirectlink": {
                 "input": {
                   "type": "text",
