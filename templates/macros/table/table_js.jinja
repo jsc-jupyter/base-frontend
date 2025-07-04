@@ -2419,13 +2419,14 @@
       function homeTriggerRTCChanged(trigger, serviceId, rowId, tabId, elementId, elementOptions) {
         const rtcCheckboxElement = getInputElement(serviceId, rowId, elementId);
         const rtcBtn = $(`#${serviceId}-${rowId}-rtc-btn`);
-        const checked = rtcCheckboxElement.length > 0 && rtcCheckboxElement[0].checked && rtcCheckboxElement.attr('data-collect') === "true";
-        if ( checked ) {
-          rtcBtn.removeClass('d-none');
-        } else {
-          rtcBtn.addClass('d-none');
+        if ( rtcCheckboxElement.attr('data-collect') === "true" ) {
+          const checked = rtcCheckboxElement.length > 0 && rtcCheckboxElement[0].checked
+          if ( checked ) {
+            rtcBtn.removeClass('d-none');
+          } else {
+            rtcBtn.addClass('d-none');
+          }
         }
-
       }
 
       function homeTriggerSystemChanged(trigger, serviceId, rowId, tabId, elementId, elementOptions) {
