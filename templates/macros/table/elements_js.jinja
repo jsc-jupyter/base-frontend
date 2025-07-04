@@ -115,6 +115,11 @@
                     const serviceId = $this.attr("data-service");
                     const rowId = $this.attr("data-row");
                     {{ element_options["triggerOnChange"] }}("onChange", serviceId, rowId, "{{ tab_id }}", "{{ element_id }}", {{ element_options | tojson }});
+
+                    $(`[id^='${serviceId}-${rowId}-']`).trigger(`trigger_{{ element_id }}`);
+                    logDebug && console.log("update {{ element_id }}. Trigger Change by: {{ trigger_key }}");
+                    // $(`[id^='${serviceId}-${rowId}-'][id$='-{{ element_id }}-input']`).trigger("change");
+                    // logDebug && console.log("update {{ element_id }}. Trigger Change by: {{ trigger_key }} done");
                   });
                 {%- endif %}
                 {%- if element_options.get("observeAttribute", "") %}
@@ -448,7 +453,7 @@
           const $this = $(this);
           const serviceId = $this.attr("data-service");
           const rowId = $this.attr("data-row");
-          const workshopUrl = $(`#${serviceId}-${rowId}-modal .modal-body a`).attr('href');
+          const workshopUrl = $(`#${serviceId}-${rowId}-modal .modal-body a`).last().attr('href');
           navigator.clipboard.writeText(workshopUrl).then(function() {
             $(`#${serviceId}-${rowId}-modal-copy-btn`).tooltip('dispose').attr('title', 'Copied');
             $(`#${serviceId}-${rowId}-modal-copy-btn`).tooltip('show');
@@ -458,10 +463,10 @@
         });
 
         window.showModal = function (serviceId, rowId, url, header, text1, text2) {
-          $(`#${serviceId}-${rowId}-modal .modal-title`).text(header);
-          $(`#${serviceId}-${rowId}-modal .modal-body p`).text(`${text1}`);
           $(`#${serviceId}-${rowId}-modal .modal-body a`).text(`${text2}`);
           $(`#${serviceId}-${rowId}-modal .modal-body a`).attr('href', url);
+          $(`#${serviceId}-${rowId}-modal .modal-title`).text(header);
+          $(`#${serviceId}-${rowId}-modal .modal-body p`).html(`${text1}`);
           $(`#${serviceId}-${rowId}-modal`).modal('show');
         }
 
@@ -802,7 +807,7 @@
         lastEvent = events.length > 0 ? events[events.length - 1] : false;
         clearLogs(serviceId, name);
         if ( lastEvent ) {
-          {%- if spawner.cancel_pending or spawner.active %}
+          {%- if ( spawner.pending and spawner.pending == "stop" ) or spawner.active %}
           updateProgressBar = true;
           {%- else %}
           updateProgressBar = lastEvent.progress != 100;
@@ -824,7 +829,7 @@
         });
         {# Set Buttons in correct state #}
         let status = "stopped";
-        {%- if spawner.cancel_pending %}
+        {%- if spawner.pending and spawner.pending == "stop" %}
         status = "cancelling";
         {%- elif not spawner.ready and spawner.active %}
         status = "starting";

@@ -50,7 +50,7 @@
                 {%- set spawnertype = "share" %}
               {%- else %}
                 {%- set spawnertype = "default" %}
-              {%- endif %}
+              {%- endif %}              
               {%- if (is_first_type and row_id == vars.first_row_id) or (spawnertype == type and row_id != vars.first_row_id) %}
                 <!-- summary of row -->
                 
@@ -90,7 +90,7 @@
                   data-spawner-active="{{ spawner.active | lower }}"
                   data-spawner-ready="{{ spawner.ready | lower }}"
                 {%- endif %}
-                >                  
+                >
                   <td class="details-td" data-bs-target="#{{ row_id }}-collapse">
                     {%- if loop.first %}
                       <div class="d-flex mx-4">

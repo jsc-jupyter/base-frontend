@@ -98,6 +98,26 @@ define(["jquery", "utils"], function ($, utils) {
     this.api_request(utils.url_path_join("users", user, "server"), options);
   };
 
+  JHAPI.prototype.rtc_named_server_create = function (user, server_name, options) {
+    options = options || {};
+    options = update(options, { type: "POST" });
+    options.data = JSON.stringify({});
+    this.api_request(
+      utils.url_path_join("share-codes", user, server_name),
+      options
+    );
+  };
+
+  JHAPI.prototype.rtc_named_server_remove = function (user, server_name, options) {
+    options = options || {};
+    options = update(options, { type: "DELETE" });
+    options.data = JSON.stringify({});
+    this.api_request(
+      utils.url_path_join("share-codes", user, server_name),
+      options
+    );
+  };
+
   JHAPI.prototype.cancel_named_server = function (user, server_name, options) {
     options = options || {};
     options = update(options, { type: "POST" });
@@ -131,7 +151,7 @@ define(["jquery", "utils"], function ($, utils) {
     this.api_request(
       utils.url_path_join("users", user, "servers", server_name),
       options
-    );
+    );    
   };
 
   JHAPI.prototype.delete_named_server = function (user, server_name, options) {

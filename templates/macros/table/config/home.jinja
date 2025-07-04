@@ -91,7 +91,8 @@
                   "options": {
                     "collect": true,
                     "show": true
-                  }
+                  },
+                  "rtc_system_list": ["JSC-Cloud"]
                 },
                 "label": {
                   "type": "text",
@@ -100,7 +101,8 @@
                 "trigger": {
                   "init": "homeTriggerSystem",
                   "option": "homeTriggerSystem"
-                }
+                },
+                "triggerOnChange": "homeTriggerSystemChanged"
               },
               "repo2dockerdirectlink": {
                 "input": {
@@ -127,7 +129,8 @@
                   "system": "homeTriggerUpdateDirectLinks",
                   "flavor": "homeTriggerUpdateDirectLinks",
                   "repopathtype": "homeTriggerUpdateDirectLinks",
-                  "localstoragepath": "homeTriggerUpdateDirectLinks"
+                  "localstoragepath": "homeTriggerUpdateDirectLinks",
+                  "rtc": "homeTriggerUpdateDirectLinks"
                 },
                 "dependency": {
                   "option": [
@@ -780,6 +783,7 @@
                   "options": {
                     "buttons": [
                       "share",
+                      "rtc",
                       "save",
                       "reset",
                       "delete",
@@ -789,6 +793,11 @@
                       "text": "Share",
                       "trigger": "homeTriggerButtonShare",
                       "show": true
+                    },
+                    "rtc": {
+                      "text": "RTC",
+                      "trigger": "homeTriggerButtonRTC",
+                      "show": false
                     },
                     "startgreen": {
                       "text": "Start",
