@@ -2419,7 +2419,7 @@
       function homeTriggerRTCChanged(trigger, serviceId, rowId, tabId, elementId, elementOptions) {
         const rtcCheckboxElement = getInputElement(serviceId, rowId, elementId);
         const rtcBtn = $(`#${serviceId}-${rowId}-rtc-btn`);
-        const checked = rtcCheckboxElement.length > 0 && rtcCheckboxElement[0].checked && rtcCheckboxElement[0].attr('data-collect') === "true";
+        const checked = rtcCheckboxElement.length > 0 && rtcCheckboxElement[0].checked && rtcCheckboxElement.attr('data-collect') === "true";
         if ( checked ) {
           rtcBtn.removeClass('d-none');
         } else {
