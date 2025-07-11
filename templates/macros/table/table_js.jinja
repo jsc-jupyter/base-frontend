@@ -1169,6 +1169,8 @@
             availableDescription = `${key} ${newValue} is not in allowed range [${min}, ${max}].`;
             console.log(`${key} ${newValue} currently not available`);
           }
+        } else if (dataType == "multiplecheckbox" ) {
+          inputElement.prop("checked", true);
         } else if (dataType == "checkbox" ) {
           inputElement.prop("checked", true);
           $(`[id^='${serviceId}-${rowId}-'][id$='-input']`).trigger(`trigger_${key}`);
@@ -1408,6 +1410,8 @@
             console.log(`${key} ${newValue} currently not available`);
             console.log(availableDescription);
           }
+        } else if (dataType == "multiplecheckbox" ) {
+          inputElement.prop("checked", true);
         } else if (dataType == "checkbox" ) {
           inputElement.prop("checked", true);
           $(`[id^='${serviceId}-${rowId}-'][id$='-input']`).trigger(`trigger_${key}`);
