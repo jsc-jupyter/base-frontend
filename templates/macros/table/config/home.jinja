@@ -91,7 +91,9 @@
                   "options": {
                     "collect": true,
                     "show": true
-                  }
+                  },
+                  "rtc_system_list": ["JSC-Cloud", "deNBI-Cloud"],
+                  "rtc_option_list": ["custom", "repo2docker", "default"]
                 },
                 "label": {
                   "type": "text",
@@ -100,7 +102,32 @@
                 "trigger": {
                   "init": "homeTriggerSystem",
                   "option": "homeTriggerSystem"
-                }
+                },
+                "triggerOnChange": "homeTriggerSystemChanged"
+              },
+              "rtc": {
+                "input": {
+                  "type": "checkbox",
+                  "options": {
+                    "enabled": true,
+                    "default": false
+                  },
+                },
+                "label": {
+                  "type": "texticonclick",
+                  "icontext": "Real-Time Collaboration disables any access/coupling to HPC systems. <a href='https://jupyterlab-realtime-collaboration.readthedocs.io/' target='_blank'>more</a>",
+                  "value": "Real-Time Collaboration"
+                },
+                "dependency": {
+                  "option": [
+                    "lmod"
+                  ],
+                  "system": [
+                    "jsccloud",
+                    "denbicloud"
+                  ]
+                },
+                "triggerOnChange": "homeTriggerRTCChanged"
               },
               "repo2dockerdirectlink": {
                 "input": {
@@ -780,6 +807,7 @@
                   "options": {
                     "buttons": [
                       "share",
+                      "rtc",
                       "save",
                       "reset",
                       "delete",
@@ -789,6 +817,11 @@
                       "text": "Share",
                       "trigger": "homeTriggerButtonShare",
                       "show": true
+                    },
+                    "rtc": {
+                      "text": "RTC",
+                      "trigger": "homeTriggerButtonRTC",
+                      "show": false
                     },
                     "startgreen": {
                       "text": "Start",

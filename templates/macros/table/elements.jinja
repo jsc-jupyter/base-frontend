@@ -16,6 +16,12 @@
     {%- set clazz = "" %}
     {%- set svgicon = svg.share_svg | safe %}
     {%- set buttontext = button_options.get("text", "Share") %}
+  {%- elif button == "rtc" %}
+    {% if button_options.get("show", false) %}
+      {%- set clazz = "d-none" %}
+    {%- endif %}
+    {%- set svgicon = svg.rtc_svg | safe %}
+    {%- set buttontext = button_options.get("text", "RTC") %}
   {%- elif button == "reset" %}
     {%- set clazz = "btn-danger" %}
     {%- set svgicon = svg.reset_svg | safe %}
@@ -111,7 +117,7 @@
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-default" data-bs-dismiss="modal">Close</button>
-          <button type="button" data-service="{{ service_id }}" data-row="{{ row_id }}" id="{{ service_id }}-{{ row_id }}-modal-copy-btn" class="btn btn-outline-primary" data-bs-toggle="tooltip" data-service="{{ service_id }}" data-row="{{ row_id }}" data-bs-placement="top" title="Copy to clipboard">Copy</button>
+          <button type="button" data-service="{{ service_id }}" data-row="{{ row_id }}" id="{{ service_id }}-{{ row_id }}-modal-copy-btn" class="btn btn-outline-primary" data-bs-toggle="tooltip" data-service="{{ service_id }}" data-row="{{ row_id }}" data-bs-placement="top" title="Copy to clipboard">Copy URL</button>
         </div>
       </div>
     </div>

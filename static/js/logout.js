@@ -80,15 +80,7 @@ require(["jquery", "utils"], function (
   });
 
   $("#logout").click(function () {
-    var url = window.location.href;
-    if (utils.getUrlParameter("logout") != "true") {
-      if (window.location.search) {
-        url += "&";
-      } else {
-        url += "?";
-      }
-      url += "logout=true";
-    }
-    window.location.replace(url);
+    var targetUrl = window.location.origin + base_url + "home?logout=true";
+    window.location.replace(targetUrl);
   });
 });

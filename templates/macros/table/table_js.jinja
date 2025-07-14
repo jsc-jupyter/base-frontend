@@ -2419,6 +2419,42 @@
       }
     {# <-- WorkshopManager.default.repo2docker.repopathtype #}
 
+    {# Home.default.rtc --> #}
+      function homeTriggerRTCChanged(trigger, serviceId, rowId, tabId, elementId, elementOptions) {
+        const rtcCheckboxElement = getInputElement(serviceId, rowId, elementId);
+        const rtcBtn = $(`#${serviceId}-${rowId}-rtc-btn`);
+        if ( rtcCheckboxElement.attr('data-collect') === "true" ) {
+          const checked = rtcCheckboxElement.length > 0 && rtcCheckboxElement[0].checked
+          if ( checked ) {
+            rtcBtn.removeClass('d-none');
+          } else {
+            rtcBtn.addClass('d-none');
+          }
+        }
+      }
+
+      function homeTriggerSystemChanged(trigger, serviceId, rowId, tabId, elementId, elementOptions) {
+        const inputElement = getInputElement(serviceId, rowId, elementId);
+        const optionElement = getInputElement(serviceId, rowId, "option");
+        const rtcBtn = $(`#${serviceId}-${rowId}-rtc-btn`);
+        const system = inputElement.length > 0 && inputElement[0].value;
+        const option = optionElement.length > 0 && optionElement[0].value;
+        const rtc_system_list = elementOptions?.input?.rtc_system_list || [];
+        const rtc_option_list = elementOptions?.input?.rtc_option_list || [];
+        if ( rtc_system_list.includes(system) && rowId != "__new__" && rtc_option_list.includes(option) ) {
+          rtcBtn.removeClass('d-none');
+        } else {
+          const rtcCheckboxElement = getInputElement(serviceId, rowId, "rtc");
+          const checked = rtcCheckboxElement.length > 0 && rtcCheckboxElement[0].checked && rtcCheckboxElement[0].attr('data-collect') === "true";
+          if ( checked ) {
+            rtcBtn.removeClass('d-none');
+          } else {
+            rtcBtn.addClass('d-none');
+          }
+        }
+      }
+    {# <-- Home.default.rtc #}
+
     {# WorkshopManager.default.repo2docker.repotype --> #}  
 
       function homeTriggerRepoTypeChanged(trigger, serviceId, rowId, tabId, elementId, elementOptions) {
@@ -2665,6 +2701,17 @@
       }
     {# <-- WorkshopManager.button.reset #}
 
+    function homeTriggerButtonRTC(serviceId, rowId, buttonId, button_options, user, api, base_url, utils) {
+      const options = getAPIOptions();
+      options["success"] = function (resp) {
+        console.log(resp);
+        const url = new URL(utils.url_path_join(window.origin, resp.accept_url).replace("//", "/"));
+        const description = 'Access URL to your Server.<br><span style="color: red">Users with this link have full access to your JupyterLab!</span><br>Click copy and send this invitation to your colleagues.<br>See the RTC <a target="_blank" href="https://jupyterlab-realtime-collaboration.readthedocs.io">documentation</a> for more details.<br>Stopping your server will revoke all RTC shares.'
+        showModal(serviceId, rowId, url, `Real-Time Collaboration`, description, `RTC Invitation Link ( expires at ${resp.expires_at} )`);
+      }
+      api.rtc_named_server_create(user, rowId, options);
+    }
+
     function homeTriggerButtonShare(serviceId, rowId, buttonId, button_options, user, api, base_url, utils) {
       // Send POST Request to the Backend, if successful -> show modal
       // let url = new URL(utils.url_path_join(window.origin, "share", resp).replace("//", "/"));
@@ -2715,6 +2762,7 @@
     {# WorkshopManager.button.stop --> #}
       function updateHeaderButtons(serviceId, rowId, status) {
         // status: ["running", "starting", "na", "stopping", "cancelling", "stopped", "waiting"]
+        // console.log(status);
         const summaryTr = $(`#${serviceId}-${rowId}-summary-tr`);
         if ( summaryTr.attr("data-spawner-na") == "true" ) {
           status = "na";
@@ -2732,8 +2780,8 @@
           toShow = ["na", "del"];
           toDisable = ["na"];
         } else if ( status == "stopping" ) {
-          toShow = ["open", "stop"];
-          toDisable = ["open", "stop"];
+          toShow = ["stop"];
+          toDisable = ["stop"];
         } else if ( status == "cancelling" ) {
           toShow = ["cancel"];
           toDisable = ["cancel"];
@@ -3168,12 +3216,8 @@
         }
         {%- if pagetype == vars.pagetype_start or pagetype == vars.pagetype_spawn %}
         if ( event.failed ) {
-          let infoMsg = '<div class="log-info-msg"><details open style="border-left: 4px solid darkorange; padding-left: 10px; margin-top: 1em;"><summary style="color: darkorange; font-weight: bold; cursor: pointer;">This is the starting page, you can\'t update your configuration here.</summary><p>To update your configuration or add a new one, please visit the <a href="/hub/home">configuration page</a>.</p></details></div>';
-          const childCountInfoMsg = logInputElement.children().length;
-          let existsInfoMsg = logInputElement.find('.log-info-msg').length > 0;
-          if ( !existsInfoMsg ) {
-            logInputElement.append($(`<div id="${serviceId}-${rowId}-logs-logcontainer-element${childCountInfoMsg}" class="log-div">`).html(infoMsg));
-          }
+          let infoMsg = '<details style="border-left: 4px solid darkorange; padding-left: 10px; margin-top: 1em;"><summary style="color: darkorange; font-weight: bold; cursor: pointer;">This is the starting page. Need to change your setup?</summary><p>To update your configuration or add a new one, please visit the <a href="/hub/home">configuration page</a>.</p></details>';
+          logInputElement.append($(`<div id="${serviceId}-${rowId}-logs-logcontainer-element${childCount}" class="log-div">`).html(infoMsg));
         }
         {%- endif %}
       }
