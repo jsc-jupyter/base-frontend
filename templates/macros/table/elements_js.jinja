@@ -253,9 +253,9 @@
           $('#{{ service_id }}-{{ spawner.name }}-loading-tr').hide();
           $('#{{ service_id }}-{{ spawner.name }}-summary-tr').show();
         {%- elif pagetype == vars.pagetype_start %}
-          console.time('fillExistingRowTime');
+          logDebug && console.time('fillExistingRowTime');
           homeFillExistingRow("{{ service_id }}", "{{ spawner.name }}", {{ frontendCollection.get("decrypted_user_options").get(spawner.name, spawner.user_options) | tojson }}, {{ service_options.get("fillingOrder", []) | tojson }});
-          console.timeEnd('fillExistingRowTime');
+          logDebug && console.timeEnd('fillExistingRowTime');
           $(`[id^='{{ service_id }}-{{ spawner.name }}'][id$='-input']`).prop("disabled", true);
           {%- if spawner.events %}
             {%- for event in spawner.events %}
