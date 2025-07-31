@@ -191,7 +191,7 @@
                                     {%- endfor %}
                                     role="tab">
                                     <span>{{ button_options.get("displayName", "Unknown Button") }}</span>
-                                    <span id="{{ service_id }}-{{ row_id }}-{{ button_id }}-tab-input-warning" class="d-flex invisible">
+                                    <span id="{{ service_id }}-{{ row_id }}-{{ button_id }}-tab-input-warning" data-type="span-warning" class="d-flex invisible">
                                       {{ svg.warning_svg | safe }}
                                       <span class="visually-hidden">settings changed</span>
                                     </span>

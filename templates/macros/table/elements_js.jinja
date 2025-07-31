@@ -1,10 +1,9 @@
 {%- import "macros/svgs.jinja" as svg -%}
-
-{%- include "macros/table/table_js.jinja" with context %}
 {%- import "macros/table/variables.jinja" as vars with context %}
 {%- include "macros/table/js_additions.jinja" with context %}
 
 <script>
+  // Some Start Line
   $(document).ready(function() {
     require(["jquery", "jhapi", "utils"], function (
       $,
@@ -68,12 +67,12 @@
                     if (event.target !== this) {
                       return; // Ignore events bubbling up from child elements
                     }
-                    logDebug && console.log("update {{ element_id }}. Triggered by: ({{ input_key }})");
+                    logDebug && console.time("update {{ element_id }}. Triggered by: ({{ input_key }})");
                     const $this = $(this);
                     const serviceId = $this.attr("data-service");
                     const rowId = $this.attr("data-row")
                     {{ input_func }}("{{ input_key }}", serviceId, rowId, "{{ tab_id }}", "{{ element_id }}", {{ element_options | tojson }});
-                    logDebug && console.log("update {{ element_id }}. Triggered by: ({{ input_key }}) done");
+                    logDebug && console.timeEnd("update {{ element_id }}. Triggered by: ({{ input_key }})");
                   });
                 {%- endfor %}
                 {%- for trigger_key, trigger_func in element_options.get("trigger", {}).items() %}
@@ -81,7 +80,7 @@
                     if (event.target !== this) {
                       return; // Ignore events bubbling up from child elements
                     }
-                    logDebug && console.log("update {{ element_id }}. Triggered by: ({{ trigger_key }})");
+                    logDebug && console.time("update {{ element_id }}. Triggered by: ({{ trigger_key }})");
                     const $this = $(this);
                     const serviceId = $this.attr("data-service");
                     const rowId = $this.attr("data-row");
@@ -103,9 +102,9 @@
                     if ( trigger ) {
                       {{ trigger_func }}("{{ trigger_key }}", serviceId, rowId, "{{ tab_id }}", "{{ element_id }}", {{ element_options | tojson }});
                       $this.trigger("change");
-                      logDebug && console.log("update {{ element_id }}. Triggered by: ({{ trigger_key }}) done");
+                      logDebug && console.timeEnd("update {{ element_id }}. Triggered by: ({{ trigger_key }})");
                     } else {
-                      logDebug && console.log("update {{ element_id }}. Triggered by: ({{ trigger_key }}) no function call");
+                      logDebug && console.timeEnd("update {{ element_id }}. Triggered by: ({{ trigger_key }})");
                     }
                   });
                 {%- endfor %}
@@ -173,62 +172,6 @@
           {%- endfor %}
         {%- endfor %}
         {%- for button_id, button_options in service_options.navbar.items() %}
-          $(`button[id^='{{ service_id }}-'][id$='-{{ button_id }}-navbar-button']`).on("show", function (event) {
-            const $this = $(this);
-            const rowId = $this.attr("data-row");
-            const serviceId = $this.attr("data-service");
-            let show = true;
-            if ( !$this.data('show') ) {
-              const dependencies = {{ button_options.get("dependency", {}) | tojson }};
-              for (const [key, allowedValues] of Object.entries(dependencies)) {
-                const currentValues = val(getInputElement(serviceId, rowId, key));
-                show = currentValues.some(value => {
-                  const mappedValue = mappingDict[serviceId]?.[key]?.[value] ?? value;
-                  return allowedValues.includes(mappedValue);
-                });
-                if ( !show ) {
-                  break;
-                }
-              }
-            }
-            if ( show ) {
-              $this.addClass("show");
-              $this.attr("style", "");
-              $this.show();
-              $(`#${serviceId}-${rowId}-{{ button_id }}-tab-input-warning`).addClass("invisible");
-            }
-          });
-          $(`button[id^='{{ service_id }}-'][id$='-{{ button_id }}-navbar-button']`).on("hide", function (event) {
-            const $this = $(this);
-            const rowId = $this.attr("data-row");
-            const serviceId = $this.attr("data-service");
-            $this.removeClass("show");
-            $this.attr("style", "{{ style_hide }}");
-            $this.hide();
-            $(`[id^='${serviceId}-'][id$='-${rowId}-{{ button_id }}-tab-input-warning']`).addClass("invisible");
-          });
-          $(`button[id^='{{ service_id }}-'][id$='-{{ button_id }}-navbar-button']`).on("activate", function (event) {
-            const $this = $(this);
-            const rowId = $this.attr("data-row");
-            const serviceId = $this.attr("data-service");
-            $(`div[id^='${serviceId}-${rowId}-'][id$='-{{ button_id }}-contenttab-div']`).addClass("show");
-            $(`div[id^='${serviceId}-${rowId}-'][id$='-{{ button_id }}-contenttab-div']`).show();
-            $(`[id^='${serviceId}-${rowId}-'][id$='-{{ button_id }}-tab-input-warning']`).addClass("invisible");
-          });
-          $(`button[id^='{{ service_id }}-'][id$='-{{ button_id }}-navbar-button']`).on("deactivate", function (event) {
-            const $this = $(this);
-            const rowId = $this.attr("data-row");
-            const serviceId = $this.attr("data-service");
-            $(`div[id^='${serviceId}-${rowId}-'][id$='-{{ button_id }}-contenttab-div']`).removeClass("show");
-            $(`div[id^='${serviceId}-${rowId}-'][id$='-{{ button_id }}-contenttab-div']`).hide();
-          });
-          $(`button[id^='{{ service_id }}-'][id$='-{{ button_id }}-navbar-button']`).on("click", function (event) {
-            $this = $(this);
-            const rowId = $this.attr("data-row");
-            const serviceId = $this.attr("data-service");
-            $(`button[id^='${serviceId}-${rowId}-'][id$='-navbar-button']:not([data-tab='{{ button_id }}'])`).trigger("deactivate");
-            $this.trigger("activate");
-          });
           {%- for trigger_key, trigger_func in button_options.get("trigger", {}).items() %}
             $(`button[id^='{{ service_id }}-'][id$='-{{ button_id }}-navbar-button']`).on("trigger_{{ trigger_key }}", function (event) {
               if (event.target !== this) {
@@ -254,7 +197,6 @@
               }
             })
           {%- endfor %}
-
         {%- endfor %}
         {%- if pagetype == vars.pagetype_workshopmanager %}
           let modalWasVisible = false;
@@ -271,350 +213,6 @@
           }).observe(document.getElementById('{{ service_id }}-{{ vars.first_row_id }}-modal'));
         {%- endif %}
       {%- endfor %}
-
-
-      function dependencyFilter(serviceId, rowId, elementId, objects) {
-        return objects.filter(function() {
-          // Elements that have "data-dependency-${elementId}" AND at least one other dependency
-          const otherDependencies = [...this.attributes].some(attr => 
-            attr.name.startsWith("data-dependency-") && !attr.name.startsWith(`data-dependency-${elementId}`)
-          );
-
-          if ( !otherDependencies ) {
-            return true;
-          } else {
-            // Map each element to a list of its dependencies (excluding elementId)
-            const dependenciesList = [...this.attributes]
-                .map(attr => attr.name)
-                .filter(name => name.startsWith("data-dependency-") && !name.startsWith(`data-dependency-${elementId}`))
-                .map(name => name.replace("data-dependency-", ""));
-
-            return dependenciesList.some(dependency => {
-                const inputValue = $(`[id^='${serviceId}-${rowId}-'][id$='-${dependency}-input']`).val();
-
-                const allowedValues = [...this.attributes]
-                    .filter(attr => attr.name.startsWith(`data-dependency-${dependency}-`))
-                    .map(attr => attr.name.replace(`data-dependency-${dependency}-`, ""));
-
-                return allowedValues.includes(inputValue);
-            });
-          }
-        });
-      }
-
-      // show / hide dependent elements
-      $(`select[id$='-input']`).change(function (event) {
-        const $this = $(this);
-        const serviceId = $this.attr("data-service");
-        const rowId = $this.attr("data-row");
-        const elementId = $this.attr("data-element");
-        logDebug && console.log(`${elementId} changed ... `);
-        $(`[id^='${serviceId}-${rowId}-']`).trigger(`trigger_${elementId}`);
-
-        const isDisabled = $this.prop("disabled");
-        let newValues = $this.val();
-        if ( !isDisabled && !(!newValues || (Array.isArray(newValues) && newValues.length === 0)) ) {
-          if ( !Array.isArray(newValues) ){
-            newValues = [newValues];
-          }
-          // const mappedValues = newValues.map(newValue => mappingDict[serviceId]?.[elementId]?.[newValue] ?? newValue);
-          const mappedValues = [...new Set(newValues.map(newValue => mappingDict[serviceId]?.[elementId]?.[newValue] ?? newValue))];
-          const excludes = `:not(${mappedValues.map(value => `[data-dependency-${elementId}-${value}]`).join(',')})`;
-          let prefixSelector = "";
-          let selector = "";
-
-          // Show + set to Active (add collect)
-          prefixSelector = `div[id^='${serviceId}-${rowId}-'][id$='-input-div'][data-show='true']`;
-          selector = mappedValues.map(value => `${prefixSelector}[data-dependency-${elementId}-${value}]`).join(',');
-          dependencyFilter(serviceId, rowId, elementId, $(`${selector}`)).show();
-          
-          prefixSelector = `[id^='${serviceId}-${rowId}-'][id$='-input']:not([data-collect-static])`;
-          selector = mappedValues.map(value => `${prefixSelector}[data-dependency-${elementId}-${value}]`).join(',');
-          dependencyFilter(serviceId, rowId, elementId, $(`${selector}`)).attr("data-collect", true);
-          
-          // trigger all new activated label cb, to ensure normally hidden inputs are shown
-          prefixSelector = `[id^='${serviceId}-${rowId}-'][id$='-input-cb']`;
-          selector = mappedValues.map(value => `${prefixSelector}[data-dependency-${elementId}-${value}]`).join(',');
-          dependencyFilter(serviceId, rowId, elementId, $(`${selector}`)).trigger("change");
-
-          // show navbar buttons
-          prefixSelector = `button[id^='${serviceId}-${rowId}-'][id$='-navbar-button'][data-show="true"]`;
-          selector = mappedValues.map(value => `${prefixSelector}[data-dependency-${elementId}-${value}]`).join(',');
-          dependencyFilter(serviceId, rowId, elementId, $(`${selector}`)).trigger("show");
-          dependencyFilter(serviceId, rowId, elementId, $(`${selector}`)).trigger("change");
-
-          // show buttons
-          prefixSelector = `button[id^='${serviceId}-${rowId}-'][id$='-btn']`;
-          selector = mappedValues.map(value => `${prefixSelector}[data-dependency-${elementId}-${value}]`).join(',');
-          dependencyFilter(serviceId, rowId, elementId, $(`${selector}`)).show();
-
-        {# Show / Hide dependency values #}
-          // hide + ignore
-          $(`div[id^='${serviceId}-${rowId}-'][id$='input-div'][data-dependency-${elementId}]${excludes}`).hide();
-          $(`[id^='${serviceId}-${rowId}-'][id$='-input'][data-dependency-${elementId}]${excludes}`).attr("data-collect", false);
-
-          // hide navbar buttons
-          selector = `button[id^='${serviceId}-${rowId}-'][id$='-navbar-button'][data-dependency-${elementId}]${excludes}`;
-          $(`${selector}`).trigger("hide");
-
-          // hide buttons
-          selector = `button[id^='${serviceId}-${rowId}-'][id$='-btn'][data-dependency-${elementId}]${excludes}`;
-          $(`${selector}`).hide();
-        } else {
-          // hide + ignore all specific inputs
-          $(`div[id^='${serviceId}-${rowId}-'][id$='input-div'][data-dependency-${elementId}]`).hide();
-          $(`[id^='${serviceId}-${rowId}-'][id$='input'][data-dependency-${elementId}]`).attr("data-collect", false);
-        }
-      });
-
-        $(`[id$='-sharecopy-btn-header']`).on("click", function() {
-          const $this = $(this);
-          const serviceId = $this.attr("data-service");
-          const rowId = $this.attr("data-row");
-          const originalIcon = $this.find(".copy-icon").html();
-          const shareId = globalUserOptions[serviceId][rowId].share_id;
-          let tooltipInstance = bootstrap.Tooltip.getInstance($this);
-          let url = utils.url_path_join(window.origin, "share", shareId).replace("//", "/");
-
-          navigator.clipboard.writeText(url).then(() => {
-            $this.html(`{{ svg.check_svg | safe }}`);
-            setTimeout(function () {
-              if (tooltipInstance) {
-                tooltipInstance.hide();
-              }
-              $this.html(`{{ svg.copy_svg | safe }}`);
-            }, 1000);
-          }).catch(err => {
-            console.error("Failed to copy:", err);
-          });
-
-        });
-
-        $(`[id$='-workshopcopy-btn-header']`).on("click", function() {
-          const $this = $(this);
-          const serviceId = $this.attr("data-service");
-          const rowId = $this.attr("data-row");
-          const originalIcon = $this.find(".copy-icon").html();
-          const workshopId = globalUserOptions[serviceId][rowId].workshop_id;
-          let tooltipInstance = bootstrap.Tooltip.getInstance($this);
-          let url = utils.url_path_join(window.origin, "workshops", workshopId).replace("//", "/");
-
-          navigator.clipboard.writeText(url).then(() => {
-            $this.html(`{{ svg.check_svg | safe }}`);
-            setTimeout(function () {
-              if (tooltipInstance) {
-                tooltipInstance.hide();
-              }
-              $this.html(`{{ svg.copy_svg | safe }}`);
-            }, 1000);
-          }).catch(err => {
-            console.error("Failed to copy:", err);
-          });
-
-        });
-
-        $(`[id$='-text-copybutton']`).on("click", function() {
-          const $this = $(this);
-          const serviceId = $this.attr("data-service");
-          const rowId = $this.attr("data-row");
-          const copyKey = $this.attr("data-copy-key");
-          const valid = validateForm(serviceId, rowId);
-
-          let tooltipInstance = bootstrap.Tooltip.getInstance($this);
-
-          if ( !valid ) {
-            showToast("URL not copied. Please check input.");
-            $this.html(`{{ svg.failed_svg | safe }}`);
-            setTimeout(function () {
-              if (tooltipInstance) {
-                tooltipInstance.hide();
-              }
-            }, 1000);
-            setTimeout(function () {
-              $this.html(`{{ svg.copy_svg | safe }}`);
-            }, 3000);            
-            return;
-          }
-
-          const value = $(`[id^='${serviceId}-${rowId}-'][data-copy-key='${copyKey}']`).val();          
-          navigator.clipboard.writeText(value).then(() => {
-            $this.html(`{{ svg.check_svg | safe }}`);
-            setTimeout(function () {
-              if (tooltipInstance) {
-                tooltipInstance.hide();
-              }
-              $this.html(`{{ svg.copy_svg | safe }}`);
-            }, 1000);
-          }).catch(err => {
-            console.error("Failed to copy:", err);
-          });
-        });
-        $(`[id$='-modal-copy-btn']`).on("click", function (){
-          const $this = $(this);
-          const serviceId = $this.attr("data-service");
-          const rowId = $this.attr("data-row");
-          const workshopUrl = $(`#${serviceId}-${rowId}-modal .modal-body a`).last().attr('href');
-          navigator.clipboard.writeText(workshopUrl).then(function() {
-            $(`#${serviceId}-${rowId}-modal-copy-btn`).tooltip('dispose').attr('title', 'Copied');
-            $(`#${serviceId}-${rowId}-modal-copy-btn`).tooltip('show');
-          }, function(err) {
-            console.error('Could not copy text: ', err);
-          });
-        });
-
-        window.showModal = function (serviceId, rowId, url, header, text1, text2) {
-          $(`#${serviceId}-${rowId}-modal .modal-body a`).text(`${text2}`);
-          $(`#${serviceId}-${rowId}-modal .modal-body a`).attr('href', url);
-          $(`#${serviceId}-${rowId}-modal .modal-title`).text(header);
-          $(`#${serviceId}-${rowId}-modal .modal-body p`).html(`${text1}`);
-          $(`#${serviceId}-${rowId}-modal`).modal('show');
-        }
-
-      // secret input text fields -->
-        $(`button[id$='-view-password']`).on("click", function (event) {
-          const $this = $(this);
-          const serviceId = $this.attr("data-service");
-          const rowId = $this.attr("data-row");
-          const elementId = $this.attr("data-element");
-          const passInput = $(`input[id^='${serviceId}-${rowId}-'][id$='-${elementId}-input']`);
-          const eye = $(`i[id^='${serviceId}-${rowId}-'][id$='-${elementId}-password-eye']`);
-          {#
-          const passInput = $('input[id*={{ id_prefix }}-{{ element_id }}-input]')[0];
-          const eye = $('i[id*={{ id_prefix }}-{{ element_id }}-password-eye]')[0];
-          #}
-          if (passInput.prop("type") === "password") {
-            passInput.prop("type", "text");
-            eye.removeClass("fa-eye");
-            eye.addClass("fa-eye-slash");
-          } else {
-            passInput.prop("type", "password");
-            eye.addClass("fa-eye");
-            eye.removeClass("fa-eye-slash");
-          }
-        });
-      // <-- secret input text fields
-
-      $(document).on("click", `button[data-textgrower-btn-type='add'][id$='-input']`, function (event) {
-        const $this = $(this);
-        const serviceId = $this.attr("data-service");
-        const rowId = $this.attr("data-row");
-        const tabId = $this.attr("data-tab");
-        const elementId = $this.attr("data-element");
-        
-        const parentContainer = $this.closest('.container');
-        const countElements = parseInt(parentContainer.attr("data-count")) + 1;
-        parentContainer.attr("data-count", countElements);
-        const firstInputElement = $(`[id^='${serviceId}-${rowId}-${tabId}'][id$='-1-${elementId}-input']`);
-        const dataType = firstInputElement.attr("data-type");
-        const group = firstInputElement.attr("data-group") ?? "default";
-        const name = firstInputElement.attr("name") ?? elementId;
-        const type = firstInputElement.attr("type") ?? "text";
-        let pattern = firstInputElement.attr("pattern");
-        if ( !pattern ) {
-          pattern = "";
-        }
-        let placeholder = firstInputElement.attr("placeholder");
-        if ( !placeholder ) {
-          placeholder = "";
-        }
-
-        const newInputGroup = `
-          <div class="input-group" style="display: flex; align-items: center; margin-bottom: 10px;">
-          <input id="${serviceId}-${rowId}-${tabId}-${countElements}-${elementId}-input" type="${type}"
-            class="form-control"
-            data-service="${serviceId}"
-            data-row="${rowId}"
-            data-tab="${tabId}"
-            data-type="${dataType}"
-            data-element="${elementId}"
-            data-group="${group}"
-            data-collect="true"
-            data-collect-static
-            name="${name}"
-            type="${type}"
-            pattern="${pattern}"
-            placeholder="${placeholder}"
-          />
-          <button data-collect-static data-textgrower-btn-type="del" data-element="${elementId}" data-service="${serviceId}" data-row="${rowId}" data-tab="${tabId}" data-collect="false" type="button" id="${serviceId}-${rowId}-${tabId}-${countElements}-delbtn-${elementId}-input" style="margin-left: 8px;" class="btn btn-danger">{{ svg.delete_svg | safe }}</button>
-          <button data-collect-static data-textgrower-btn-type="add" data-element="${elementId}" data-service="${serviceId}" data-row="${rowId}" data-tab="${tabId}" data-collect="false" type="button" id="${serviceId}-${rowId}-${tabId}-${countElements}-addbtn-${elementId}-input" style="margin-left: 8px;" class="btn btn-primary">{{ svg.plus_svg | safe }}</button>
-        </div>
-        `;
-        parentContainer.append(newInputGroup);
-      });
-      $(document).on("click", `button[data-textgrower-btn-type='del'][id$='-input']`, function (event) {
-        $(this).closest('.input-group').remove();              
-      });
-
-
-      $(`[data-sse-flavors]`).on("sse", function (event, data) { 
-        const $this = $(this);
-        const serviceId = $this.attr("data-service");
-        const rowId = $this.attr("data-row");
-        for ( const [system, systemFlavors] of Object.entries(data) ) {
-          kubeOutpostFlavors[system] = systemFlavors;
-        }
-        const currentSystem = $(`[id^='${serviceId}-${rowId}-'][id$='-system-input']`);
-        if ( currentSystem.length && currentSystem.attr("data-collect") == "true" ) {
-          if ( Object.keys(data).includes(currentSystem.val()) ){
-            setFlavorInfo(serviceId, rowId, currentSystem.val(), kubeOutpostFlavors[currentSystem.val()]);
-          }
-        }
-      });
-
-      $(`input[id$='-select-all-input']`).on("click", function () {
-        const $this = $(this);
-        const serviceId = $this.attr("data-service");
-        const rowId = $this.attr("data-row");
-        const tabId = $this.attr("data-tab");
-        if ( $this.prop("checked") ) {
-          $(`input[id^='${serviceId}-${rowId}-${tabId}-'][id$='-input']`).prop("checked", true);
-          $(`[id^='${serviceId}-${rowId}-${tabId}-'][id$='-select-none-input']`).prop("checked", false);
-        }
-      })
-      $(`input[id$='-select-none-input']`).on("click", function () {
-        const $this = $(this);
-        const serviceId = $this.attr("data-service");
-        const rowId = $this.attr("data-row");
-        const tabId = $this.attr("data-tab");
-        if ( $this.prop("checked") ) {
-          $(`input[id^='${serviceId}-${rowId}-${tabId}-'][id$='-input']:not([id$='-select-none-input'])`).prop("checked", false);
-          $(`[id^='${serviceId}-${rowId}-${tabId}-'][id$='-select-all-input']`).prop("checked", false);
-        }
-      })
-
-      $(".summary-tr").on("click", function (event) {
-        if (![event.target, event.target.parentElement, event.target.parentElement?.parentElement]
-          .some(el => el?.tagName === "BUTTON")) {
-          const $this = $(this);
-          const id = $this.data("server-id");
-          let accordionIcon = $(this).find(".accordion-icon");
-          let collapse = $(`.collapse[id^=${id}]`);
-          if ( collapse.length > 0 ) {
-            let shown = collapse.hasClass("show");
-            if (shown) accordionIcon.addClass("collapsed");
-            else accordionIcon.removeClass("collapsed");
-            new bootstrap.Collapse(collapse);
-          }
-        }
-      });
-
-      
-
-      // Storage Logic >
-      $('.add-data-mount').on('click', function(event) {
-        const $this = $(this);
-        const serviceId = $this.data('service');
-        const rowId = $this.data('row');
-        const tabId = $this.data('tab');
-        const newRowHtml = createStorageRow(serviceId, rowId, tabId);
-        $(`#${serviceId}-${rowId}-${tabId}-table`).show();
-        $(`#${serviceId}-${rowId}-${tabId}-table tbody`).append(newRowHtml);
-      });
-
-
-      // < Storage Logic
-
-
       logDebug && console.log(`Fill elements ...`);
       {% if pagetype == vars.pagetype_home %}
         $(`[id*='-{{ vars.first_row_id }}-'][id$='-input']`).trigger("trigger_init");
@@ -655,7 +253,9 @@
           $('#{{ service_id }}-{{ spawner.name }}-loading-tr').hide();
           $('#{{ service_id }}-{{ spawner.name }}-summary-tr').show();
         {%- elif pagetype == vars.pagetype_start %}
+          console.time('fillExistingRowTime');
           homeFillExistingRow("{{ service_id }}", "{{ spawner.name }}", {{ frontendCollection.get("decrypted_user_options").get(spawner.name, spawner.user_options) | tojson }}, {{ service_options.get("fillingOrder", []) | tojson }});
+          console.timeEnd('fillExistingRowTime');
           $(`[id^='{{ service_id }}-{{ spawner.name }}'][id$='-input']`).prop("disabled", true);
           {%- if spawner.events %}
             {%- for event in spawner.events %}
@@ -847,100 +447,10 @@
     });
   });
   {%- if pagetype == vars.pagetype_workshop %}
-  const workshop_options = {{ workshop_options | tojson }};
+    const workshop_options = {{ workshop_options | tojson }};
   {%- endif %}
 
+// Some Start Line End
 
-  // Storage Logic 
-  $(document).on('click', '.del-data-mount', function (event) {
-    event.stopPropagation();
-    const $this = $(this);
-    const summaryRow = $this.closest('tr');
-    const collapseRow = summaryRow.next('.collapsible-tr');
-    const table = summaryRow.closest('table');
-    collapseRow.remove();
-    summaryRow.remove();
-
-    if (table.find('tbody tr').length === 0) {
-      table.hide();
-    }
-
-  });
-
-  $(document).on('input', '.data-mount-b2drop-user', function () {
-    const $this = $(this);
-    const userInput = $this.val().trim();
-    const group = $this.data('group');
-
-    if (group && userInput) {
-      const $urlInput = $(`input[name="url"][data-group="${group}"]`);
-      $urlInput.val(`https://b2drop.eudat.eu/remote.php/dav/files/${userInput}/`);
-    }
-  });
-
-  $(document).on('click', '.data-mount-passwd-btn', function () {
-    const $this = $(this);
-    const input = $this.closest('.input-group').find('input[type="password"], input[type="text"]');
-
-    if (input.attr('type') === 'password') {
-      input.attr('type', 'text');
-      $this.find('i').removeClass('fa-eye').addClass('fa-eye-slash');
-    } else {
-      input.attr('type', 'password');
-      $this.find('i').removeClass('fa-eye-slash').addClass('fa-eye');
-    }
-  });
-
-  $(document).on('change', '.data-mount-template-input', function () {
-    const $this = $(this);
-    const selectedText = $this.find('option:selected').text();
-    const row = $this.closest('tr');
-    const val = $this.val();
-
-    const mountPathInput = row.find('input[name="path"]');
-    mountPathInput.val(val);
-
-    const container = $this.closest('tr').prev('.summary-tr');
-
-    // Update the summary cell text via class
-    container.find('.data-mount-summary-template').text(selectedText);
-
-    row.find('[data-storage-template]').each(function () {
-      const container = $(this);
-      const isMatch = container.data('storage-template') === val;
-
-      container.toggle(isMatch); // show if match, hide otherwise
-
-      // Update data-collect on all inputs inside the container
-      container.find('input[data-collect], select[data-collect]').each(function () {
-        $(this).attr('data-collect', isMatch.toString());
-      });
-    });
-  });
-
-  $(document).on('click', '.data-mount-summary-tr', function () {
-    const $this = $(this);
-    const summaryRow = $this.closest('tr');
-    const collapseRow = summaryRow.next('.collapsible-tr');
-    const collapseDiv = collapseRow.find('.collapse'); // assumes you wrapped it in .collapse
-    const accordionIcon = summaryRow.find('.accordion-icon');
-
-    if (collapseDiv.length > 0) {
-      const isShown = collapseDiv.hasClass('show');
-
-      // Toggle icon class
-      accordionIcon.toggleClass('collapsed', isShown);
-
-      // Toggle collapse using Bootstrap API
-      const bsCollapse = bootstrap.Collapse.getInstance(collapseDiv[0]) ||
-                          new bootstrap.Collapse(collapseDiv[0], { toggle: false });
-
-      if (isShown) {
-        bsCollapse.hide();
-      } else {
-        bsCollapse.show();
-      }
-    }
-  });
-  // Storage Logic End
 </script>
+

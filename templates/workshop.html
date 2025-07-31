@@ -30,6 +30,73 @@
 {%- block script -%}
 {%- import "macros/table/variables.jinja" as vars with context %}
 {%- set pagetype = vars.pagetype_workshop %}
+{%- import "macros/svgs.jinja" as svg -%}
 {%- import "macros/table/config/workshop.jinja" as config with context %}
+<script>
+  /* Jinja dependent functions:
+  * Define get funtions to enable the use of jinja variables (supplied by the backend) within the JavaScript classes (otherwise they are not reachable)
+  */
+  function getFrontendCollection() {
+    return {{ frontendCollection | tojson}} || {};
+  }
+  function getFrontendConfig() {
+    return {{ config.frontend_config | tojson}} || {};
+  }
+  function getSvg(name) {
+    if ( name === "check" ) {
+      return `{{ svg.check_svg | safe }}`;
+    } else if ( name === "copy" ) {
+      return `{{ svg.copy_svg | safe }}`;
+    } else if ( name === "failed" ) {
+      return `{{ svg.failed_svg | safe }}`;
+    } else if ( name === "link" ) {
+      return `{{ svg.link_svg | safe }}`;
+    } else if ( name === "delete" ) {
+      return `{{ svg.delete_svg | safe }}`;
+    } else if ( name === "plus" ) {
+      return `{{ svg.plus_svg | safe }}`;
+    } else if ( name === "info" ) {
+      return `{{ svg.info_svg | safe }}`;
+    }
+  }
+  function getAuthState() {
+    return {{ auth_state | default({}) | tojson }};
+  }
+  function getWorkshopOptions() {
+    return {{ workshop_options | default({}) | tojson }};
+  }
+  function isFirstRow(rowId) {
+    return rowId === "{{ vars.first_row_id }}";
+  }
+  function getSpawnerUserOptions() {
+    {% set spawner_map = {} %}
+    {% for spawner in spawners %}
+      {%- if spawner.user_options and spawner.user_options.get("name", false) %}
+        {% set _ = spawner_map.update({ spawner.name: spawner.user_options }) %}
+      {%- endif %}
+    {% endfor %}
+    return {{ spawner_map | tojson | safe }};
+  }
+  function pageType(name) {
+    if ( name === "home" ) {
+      return "{{ vars.pagetype_home }}";
+    } else if ( name === "share" ) {
+      return "{{ vars.pagetype_share }}";
+    } else if ( name === "spawn" ) {
+      return "{{ vars.pagetype_spawn }}";
+    } else if ( name === "start" ) {
+      return "{{ vars.pagetype_start }}";
+    } else if ( name === "workshop" ) {
+      return "{{ vars.pagetype_workshop }}";
+    } else if ( name === "workshopmanager" ) {
+      return "{{ vars.pagetype_workshopmanager }}";
+    } else {
+      return "{{ pagetype }}";
+    }
+  }
+</script>
+
+<script src="{{static_url("js/table.js") }}" type="text/javascript" charset="utf-8"></script>
+
 {%- include "macros/table/elements_js.jinja" with context %}
 {%- endblock %}
