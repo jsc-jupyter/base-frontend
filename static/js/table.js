@@ -4274,7 +4274,7 @@ require(["jquery", "utils"], function (
         return;
       }
       let exists = false;
-      const childCount = logInputElement.children().length;
+      const childCount = logInputElement.children().length || 0;
       logInputElement.children().each(function (i, e) {
         let logMsg = $(e).html();
         if (htmlMsg == logMsg) exists = true;
