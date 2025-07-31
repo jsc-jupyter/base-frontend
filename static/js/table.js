@@ -4256,6 +4256,7 @@ require(["jquery", "utils"], function (
 
   function appendToLog(serviceId, rowId, event) {    
     const logInputElement = $(`[id^='${serviceId}-${rowId}-logs'][id$='-logcontainer-input']`);
+    const childCount = logInputElement.children().length || 0;
     let htmlMsg = "";
     if (event.html_message !== undefined) {
       htmlMsg = event.html_message
@@ -4274,7 +4275,6 @@ require(["jquery", "utils"], function (
         return;
       }
       let exists = false;
-      const childCount = logInputElement.children().length || 0;
       logInputElement.children().each(function (i, e) {
         let logMsg = $(e).html();
         if (htmlMsg == logMsg) exists = true;
