@@ -4289,8 +4289,10 @@ require(["jquery", "utils"], function (
     }
     if (pageType(null) == pageType("start") || pageType(null) == pageType("spawn") ) {
       if ( event.failed ) {
-        let infoMsg = '<details style="border-left: 4px solid darkorange; padding-left: 10px; margin-top: 1em;"><summary style="color: darkorange; font-weight: bold; cursor: pointer;">This is the starting page. Need to change your setup?</summary><p>To update your configuration or add a new one, please visit the <a href="/hub/home">configuration page</a>.</p></details>';
-        logInputElement.append($(`<div id="${serviceId}-${rowId}-logs-logcontainer-element${childCount}" class="log-div">`).html(infoMsg));
+        if (logInputElement.find('[data-config-hint]').length === 0) {
+          let infoMsg = '<details data-config-hint style="border-left: 4px solid darkorange; padding-left: 10px; margin-top: 1em;"><summary style="color: darkorange; font-weight: bold; cursor: pointer;">This is the starting page. Need to change your setup?</summary><p>To update your configuration or add a new one, please visit the <a href="/hub/home">configuration page</a>.</p></details>';
+          logInputElement.append($(`<div id="${serviceId}-${rowId}-logs-logcontainer-element${childCount}" class="log-div">`).html(infoMsg));
+        }
       }
     }
   }
