@@ -4949,7 +4949,18 @@ function triggerInitUntilValuesSet(serviceId, rowId, firstRow = false, maxTries 
         const defaultOptions = defaults?.options || {};
 
         for (const [key, value] of Object.entries(defaultOptions)) {
-            $(`[id^='${serviceId}-${rowId}-${defaultTab}-'][id$='-${key}-input']`).val(value);
+            if (value != null && value !== "") {
+                const $el = $(`[id^='${serviceId}-${rowId}-${defaultTab}-'][id$='-${key}-input']`);
+
+                if ($el.is("select")) {
+                    const hasOption = $el.find(`option[value="${value}"]`).length > 0;
+                    if (hasOption) {
+                        $el.val(value);
+                    }
+                } else {
+                    $el.val(value);
+                }
+            }
         }
 
         console.timeEnd(`Init Row ${serviceId}-${rowId} (${tries})`);
