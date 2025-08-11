@@ -2185,16 +2185,16 @@ function homeDefaultHeaderTypeWorkshop(spawner, service_id, row_id, row_options,
       >
         ${getSvg("stop")} Stop
       </button>
-      ${
-        showWorkshopCopy ? `<button type="button"
-          id="${service_id}-${row_id}-del-btn-header"
-          class="btn btn-danger"
-          data-service="${service_id}"
-          data-row="${row_id}"
-          data-element="del"
-        >
-          ${getSvg("delete")}
-        </button>`: '' 
+      <button type="button"
+        id="${service_id}-${row_id}-del-btn-header"
+        class="btn btn-danger"
+        data-service="${service_id}"
+        data-row="${row_id}"
+        ${!showWorkshopCopy ? "style='display: none'": ''}
+        data-element="del"
+      >
+        ${getSvg("delete")}
+      </button>
       }
     </th>
   `;
