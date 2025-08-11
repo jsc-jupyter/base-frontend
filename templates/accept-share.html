@@ -2,19 +2,27 @@
 {% block login_widget %}
 {% endblock login_widget %}
 {% block main %}
+  {%- set orig_user = spawner.user %}
+  {%- set ns = namespace(owner_mail=orig_user.name) %}
+  {%- for group in orig_user.groups %}
+    {%- if group.name and group.name.startswith("email:") %}
+      {%- set ns.owner_mail = group.name[6:] %}
+      {%- break %}
+    {%- endif %}
+  {%- endfor %}
   <div class="container">
     <div class="row justify-content-center">
       <div class="col-md-6">
         <h1 class="text-center">Accept RTC invitation</h1>
         {%- if spawner.user_options.get("system", "None") in ["JSC-Cloud", "deNBI-Cloud"] %}
           <p class="lead">
-            You have been invited to access an other user's server
-            {%- if spawner.user_options.get("name", spawner.name) %}({{ spawner.user_options.get("name", spawner.name) }}){%- endif %} at <a style="color: white", href="{{ spawner_url | safe }}">{{ spawner_url }}</a>
+            You have been invited to access {{ ns.owner_mail }}'s server
+            {%- if spawner.user_options.get("name", spawner.name) %}: "{{ spawner.user_options.get("name", spawner.name) }}"{%- endif %}
           </p>
           {% if not spawner_ready %}
             <p class="alert alert-danger">
-              The server at {{ spawner_url }} is not currently running.
-              After accepting permission, you may need to ask {{ owner.name }}
+              The server is currently not running.
+              After accepting permission, you may need to ask {{ ns.owner_mail }}
               to start the server before you can access it.
             </p>
           {% endif %}

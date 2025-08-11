@@ -1,0 +1,767 @@
+function getFrontendConfig() {
+  return {
+    "services": {
+      "default": "jupyterlab",
+      "options": {
+        "jupyterlab": {
+          "fillingOrder": ["expertmode", "option", "system", "project", "partition", "flavor", "privaterepo"],
+          "navbar": {},
+          "tabs": {
+            "default": {
+              "left": {
+                "workshopid": {
+                  "input": {
+                    "type": "text",
+                    "options": {
+                      "collect": true,
+                      "alwaysDisabled": true,
+                      "enabled": false,
+                      "show": true,
+                      "placeholder": "An ID will be generated for you",
+                      "placeholderInstructor": "Choose a descriptive ID",
+                      "pattern": "[a-z][a-z0-9_\\-]*",
+                      "warning": "Allowed chars: a-z 0-9 _ - . Must start with a lowercase letter ([a-z][a-z0-9_-]*)",
+                      "group": "none"
+                    }
+                  },
+                  "trigger": {
+                    "init": "wmTriggerWorkshopid"
+                  },
+                  "label": {
+                    "type": "texticonclick",
+                    "width": 6,
+                    "value": "Workshop ID:",
+                    "icontext": "For more information check out <a href='https://jupyterjsc.pages.jsc.fz-juelich.de/docs/jupyterjsc/users/jupyterlab/4.2/' target='_blank'>documentation</a>"
+                  }
+                },
+                "description": {
+                  "input": {
+                    "type": "text",
+                    "options": {
+                      "collect": true,
+                      "show": true,
+                      "required": true,
+                      "group": "none",
+                      "warning": "A description of your workshop is required. This will be displayed to users to help them select the appropriate workshop."
+                    }
+                  },
+                  "label": {
+                    "type": "text",
+                    "width": 6,
+                    "value": "Description:"
+                  }
+                },
+                "expertmode": {
+                  "input": {
+                    "type": "checkbox",
+                    "options": {
+                      "default": false,
+                      "group": "none",
+                      "instructor": "show",
+                      "enabled": true
+                    }
+                  },
+                  "trigger": {
+                    "init": "wmTriggerExpertMode"
+                  },
+                  "triggerOnChange": "wmTriggerExpertMode",
+                  "label": {
+                    "type": "texticon",
+                    "icontext": "Expert Mode allows you to select multiple Options + Systems",
+                    "width": 6,
+                    "value": "Enable expert mode"
+                  }
+                },
+                "buttonrow": {
+                  "input": {
+                    "type": "buttons",
+                    "options": {
+                      "buttons": [
+                        "delete",
+                        "save"
+                      ],
+                      "save": {
+                        "trigger": "wmTriggerButtonSave",
+                        "firstRow": false,
+                        "alignRight": true
+                      },
+                      "delete": {
+                        "firstRow": false,
+                        "trigger": "wmTriggerButtonDelete"
+                      }
+                    }
+                  }
+                }
+              },
+              "right": {
+                "option": {
+                  "input": {
+                    "type": "select",
+                    "options": {
+                      "show": true,
+                      "enabled": false
+                    }
+                  },
+                  "label": {
+                    "type": "textcheckbox",
+                    "value": "Select Version",
+                    "options": {
+                      "default": false
+                    }
+                  },
+                  "trigger": {
+                    "init": "wmTriggerOption"
+                  }
+                },
+                "system": {
+                  "input": {
+                    "type": "select",
+                    "options": {
+                      "show": true,
+                      "enabled": false
+                    }
+                  },
+                  "label": {
+                    "type": "textcheckbox",
+                    "value": "Systems",
+                    "options": {
+                      "default": false
+                    }
+                  },
+                  "trigger": {
+                    "init": "wmTriggerSystem",
+                    "option": "wmTriggerSystem"
+                  }
+                },
+                "repotype": {
+                  "input": {
+                    "type": "select",
+                    "options": {
+                      "group": "repo2docker",
+                      "enabled": false
+                    },
+                    "values": {
+                      "gh": "GitHub",
+                      "gist": "GitHub Gist",
+                      "git": "Git repository",
+                      "gl": "GitLab",
+                      "zenodo": "Zenodo DOI",
+                      "figshare": "FigShare DOI",
+                      "hydroshare": "Hydroshare resource",
+                      "dataverse": "Dataverse DOI",
+                      "ckan": "CKAN dataset"
+                    }
+                  },
+                  "label": {
+                    "type": "textcheckbox",
+                    "value": "Repository Type",
+                    "options": {
+                      "default": false
+                    }
+                  },
+                  "dependency": {
+                    "option": [
+                      "repo2docker"
+                    ]
+                  }
+                },
+                "repourl": {
+                  "input": {
+                    "type": "text",
+                    "options": {
+                      "group": "repo2docker",
+                      "enabled": false,
+                      "placeholder": "example: yuvipanda/requirements or https://github.com/yuvipanda/requirements",
+                      "pattern": "^(https?:\\/\\/github\\.com\\/)?([^\\/]+\\/[^\\/]+)\\/?$"
+                    }
+                  },
+                  "label": {
+                    "type": "textcheckbox",
+                    "value": "Repository name or URL",
+                    "options": {
+                      "default": false
+                    }
+                  },
+                  "trigger": {
+                    "repotype": "wmTriggerUpdateRepoUrlForType"
+                  },
+                  "dependency": {
+                    "option": [
+                      "repo2docker"
+                    ]
+                  }
+                },
+                "reporef": {
+                  "input": {
+                    "type": "text",
+                    "options": {
+                      "group": "repo2docker",
+                      "enabled": false,
+                      "placeholder": "HEAD"
+                    }
+                  },
+                  "label": {
+                    "type": "textcheckbox",
+                    "value": "Git ref (branch, tag, or commit)",
+                    "options": {
+                      "default": false
+                    }
+                  },
+                  "dependency": {
+                    "option": [
+                      "repo2docker"
+                    ],
+                    "repotype": [
+                      "gh",
+                      "gist",
+                      "git",
+                      "gl"
+                    ]
+                  }
+                },
+                "repopath": {
+                  "input": {
+                    "type": "text",
+                    "options": {
+                      "group": "repo2docker",
+                      "enabled": false,
+                      "placeholder": "Path to a notebook file (optional)",
+                      "patternDisabled": "^(\\/?[a-zA-Z0-9/_-]+(?:\\.[a-zA-Z0-9]+)?(?:\\/[a-zA-Z0-9/_-]+(?:\\.[a-zA-Z0-9]+)?)*|[a-zA-Z0-9/_-]+)$"
+                    }
+                  },
+                  "label": {
+                    "type": "textcheckbox",
+                    "value": "Open notebook or path (optional)",
+                    "options": {
+                      "default": false
+                    }
+                  },
+                  "dependency": {
+                    "option": [
+                      "repo2docker"
+                    ]
+                  }
+                },
+                "repopathtype": {
+                  "input": {
+                    "type": "select",
+                    "options": {
+                      "group": "repo2docker",
+                      "enabled": false,
+                      "show": false
+                    },
+                    "values": {
+                      "file": "File",
+                      "url": "URL"
+                    }
+                  },
+                  "label": {
+                    "type": "textcheckbox",
+                    "value": "Notebook Type",
+                    "options": {
+                      "default": false
+                    }
+                  },
+                  "trigger": {
+                    "repopath": "wmTriggerRepoPathType"
+                  },
+                  "dependency": {
+                    "option": [
+                      "repo2docker"
+                    ]
+                  }
+                },
+                "customimage": {
+                  "input": {
+                    "type": "text",
+                    "options": {
+                      "group": "custom",
+                      "enabled": false,
+                      "value": "jupyter/datascience-notebook",
+                      "placeholder": "jupyter/datascience-notebook",
+                      "patternDisabled": "^(([a-zA-Z0-9.\\-]+)(:[0-9]+)?\\/)?([a-zA-Z0-9._\\-]+\\/)*[a-zA-Z0-9._\\-]+(:[a-zA-Z0-9._\\-]+|@[A-Fa-f0-9]{64})?$"
+                    }
+                  },
+                  "label": {
+                    "type": "textcheckbox",
+                    "value": "Image",
+                    "options": {
+                      "default": false
+                    }
+                  },
+                  "dependency": {
+                    "option": [
+                      "custom"
+                    ]
+                  }
+                },
+                "privaterepo": {
+                  "input": {
+                    "type": "text",
+                    "options": {
+                      "group": "custom",
+                      "enabled": false,
+                      "placeholder": "myregistry.com:5000/myuser/myrepo",
+                      "patternDisabled": "^([a-zA-Z0-9.\\-]+(:[0-9]+)?\\/)?[a-zA-Z0-9._\\-]+\\/[a-zA-Z0-9._\\-]+$"
+                    }
+                  },
+                  "label": {
+                    "type": "textcheckbox",
+                    "value": "Private image repository",
+                    "options": {
+                      "default": false
+                    }
+                  },
+                  "dependency": {
+                    "option": [
+                      "custom"
+                    ]
+                  }
+                },
+                "privaterepousername": {
+                  "input": {
+                    "type": "text",
+                    "options": {
+                      "group": "custom",
+                      "enabled": false,
+                      "placeholder": "Enter your username"
+                    }
+                  },
+                  "label": {
+                    "type": "texticoncheckbox",
+                    "value": "Username",
+                    "icontext": "Username for the private registry",
+                    "options": {
+                      "default": false
+                    }
+                  },
+                  "trigger": {
+                    "privaterepo": "toggleExternalCB"
+                  },
+                  "dependency": {
+                    "option": [
+                      "custom"
+                    ]
+                  }
+                },
+                "localstoragepath": {
+                  "input": {
+                    "type": "text",
+                    "options": {
+                      "group": "storage",
+                      "enabled": false,
+                      "placeholder": "/home/jovyan/work",
+                      "value": "/home/jovyan/work",
+                      "pattern": "^\\/(?:[^\\/\\0]+\\/)*[^\\/\\0]*$"
+                    }
+                  },
+                  "label": {
+                    "type": "textcheckbox",
+                    "value": "Mount user data",
+                    "options": {
+                      "default": false
+                    }
+                  },
+                  "dependency": {
+                    "option": [
+                      "custom"
+                    ]
+                  }
+                },
+                "extensions": {
+                  "input": {
+                    "type": "select",
+                    "options": {
+                      "group": "modules",
+                      "enabled": false,
+                      "size": 4,
+                      "multiple": true,
+                      "setName": "extensionSet"
+                    }
+                  },
+                  "label": {
+                    "type": "textcheckbox",
+                    "value": "Extensions",
+                    "options": {
+                      "default": false
+                    }
+                  },
+                  "trigger": {
+                    "option": "wmTriggerModules"
+                  },
+                  "dependency": {
+                    "option": [
+                      "lmod"
+                    ]
+                  }
+                },
+                "kernels": {
+                  "input": {
+                    "type": "select",
+                    "options": {
+                      "group": "modules",
+                      "enabled": false,
+                      "size": 4,
+                      "multiple": true,
+                      "setName": "kernelSet"
+                    }
+                  },
+                  "label": {
+                    "type": "textcheckbox",
+                    "value": "Kernels",
+                    "options": {
+                      "default": false
+                    }
+                  },
+                  "trigger": {
+                    "option": "wmTriggerModules"
+                  },
+                  "dependency": {
+                    "option": [
+                      "lmod"
+                    ]
+                  }
+                },
+                "proxies": {
+                  "input": {
+                    "type": "select",
+                    "options": {
+                      "group": "modules",
+                      "enabled": false,
+                      "size": 4,
+                      "multiple": true,
+                      "setName": "proxySet"
+                    }
+                  },
+                  "label": {
+                    "type": "textcheckbox",
+                    "value": "Proxies",
+                    "options": {
+                      "default": false
+                    }
+                  },
+                  "trigger": {
+                    "option": "wmTriggerModules"
+                  },
+                  "dependency": {
+                    "option": [
+                      "lmod"
+                    ]
+                  }
+                },
+                "project": {
+                  "input": {
+                    "type": "select",
+                    "options": {
+                      "group": "hpc",
+                      "enabled": false,
+                      "multiple": true,
+                      "size": 4
+                    }
+                  },
+                  "label": {
+                    "type": "textcheckbox",
+                    "options": {
+                      "default": false
+                    },
+                    "value": "Project"
+                  },
+                  "trigger": {
+                    "system": "wmTriggerProject"
+                  },
+                  "dependency": {
+                    "system": [
+                      "unicore"
+                    ]
+                  }
+                },
+                "defaultvaluesproject": {
+                  "input": {
+                    "type": "select",
+                    "options": {
+                      "group": "hpc",
+                      "show": false,
+                      "collect": false,
+                      "enabled": false,
+                      "parent": "project",
+                      "group": "defaultvalues"
+                    }
+                  },
+                  "label": {
+                    "type": "textcheckbox",
+                    "options": {
+                      "default": false
+                    },
+                    "value": "Specify default project"
+                  },
+                  "trigger": {
+                    "project": "wmTriggerDefaultValue"
+                  },
+                  "dependency": {
+                    "system": [
+                      "unicore"
+                    ]
+                  }
+                },
+                "partition": {
+                  "input": {
+                    "type": "select",
+                    "options": {
+                      "group": "hpc",
+                      "enabled": false,
+                      "multiple": true,
+                      "size": 4
+                    }
+                  },
+                  "label": {
+                    "type": "textcheckbox",
+                    "value": "Partition",
+                    "options": {
+                      "default": false
+                    }
+                  },
+                  "trigger": {
+                    "project": "wmTriggerPartition",
+                    "system": "wmTriggerPartition"
+                  },
+                  "dependency": {
+                    "system": [
+                      "unicore"
+                    ]
+                  }
+                },
+                "defaultvaluespartition": {
+                  "input": {
+                    "type": "select",
+                    "options": {
+                      "group": "hpc",
+                      "show": false,
+                      "collect": false,
+                      "enabled": false,
+                      "parent": "partition",
+                      "group": "defaultvalues"
+                    }
+                  },
+                  "label": {
+                    "type": "textcheckbox",
+                    "options": {
+                      "default": false
+                    },
+                    "value": "Specify default partition"
+                  },
+                  "trigger": {
+                    "partition": "wmTriggerDefaultValue"
+                  },
+                  "dependency": {
+                    "system": [
+                      "unicore"
+                    ]
+                  }
+                },
+                "reservation": {
+                  "input": {
+                    "type": "select",
+                    "options": {
+                      "group": "resources",
+                      "enabled": false,
+                      "multiple": true,
+                      "size": 4
+                    }
+                  },
+                  "label": {
+                    "type": "textcheckbox",
+                    "options": {
+                      "default": false
+                    },
+                    "value": "Reservation"
+                  },
+                  "trigger": {
+                    "system": "wmTriggerReservation",
+                    "partition": "wmTriggerReservation",
+                    "project": "wmTriggerReservation"
+                  },
+                  "dependency": {
+                    "system": [
+                      "unicore"
+                    ]
+                  }
+                },
+                "defaultvaluesreservation": {
+                  "input": {
+                    "type": "select",
+                    "options": {
+                      "group": "hpc",
+                      "show": false,
+                      "collect": false,
+                      "enabled": false,
+                      "parent": "reservation",
+                      "group": "defaultvalues"
+                    }
+                  },
+                  "label": {
+                    "type": "textcheckbox",
+                    "options": {
+                      "default": false
+                    },
+                    "value": "Specify default reservation"
+                  },
+                  "trigger": {
+                    "reservation": "wmTriggerDefaultValue"
+                  },
+                  "dependency": {
+                    "system": [
+                      "unicore"
+                    ]
+                  }
+                },
+                "nodes": {
+                  "input": {
+                    "type": "number",
+                    "options": {
+                      "show": false,
+                      "group": "resources",
+                      "enabled": false
+                    }
+                  },
+                  "label": {
+                    "type": "textcheckbox",
+                    "value": "Nodes",
+                    "options": {
+                      "default": false
+                    }
+                  },
+                  "trigger": {
+                    "system": "wmTriggerResources",
+                    "partition": "wmTriggerResources"
+                  },
+                  "dependency": {
+                    "system": [
+                      "unicore"
+                    ]
+                  }
+                },
+                "runtime": {
+                  "input": {
+                    "type": "number",
+                    "options": {
+                      "show": false,
+                      "group": "resources"
+                    }
+                  },
+                  "label": {
+                    "type": "textcheckbox",
+                    "value": "Runtime",
+                    "options": {
+                      "default": false
+                    }
+                  },
+                  "trigger": {
+                    "system": "wmTriggerResources",
+                    "partition": "wmTriggerResources"
+                  },
+                  "dependency": {
+                    "system": [
+                      "unicore"
+                    ]
+                  }
+                },
+                "gpus": {
+                  "input": {
+                    "type": "number",
+                    "options": {
+                      "show": false,
+                      "enabled": false,
+                      "group": "resources"
+                    }
+                  },
+                  "label": {
+                    "type": "textcheckbox",
+                    "value": "GPUs",
+                    "options": {
+                      "default": false
+                    }
+                  },
+                  "trigger": {
+                    "system": "wmTriggerResources",
+                    "partition": "wmTriggerResources"
+                  },
+                  "dependency": {
+                    "system": [
+                      "unicore"
+                    ]
+                  }
+                },
+                "xserver": {
+                  "input": {
+                    "type": "number",
+                    "options": {
+                      "show": false,
+                      "group": "resources"
+                    }
+                  },
+                  "label": {
+                    "type": "textcheckbox",
+                    "value": "Use XServer GPU index",
+                    "options": {
+                      "default": false
+                    }
+                  },
+                  "trigger": {
+                    "system": "wmTriggerResources",
+                    "partition": "wmTriggerResources"
+                  },
+                  "dependency": {
+                    "system": [
+                      "unicore"
+                    ]
+                  }
+                },
+                "flavor": {
+                  "input": {
+                    "type": "select",
+                    "options": {
+                      "enabled": false
+                    }
+                  },
+                  "label": {
+                    "type": "textcheckbox",
+                    "options": {
+                      "default": false
+                    },
+                    "value": "Flavor"
+                  },
+                  "trigger": {
+                    "system": "wmTriggerFlavor"
+                  },
+                  "dependency": {
+                    "system": [
+                      "jsccloud",
+                      "lrz",
+                      "lrzstaging",
+                      "hlrs",
+                      "hlrsstaging",
+                      "mpcdf",
+                      "tudstaging",
+                      "tud",
+                      "denbi"
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "tab": "default",
+            "options": {
+              "option": "4.2",
+              "system": "JUWELS"
+            }
+          },
+          "summaryButtons": {
+            "new": "wmSummaryButtonNew"
+          }
+        }
+      }
+    }
+  }
+}

@@ -5,7 +5,14 @@ require(["jquery", "utils"], function (
   utils
 ) {
 
-  $(`[id$='-sharecopy-btn-header']`).on("click", function () {
+  
+  $(document).on("click", '.open-workshop-btn', function() {
+    const $this =$(this);
+    const rowId = $this.attr('data-row');
+    window.open(`${window.origin}/workshops/${rowId}`);
+  });
+
+  $(document).on("click", `[id$='-sharecopy-btn-header']`, function () {
     const $this = $(this);
     const serviceId = $this.attr("data-service");
     const rowId = $this.attr("data-row");
@@ -27,7 +34,7 @@ require(["jquery", "utils"], function (
     });
   });
 
-  $(`[id$='-workshopcopy-btn-header']`).on("click", function () {
+  $(document).on("click", `[id$='-workshopcopy-btn-header']`, function () {
     const $this = $(this);
     const serviceId = $this.attr("data-service");
     const rowId = $this.attr("data-row");
@@ -50,7 +57,7 @@ require(["jquery", "utils"], function (
   });
 });
 
-  const logDebug = false;
+  let logDebug = false;
 
 
 
@@ -68,6 +75,7 @@ require(["jquery", "utils"], function (
     const globalFillingOrder = {};
     const globalStorageCounter = {};
     const initIncidents = getFrontendCollection()?.incidents || {};
+    // initIncidents.JSCCLOUD.health = 50;
     const incidentsmapping = {
       "JSCCLOUD": "JSC-Cloud"
     };
@@ -86,7 +94,7 @@ require(["jquery", "utils"], function (
     if ( pageType(null) == pageType("home") || pageType(null) == pageType("start") || pageType(null) == pageType("workshop") ) {
       for (const [spawnerName, spawnerUserOptions] of Object.entries(getSpawnerUserOptions())) {
         const userOptions = getFrontendCollection()?.decrypted_user_options?.[spawnerName] || spawnerUserOptions;
-        const serviceId = spawnerUserOptions?.service || globalServiceId;
+        const serviceId = spawnerUserOptions?.service || "jupyterlab";
         if ( !Object.keys(globalUserOptions).includes(serviceId) ) {
           globalUserOptions[serviceId] = {};
         }
@@ -778,7 +786,7 @@ require(["jquery", "utils"], function (
 
 
   // Storage Logic
-  $('.add-data-mount').on('click', function (event) {
+  $(document).on("click", '.add-data-mount', function (event) {
     const $this = $(this);
     const serviceId = $this.data('service');
     const rowId = $this.data('row');
@@ -795,9 +803,6 @@ require(["jquery", "utils"], function (
     const summaryRow = $this.closest('tr');
     const collapseRow = summaryRow.next('.collapsible-tr');
     const table = summaryRow.closest('table');
-    console.log(summaryRow);
-    console.log(collapseRow);
-    console.log(table);
     collapseRow.remove();
     summaryRow.remove();
 
@@ -915,18 +920,28 @@ require(["jquery", "utils"], function (
     });
   }
 
-  $(`select[id$='-input']`).change(function (event) {
+  $(document).on("change", `select[id$='-input']`, function (event) {
     const $this = $(this);
     const serviceId = $this.attr("data-service");
     const rowId = $this.attr("data-row");
-    const dataRow = $(`tr[data-server-id="${serviceId}-${rowId}"]`);
+    const dataRow = $(`tr.collapsible-tr[data-server-id="${serviceId}-${rowId}"]`);
     const elementId = $this.attr("data-element");
-    logDebug && console.log(`${elementId} changed ... `);
-    
-    dataRow.find(`[id^='${serviceId}-${rowId}-']`).trigger(`trigger_${elementId}`);
+
+
+    logDebug && console.time(`Trigger trigger_${elementId}`);
+    logDebug && console.log(`Trigger trigger_${elementId}`);
+    const toTrigger = dataRow.find(`[data-trigger-${elementId}]`)
+    toTrigger.trigger(`triggerNo_${elementId}`);
+    logDebug && console.timeEnd(`Trigger trigger_${elementId}`);
+
+
+    logDebug && console.log(`${rowId} - ${elementId} changed ( ${$this.val()} )`);
+    $this.trigger("change_select");
+    dataRow.find(`[data-trigger-${elementId}][id^='${serviceId}-${rowId}-']`).trigger(`trigger_${elementId}`);
 
     const isDisabled = $this.prop("disabled");
     let newValues = $this.val();
+    logDebug && console.time(`${elementId} logic block`)
     if (!isDisabled && !(!newValues || (Array.isArray(newValues) && newValues.length === 0))) {
       if (!Array.isArray(newValues)) {
         newValues = [newValues];
@@ -979,6 +994,8 @@ require(["jquery", "utils"], function (
       dataRow.find(`div[id^='${serviceId}-${rowId}-'][id$='input-div'][data-dependency-${elementId}]`).hide();
       dataRow.find(`[id^='${serviceId}-${rowId}-'][id$='input'][data-dependency-${elementId}]`).attr("data-collect", false);
     }
+    logDebug && console.timeEnd(`${elementId} logic block`)
+
   });
   // Show / Hide elements -- End
 
@@ -986,7 +1003,7 @@ require(["jquery", "utils"], function (
 
   // Buttons
 
-  $(`button[id$='-navbar-button']`).on("show", function (event) {
+  $(document).on("show", `button[id$='-navbar-button']`, function (event) {
     const $this = $(this);
     if (!$this.hasClass("show")) {
       $this.addClass("show");
@@ -996,7 +1013,7 @@ require(["jquery", "utils"], function (
     }
   });
 
-  $(`button[id$='-navbar-button']`).on("hide", function (event) {
+  $(document).on("hide", `button[id$='-navbar-button']`, function (event) {
     const $this = $(this);
     $this.removeClass("show");
     $this.attr("style", "height: 0 !important; overflow: hidden !important; padding-top: 0 !important; padding-bottom: 0 !important; border: none !important; margin: 0 !important;");
@@ -1004,7 +1021,7 @@ require(["jquery", "utils"], function (
     $this.hide();
   });
 
-  $(`button[id$='-navbar-button']`).on("activate", function (event) {
+  $(document).on("activate", `button[id$='-navbar-button']`, function (event) {
     const $this = $(this);
     const tabId = $this.attr("data-tab");
     const contentTab = $this.parent().parent().find(`div[id$='-${tabId}-contenttab-div']`)
@@ -1013,7 +1030,7 @@ require(["jquery", "utils"], function (
     $this.find(`[id$='-tab-input-warning']`).addClass("invisible");
   });
 
-  $(`button[id$='-navbar-button']`).on("deactivate", function (event) {
+  $(document).on("deactivate", `button[id$='-navbar-button']`, function (event) {
     const $this = $(this);
     const tabId = $this.attr("data-tab");
     const contentTab = $this.parent().parent().find(`div[id$='-${tabId}-contenttab-div']`)
@@ -1021,7 +1038,7 @@ require(["jquery", "utils"], function (
     contentTab.hide();
   });
 
-  $(`button[id$='-navbar-button']`).on("click", function (event) {
+  $(document).on("click", `button[id$='-navbar-button']`, function (event) {
     $this = $(this);
     const tabId = $this.attr("data-tab");
     $this.parent().parent().find(`[id$='-navbar-button']:not([data-tab='${tabId}'])`).trigger("deactivate");
@@ -1031,7 +1048,7 @@ require(["jquery", "utils"], function (
 
 
 
-  $(`[id$='-text-copybutton']`).on("click", function () {
+  $(document).on("click", `[id$='-text-copybutton']`, function () {
     const $this = $(this);
     const serviceId = $this.attr("data-service");
     const rowId = $this.attr("data-row");
@@ -1053,10 +1070,9 @@ require(["jquery", "utils"], function (
       }, 3000);
       return;
     }
-
     const value = $(`[id^='${serviceId}-${rowId}-'][data-copy-key='${copyKey}']`).val();
     navigator.clipboard.writeText(value).then(() => {
-      $this.html(getSvg("copy"));
+      $this.html(getSvg("check"));
       setTimeout(function () {
         if (tooltipInstance) {
           tooltipInstance.hide();
@@ -1068,7 +1084,7 @@ require(["jquery", "utils"], function (
     });
   });
 
-  $(`[id$='-modal-copy-btn']`).on("click", function () {
+  $(document).on("click", `[id$='-modal-copy-btn']`, function () {
     const $this = $(this);
     const serviceId = $this.attr("data-service");
     const rowId = $this.attr("data-row");
@@ -1089,7 +1105,7 @@ require(["jquery", "utils"], function (
     $(`#${serviceId}-${rowId}-modal`).modal('show');
   }
 
-  $(`button[id$='-view-password']`).on("click", function (event) {
+  $(document).on("click", `button[id$='-view-password']`, function (event) {
     const $this = $(this);
     const passInput = $this.parent().parent().find(`input`);
     const eye = $this.find(`i[id$='-password-eye']`);
@@ -1789,7 +1805,8 @@ require(["jquery", "utils"], function (
 
   // Buttons End
 
-  $(`[data-sse-flavors]`).on("sse", function (event, data) { 
+
+  $(document).on("sse", "[data-sse-flavors]", function (event, data) {
     const $this = $(this);
     const serviceId = $this.attr("data-service");
     const rowId = $this.attr("data-row");
@@ -1805,7 +1822,7 @@ require(["jquery", "utils"], function (
   });
 
 
-  $(`input[id$='-select-all-input']`).on("click", function () {
+  $(document).on("click", "input[id$='-select-all-input']", function () {
     const $this = $(this);
     const parentDiv = $this.parent().parent().parent();
     if ( $this.prop("checked") ) {
@@ -1814,7 +1831,7 @@ require(["jquery", "utils"], function (
     }
   })
 
-  $(`input[id$='-select-none-input']`).on("click", function () {
+  $(document).on("click", "input[id$='-select-none-input']", function () {
     const $this = $(this);
     const parentDiv = $this.parent().parent().parent();
     if ( $this.prop("checked") ) {
@@ -1822,7 +1839,7 @@ require(["jquery", "utils"], function (
     }
   })
 
-  $(".summary-tr").on("click", function (event) {
+  $(document).on("click", ".summary-tr", function (event) {
     if (![event.target, event.target.parentElement, event.target.parentElement?.parentElement]
       .some(el => el?.tagName === "BUTTON")) {
       const $this = $(this);
@@ -1977,7 +1994,7 @@ require(["jquery", "utils"], function (
         if (values.length > 0){
           select.val(values[0][0]);
         } else if ( !defaultValue ) {
-          console.error(`Could not fill object. Check configuration.`);
+          console.error(`Could not fill object ${elementId}. Check configuration.`);
           if (isWorkshop) {
             workshopNotUsable(select);
           }
@@ -2256,12 +2273,79 @@ require(["jquery", "utils"], function (
 
 
 
+$(document).on("sse", `[data-sse-progress][id$='-summary-tr']`, function (event, data) {
+  if (event.target !== this) {
+    return; // Ignore events bubbling up from child elements
+  }
+  const $this = $(this);
+  const serviceId = $this.attr("data-service");
+  const rowId = $this.attr("data-row");
+  if ( Object.keys(data).includes(rowId) ){
+    const ready = data[rowId]?.ready ?? false;
+    const failed = data[rowId]?.failed ?? false;
+    const progress = data[rowId]?.progress ?? 10;
+
+    let status = "starting";
+    if ( ready ) status = "connecting";
+    else if ( failed ) status = "stopped";
+    else if ( progress == 99 ) status = "cancelling";
+    else if ( progress == 0 ) status = "";
+    progressBarUpdate(serviceId, rowId, status, progress);
+
+    if ( ready ) {
+      if ( pageType(null) == pageType("start") || pageType(null) == pageType("spawn") ) {
+          updateHeaderButtons(serviceId, rowId, "waiting");
+          const url = data[rowId]?.url ?? "{{ url }}";
+          checkAndOpenUrl(serviceId, rowId, url);
+      } else {
+          updateHeaderButtons(serviceId, rowId, "running");
+          progressBarUpdate(serviceId, rowId, "running", 100);
+          $(`button[id^='${serviceId}-${rowId}-'][id$='-btn']`).prop("disabled", false);
+      }
+    } else if ( failed ) {
+      updateHeaderButtons(serviceId, rowId, "stopped");
+      $(`button[id^='${serviceId}-${rowId}-'][id$='-btn']`).prop("disabled", false);
+    } else if ( progress == 99 ) {
+      updateHeaderButtons(serviceId, rowId, "cancelling");
+      $(`button[id^='${serviceId}-${rowId}-'][id$='-btn']`).prop("disabled", true);
+    } else {
+      updateHeaderButtons(serviceId, rowId, "starting");
+      $(`button[id^='${serviceId}-${rowId}-'][id$='-btn']`).prop("disabled", true);
+    }
+    appendToLog(serviceId, rowId, data[rowId]);
+    
+  }
+});
+
+$(document).on("sse", `[data-sse-reservations]`, function (event, data) {
+  if (event.target !== this) {
+    return; // Ignore events bubbling up from child elements
+  }
+  setReservations(data);
+  $(`[id$='-reservation-input']`).trigger("change");
+});
+
+
+$(document).on("sse", `[data-sse-servers][id$='-summary-tr']`, function (event, data) {
+  if (event.target !== this) {
+    return; // Ignore events bubbling up from child elements
+  }
+  const $this = $(this);
+  const serviceId = $this.attr("data-service");
+  const rowId = $this.attr("data-row");
+  const stopped = data?.stopped ?? [];
+  if ( stopped.includes(rowId) ){
+    progressBarUpdate(serviceId, rowId, "", 0);
+    updateHeaderButtons(serviceId, rowId, "stopped");
+  }
+});
 
   function homeFillElement(serviceId, rowId, user_options, inputElement) {
     const key = inputElement.attr("data-element");
     const dataGroup = inputElement.attr("data-group");
     const dataType = inputElement.attr("data-type");
     const dataRow = $(`tr[data-server-id="${serviceId}-${rowId}"]`);
+    const prevValue = inputElement.val();
     let availableDescription = false;
 
     let newValue = "";
@@ -2279,7 +2363,6 @@ require(["jquery", "utils"], function (
     } else {
       newValue = user_options?.[dataGroup]?.[key] ?? "";
     }
-
     if ( newValue ) {
       isInUserOptions = true;
       if ( dataType == "select" ) {
@@ -2333,6 +2416,34 @@ require(["jquery", "utils"], function (
     return availableDescription;
   }
 
+  function startFillExistingRow(serviceId, rowId, user_options, fillingOrder) {
+    homeFillExistingRow(serviceId, rowId, user_options, fillingOrder);
+    $(`[id^='${serviceId}-${rowId}-'][id$='-input']`).prop("disabled", true);
+    const spawner = getSpawner(rowId);
+    for ( const event of spawner.events ) {
+      appendToLog(serviceId, rowId, event);
+    }
+    let option = $(`#${serviceId}-${rowId}-summary-tr`).attr('data-option');
+    $(`div[id$='-collapse']:not([id^='${serviceId}-${rowId}-collapse'])`).removeClass("show");
+    $(`div[id^='${serviceId}-${rowId}-collapse']`).addClass("show");
+    let x = document.getElementById(`${serviceId}-${rowId}-summary-tr`);
+    if ( x ) x.scrollIntoView();
+    if ( spawner.ready ) {
+      window.location.href = `/user/${window.jhdata.user}/${rowId}`;
+    } else if ( !spawner.active ) {
+      $(`[id^='${serviceId}-${rowId}-'][id$='-start-btn-header']`).trigger("click");
+    } else {
+      homeHeaderUpdate(serviceId, rowId);
+      if ( serviceId === "jupyterlab" && option === "repo2docker" ) {
+        updateHeaderButtons(serviceId, rowId, "building");
+        progressBarUpdate(serviceId, rowId, "building", 2);
+      } else {
+        updateHeaderButtons(serviceId, rowId, "starting");
+        progressBarUpdate(serviceId, rowId, "starting", 10);
+      }
+    }
+    $(`[id^='${serviceId}-${rowId}-'][id$='-logs-navbar-button']`).trigger("click");
+  }
 
   function homeFillExistingRow(serviceId, rowId, user_options, fillingOrder) {
     let availableDescription = false;
@@ -2421,8 +2532,9 @@ require(["jquery", "utils"], function (
       $(`[id^='${serviceId}-${rowId}-'][id$='-input']`).prop("disabled", true);
       $(`[id^='${serviceId}-${rowId}-'][id$='-input-cb']`).prop("disabled", true);
       $(`button[id^='${serviceId}-${rowId}-'][id$='-view-password']`).prop("disabled", true);
-      $(`[id^='${serviceId}-${rowId}-'][id$='-btn']:not([id$='-delete-btn'])`).remove();
+      $(`[id^='${serviceId}-${rowId}-'][id$='-btn']:not([id$='-delete-btn']):not([id$='-rtc-btn'])`).remove();
     }
+
   }
 
 
@@ -2442,6 +2554,9 @@ require(["jquery", "utils"], function (
       }
     } else if ( ["none", "default"].includes(dataGroup) ) {
       newValue = user_options?.[key] ?? "";
+    } else if ( dataGroup == "defaultvalues" ) {
+      const dataParent = inputElement.attr("data-parent");
+      newValue = user_options?.[dataGroup]?.[dataParent] ?? "";
     } else {
       newValue = user_options?.[dataGroup]?.[key] ?? "";
     }
@@ -2470,8 +2585,7 @@ require(["jquery", "utils"], function (
     }
   }
 
-  function workshopManagerFillExistingRow(serviceId, rowId, workshopDict, fillingOrder) {
-    const user_options = workshopDict.user_options;
+  function workshopManagerFillExistingRow(serviceId, rowId, user_options, fillingOrder) {
     fillingOrder.forEach(key => {  
       const inputElement = $(`[id^='${serviceId}-${rowId}-'][id$='-${key}-input']`);
       workshopManagerFillElement(serviceId, rowId, user_options, inputElement);
@@ -2498,7 +2612,6 @@ require(["jquery", "utils"], function (
     const key = inputElement.attr("data-element");
     const dataGroup = inputElement.attr("data-group");
     const dataType = inputElement.attr("data-type");
-
     let newValue = "";
     let isInUserOptions = false;
     let availableDescription = "";
@@ -2535,10 +2648,13 @@ require(["jquery", "utils"], function (
           console.log(`${key} ${newValue} currently not available`);
         }
       } else if ( dataType == "number" ) {
-        const min = inputElement.attr("min");
-        const max = inputElement.attr("max");
+        const minAttr = inputElement.attr("min");
+        const maxAttr = inputElement.attr("max");
+        const min = minAttr !== undefined ? Number(minAttr) : undefined;
+        const max = maxAttr !== undefined ? Number(maxAttr) : undefined;
+        const numericValue = Number(newValue);
         if (
-            newValue &&
+            !isNaN(numericValue) &&
             (min === undefined || newValue >= min) &&
             (max === undefined || newValue <= max)
         ) {
@@ -2593,7 +2709,7 @@ require(["jquery", "utils"], function (
     fillingOrder.forEach(key => {
       if ( !availableDescription ) {
         const inputElement = $(`[id^='${serviceId}-${rowId}-'][id$='-${key}-input']`);
-        availableDescription = workshopFillElement(serviceId, rowId, user_options, inputElement);
+        availableDescription = workshopFillElement(serviceId, rowId, workshopOptions, inputElement);
         const elementName = inputElement.attr("data-element");
         const dataType = inputElement.attr("data-type");
         if ( Object.keys(defaultValues).includes(elementName) ) {
@@ -2615,7 +2731,7 @@ require(["jquery", "utils"], function (
     unorderedElements.each(function () {
       if ( !availableDescription ) {
         const inputElement = $(this);
-        availableDescription = workshopFillElement(serviceId, rowId, user_options, inputElement);
+        availableDescription = workshopFillElement(serviceId, rowId, workshopOptions, inputElement);
         const elementName = inputElement.attr("data-element");
         const dataType = inputElement.attr("data-type");
         if ( Object.keys(defaultValues).includes(elementName) ) {
@@ -3562,7 +3678,7 @@ require(["jquery", "utils"], function (
         rtcBtn.addClass('d-none');
       }
     }
-    if ( share_system_list.includes(system) && rowId != "__new__" ) {
+    if ( share_system_list.includes(system) ) {
       shareBtn.removeClass('d-none');
     } else {
       shareBtn.addClass('d-none');
@@ -3628,7 +3744,8 @@ require(["jquery", "utils"], function (
             console.error("API Request failed:", textStatus, errorThrown);
             return;
           }
-          if (jqXHR.status == 403) {                
+          if (jqXHR.status == 403) {
+            showToast("Request to Server failed. Try refreshing website");
             return;
           }
           showToast("Request to Server failed. Try refreshing website");
@@ -3797,7 +3914,7 @@ require(["jquery", "utils"], function (
     options["type"] = "GET";
     const fillingOrder = button_options?.options?.fillingOrder || [];
     options["success"] = function (resp) {
-      workshopManagerFillExistingRow(serviceId, rowId, resp, fillingOrder);
+      workshopManagerFillExistingRow(serviceId, rowId, resp.user_options, fillingOrder);
     }
     api.api_request(
       getWorkshopManagerAPIUrl(serviceId, rowId, utils, base_url),
@@ -4051,7 +4168,6 @@ require(["jquery", "utils"], function (
 
   function homeSummaryButtonOpen(serviceId, rowId, buttonId, button_options, user, api, base_url, utils) {
     let url = new URL(utils.url_path_join(window.origin, "user", user, rowId).replace("//", "/") + '/');
-    console.log(`Open ${url}`);
     window.open(url, "_blank");
   }
 
@@ -4190,7 +4306,7 @@ require(["jquery", "utils"], function (
         // Append the new div to the container
         containerDiv.append(newDiv);
         // Add toggle function to each checkbox
-        $(`#${idPrefix}-${item[0]}-input`).on("click", function (event) {
+        $(document).on("click", `#${idPrefix}-${item[0]}-input`, function (event) {
           $(`input[id^='${serviceId}-${rowId}-'][id$='-select-all-input']`).prop("checked", false);
           $(`input[id^='${serviceId}-${rowId}-'][id$='-select-none-input']`).prop("checked", false);
         });
@@ -4385,7 +4501,7 @@ require(["jquery", "utils"], function (
       const url = new URL(window.location.href);
       localStorage.setItem("service", serviceId);
       localStorage.setItem("row", newId);
-      localStorage.setItem("showlogs", "true"); 
+      localStorage.setItem("clicklogs", "true"); 
       window.location.href = url.toString();
     }
     options["error"] = function (jqXHR, textStatus, errorThrown) {
@@ -4413,8 +4529,21 @@ require(["jquery", "utils"], function (
     api.update_named_server(user, newId, options);
   }
 
+
+  function urlPathJoin(...parts) {
+    return parts
+      .map((part, index) => {
+        // Remove leading slash unless it's the first part (protocol/host)
+        if (index > 0) part = part.replace(/^\/+/, "");
+        // Remove trailing slash
+        part = part.replace(/\/+$/, "");
+        return part;
+      })
+      .join("/");
+  }
+
       // Build repo2docker image and send start request afterwards
-  function startRepo2Docker(serviceId, rowId, userOptions, user, api, base_url, utils, callStart=true) {
+  function startRepo2Docker(serviceId, rowId, userOptions, user, api, callStart=true) {
     $(`button[id^='${serviceId}-${rowId}-'][id$='-btn']`).prop("disabled", true);
     homeHeaderUpdate(serviceId, rowId);
     updateHeaderButtons(serviceId, rowId, "building");
@@ -4464,14 +4593,13 @@ require(["jquery", "utils"], function (
     if ( Object.keys(userOptions.repo2docker).includes("reporef") ) {
       const reporef = userOptions.repo2docker?.reporef || "HEAD";        
       // url = new URL(utils.url_path_join("https://mybinder.org", "build", type, repourl, reporef).replace("//", "/"));
-      url = new URL(utils.url_path_join(window.origin, "services", "binder", "build", type, repourl, reporef).replace("//", "/"));
+      url = new URL(urlPathJoin(window.origin, "services", "binder", "build", type, repourl, reporef).replace("//", "/"));
       url.searchParams.append("build_only", "true");
     } else {
       // url = new URL(utils.url_path_join("https://mybinder.org", "build", type, repourl, "/").replace("//", "/"));
-      url = new URL(utils.url_path_join(window.origin, "services", "binder", "build", type, repourl, "/").replace("//", "/"));
+      url = new URL(urlPathJoin(window.origin, "services", "binder", "build", type, repourl, "/").replace("//", "/"));
       url.searchParams.append("build_only", "true");
     }
-    console.log(url);
     r2dEvtSource = new EventSource(url);
     let r2dStatus = 0;
     
@@ -4534,7 +4662,7 @@ require(["jquery", "utils"], function (
                     const url = new URL(window.location.href);
                     localStorage.setItem("service", serviceId);
                     localStorage.setItem("row", rowId);
-                    localStorage.setItem("showlogs", "true");
+                    localStorage.setItem("clicklogs", "true");
                     window.location.href = url.toString();
                   }
                 }, 1000);
@@ -4582,13 +4710,14 @@ require(["jquery", "utils"], function (
           updateHeaderButtons(serviceId, rowId, "stopped");
           progressBarUpdate(serviceId, rowId, "stopped", 100);
           r2dEvtSource.close();
+          r2dEvtSource = null;
       }
     }
 
     r2dEvtSource.onerror = (e) => {
-      console.log("Reconnect");
       console.log(e);
       r2dEvtSource.close();
+      r2dEvtSource = null;
     }
 
   }
@@ -4624,7 +4753,7 @@ require(["jquery", "utils"], function (
   }
 
       function homeSummaryButtonStart_start(serviceId, rowId, buttonId, button_options, user, api, base_url, utils) {
-        const form = $(`form[id^='${serviceId}-${rowId}-form']`);
+        // const form = $(`form[id^='${serviceId}-${rowId}-form']`);
         const valid = validateForm(serviceId, rowId);
         if ( !valid ) {
           console.log(`Invalid Form for ${serviceId}-${rowId}`);
@@ -4661,7 +4790,7 @@ require(["jquery", "utils"], function (
                 const url = new URL(window.location.href);
                 localStorage.setItem("service", serviceId);
                 localStorage.setItem("row", rowId);
-                localStorage.setItem("showlogs", "true");
+                localStorage.setItem("clicklogs", "true");
                 window.location.href = url.toString();
               }
             }, 10000);
@@ -4685,7 +4814,7 @@ require(["jquery", "utils"], function (
             navbarLogsButton.trigger("click");
           }
         } else {
-          startRepo2Docker(serviceId, rowId, userOptions, user, api, base_url, utils);
+          startRepo2Docker(serviceId, rowId, userOptions, user, api);
         }
       }
 
@@ -4762,7 +4891,7 @@ require(["jquery", "utils"], function (
         navbarLogsButton.trigger("click");
       }
       if ( userOptions.service == "jupyterlab" && userOptions.option == "repo2docker") {
-        startRepo2Docker(serviceId, rowId, userOptions, user, api, base_url, utils, callStart=false);
+        startRepo2Docker(serviceId, rowId, userOptions, user, api, callStart=false);
       }
     }
 
@@ -4793,3 +4922,223 @@ require(["jquery", "utils"], function (
     homeTriggerButtonDelete(serviceId, rowId, buttonId, button_options, user, api, base_url, utils);
   }
 
+function triggerInitUntilValuesSet(serviceId, rowId, firstRow = false, maxTries = 1000, delayMs = 10) {
+  return new Promise((resolve) => {
+    let tries = 0;
+    let modalWasVisible = false;
+
+    function tryTrigger() {
+      const $inputs = $(`[data-trigger-init][id^='${serviceId}-${rowId}-'][id$='-input']`);
+      const $inputsCheck = $(`[data-trigger-init][id^='${serviceId}-${rowId}-'][id$='-option-input']`);
+
+      console.time(`Init Row ${serviceId}-${rowId} (${tries + 1})`);
+
+      $inputs.trigger("trigger_init");
+
+      const allSet = !$inputsCheck.toArray().some(el => {
+        const val = $(el).val();
+        return val === undefined || val === "" || val === null;
+      });
+
+      tries++;
+
+      if (allSet) {
+        console.timeEnd(`Init Row ${serviceId}-${rowId} (${tries})`);
+
+        if (pageType(null) === pageType("workshopmanager") && firstRow) {
+          new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+              if (entry.isIntersecting) {
+                modalWasVisible = true;
+              } else if (modalWasVisible) {
+                const serviceId = $('#service-input').val();
+                const newId = $('#rowid-reload').val();
+                window.location.href = `${window.location.origin}${window.location.pathname}?service=${serviceId}&row=${newId}`;
+              }
+            });
+          }).observe(document.getElementById(`${serviceId}-${rowId}-modal`));
+        }
+
+        return resolve();
+      }
+
+      if (tries >= maxTries) {
+        console.log(`Max tries reached (${maxTries}). Stopping.`);
+        return resolve();
+      }
+
+      setTimeout(tryTrigger, delayMs);
+    }
+
+    tryTrigger();
+  });
+}
+
+
+function fillingRowsRetry(serviceId, rowId, user_options, fillingOrder, maxTries = 1000, delayMs = 10) {
+  return new Promise((resolve, reject) => {
+    let tries = 0;
+    let f = rowFills[pageType(null)];
+
+    function tryTrigger() {
+      const $inputs = $(`[id^='${serviceId}-${rowId}-'][id$='-option-input']`);
+      if ($inputs.length === 0) return resolve();
+
+      const allSet = $inputs.find(`option`).length > 0;
+      tries++;
+
+      if (allSet) {
+        console.time(`Fill Row ${serviceId}-${rowId} (${tries})`);
+        f(serviceId, rowId, user_options, fillingOrder);
+        console.timeEnd(`Fill Row ${serviceId}-${rowId} (${tries})`);
+        return resolve();
+      }
+
+      if (tries >= maxTries) {
+        console.log(`Max tries reached (${maxTries}). Stopping.`);
+        return resolve(); // still resolve to continue the chain
+      }
+
+      setTimeout(tryTrigger, delayMs);
+    }
+
+    tryTrigger();
+  });
+}
+
+const queryString = window.location.search;
+const urlParams = new URLSearchParams(queryString);
+let storageRowValue;
+let storageServiceValue;
+let storageShowlogs;
+let storageStart;
+
+
+
+const rowFills = {
+  "home": homeFillExistingRow,
+  "start": startFillExistingRow,
+  "spawn": startFillExistingRow,
+  "workshop": workshopFillExistingRow,
+  "workshopmanager": workshopManagerFillExistingRow,
+}
+
+const rowTypes = {
+  "home": appendRowToServiceTableHome,
+  "start": appendRowToServiceTableStart,
+  "spawn": appendRowToServiceTableStart,
+  "workshop": appendRowToServiceTableWorkshop,
+  "workshopmanager": appendRowToServiceTableWorkshopManager,
+}
+
+const rowHeaderDefault = {
+  "home": getHomeDefaultHeader,
+  "start": getHomeDefaultHeader,
+  "spawn": getHomeDefaultHeader,
+  "workshop": tcWorkshopDefaultHeader,
+  "workshopmanager": tcWorkshopManagerDefaultHeader
+}
+const rowHeaderFirst = {
+  "home": tcHomeFirstHeader,
+  "workshopmanager": tcWorkshopManagerFirstHeader
+}
+
+let modalWasVisible = false;
+
+
+document.addEventListener('DOMContentLoaded', async function () {
+    const page = pageType(null);
+    if ( urlParams.has('row') && urlParams.has('service') ) {
+      storageServiceValue = urlParams.get('service');
+      storageRowValue = urlParams.get('row');
+      storageShowlogs = urlParams.has('clicklogs');
+      storageStart = urlParams.has('start');
+    } else if (localStorage.getItem('row') && localStorage.getItem('service')) {
+      storageServiceValue = localStorage.getItem('service');
+      storageRowValue = localStorage.getItem('row');
+      storageStart = localStorage.getItem("start") === "true";
+      storageShowlogs = localStorage.getItem("clicklogs") === "true";
+    }
+
+    async function f(serviceId, serviceOptions, rowId, rowOptions, index) {
+      console.time(`Create Row ${serviceId}-${rowId}`);
+      const header = index === 0 ? rowHeaderFirst[page] : rowHeaderDefault[page];
+
+      rowTypes[page](serviceId, rowId, rowOptions, serviceOptions, header, index === 0);
+      $(`#${serviceId}-loading-tr`).hide();
+      await new Promise(r => setTimeout(r, 0));
+      await triggerInitUntilValuesSet(serviceId, rowId, index===0);
+      
+      await new Promise(r => setTimeout(r, 0));
+      
+
+      if (index > 0 || ["spawn", "start", "workshop"].includes(page)) {
+        await fillingRowsRetry(serviceId, rowId, getSpawner(rowId).decrypted_user_options, serviceOptions?.fillingOrder || []);
+        $(`#${serviceId}-${rowId}-summary-tr`).show();
+        $(`#${serviceId}-${rowId}-loading-tr`).hide();
+        if ( page === "home" ) {
+          if ( storageRowValue && storageRowValue === rowId && storageServiceValue && storageServiceValue === serviceId ) {
+            $(`div[id$='-table-div']:not([id^='${serviceId}-'])`).hide();
+            $(`div[id$='-table-div'][id^='${serviceId}-']`).show();
+            let option = $(`[id^='${serviceId}-${rowId}-'][id$='-option-input']`).val();
+          
+            $(`div[id$='-collapse']:not([id^='${serviceId}-${rowId}-collapse'])`).removeClass("show");
+            $(`div[id^='${serviceId}-${rowId}-collapse']`).addClass("show");
+
+            let x = document.getElementById(`${serviceId}-${rowId}-summary-tr`)
+            if ( x ) x.scrollIntoView();
+
+            if ( storageStart ) {
+              const spawner = getSpawner(rowId);
+              const ready = spawner.ready;
+              const active = spawner.active;
+              if ( ready ) {
+                window.open(`/user/${window.jhdata.user}/${rowId}`, "_blank");
+              } else if ( !active ) {
+                $(`[id^='${serviceId}-${rowId}-'][id$='-start-btn-header']`).trigger("click");
+              } else {
+                $(`[id^='${serviceId}-${rowId}-'][id$='-logs-navbar-button']`).trigger("click");
+                homeHeaderUpdate(serviceId, rowId);
+                if ( serviceId === "jupyterlab" && option === "repo2docker" ) {
+                  updateHeaderButtons(serviceId, rowId, "building");
+                  progressBarUpdate(serviceId, rowId, "building", 2);
+                } else {
+                  updateHeaderButtons(serviceId, rowId, "starting");
+                  progressBarUpdate(serviceId, rowId, "starting", 10);
+                }
+              }
+            }
+            if ( storageShowlogs ) {
+              $(`[id^='${serviceId}-${rowId}-'][id$='-logs-navbar-button']`).trigger("click");
+              if ( serviceId == "jupyterlab" && option == "repo2docker") {
+                startRepo2Docker(serviceId, rowId, ( getFrontendCollection()?.decrypted_user_options[rowId] || {}), window.jhdata.user, null, callStart=false);
+              }
+            }
+            localStorage.removeItem('service');
+            localStorage.removeItem('row');
+            localStorage.removeItem('start');
+            localStorage.removeItem('clicklogs');
+          }
+        }
+      } else {
+        $(`#${serviceId}-${rowId}-loading-tr`).hide();
+      }
+
+      console.timeEnd(`Create Row ${serviceId}-${rowId}`);
+    }
+
+    for (const [serviceId, serviceOptions] of Object.entries(getFrontendConfig().services.options)) {
+      if (["home", "workshopmanager"].includes(page)) {
+        await f(serviceId, serviceOptions, getFirstRowId(), {}, 0);
+        await new Promise(r => setTimeout(r, 0));
+      }
+
+      const rows = Object.entries(getTableRows());
+      for (let index = 0; index < rows.length; index++) {
+        const [rowId, rowOptions] = rows[index];
+        await f(serviceId, serviceOptions, rowId, rowOptions, index + 1);
+        await new Promise(r => setTimeout(r, 0)); 
+      }
+    }
+  });
+// });

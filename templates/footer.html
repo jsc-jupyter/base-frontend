@@ -186,6 +186,24 @@ require(["jquery"], function (
             </a>
             ${numberOfUsers(systemLower)}
         </div>`;
+    } else if ( ["JSCCLOUD"].includes(system) ) {
+      let imgSrc = `${staticUrl}/images/footer/templates/0.svg?v=${imgVersion}`;
+      ampelHtml = `
+        <div id="ampel-${systemLower}" class="text-center"
+            data-system=${system}
+            data-systemlower=${systemLower}
+            >
+            <img class="ampel-img" src="${imgSrc}" />
+            <a id="ampel-${systemLower}-tooltip"
+                href="https://status.jsc.fz-juelich.de/services/${systemId}"
+                target="_blank"
+                class="align-middle"
+                data-bs-toggle="tooltip"
+                data-bs-placement="top">
+                ${displayName}
+            </a>
+            ${numberOfUsers(systemLower)}
+        </div>`;
     } else {
       ampelHtml = `
         <div id="ampel-${systemLower}" class="text-center"

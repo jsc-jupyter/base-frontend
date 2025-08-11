@@ -1,13 +1,10 @@
 {%- import "macros/table/config/announcement_all.jinja" as announcement_all %}
 {%- import "macros/table/config/announcement.jinja" as announcement %}
+{%- import "macros/svgs.jinja" as svg -%}
 
 {%- macro tables(
   frontend_config,
-  macro_description,
-  macro_headerlayout,
-  macro_defaultheader,
-  macro_firstheader,
-  macro_row_content
+  description
 )%}
   <div id="toastContainer" class="position-fixed top-0 end-0 p-3"></div>
   <div id="global-content-div" class="container-fluid p-4" data-sse-reservations>
@@ -18,210 +15,69 @@
       {{ announcement.announcement() }}
     {%- endif %}
     <input id="service-input" class="form-control" data-collect="true" data-group="default" data-type="input" name="service" data-element="service" value="{{ frontend_config.get("services", {}).get("default", "jupyterlab") }}" style="display: none"/>
-    {#- TABLE #}
-    {%- for service_id, service_options in frontend_config.get("services", {}).get("options", {}).items() %}
-      {%- set is_first_service = loop.first %}
+
+    {%- for service_id in frontend_config.get("services", {}).get("options", {}).keys() %}
       <div id="{{ service_id }}-table-div" class="table-responsive-md">
-        {%- if macro_description %}
-          {{ macro_description() }}
+        {%- if description %}
+          {{ description() }}
         {%- endif %}
         <table id="{{ service_id }}-table" class="table table-bordered table-striped table-hover table-light align-middle">
-        {#- TABLE HEAD #}
           <thead class="table-secondary">
+            {%- if pagetype == vars.pagetype_workshop %}
+              <th scope="col" width="1%"></th>
+              <th scope="col" width="20%">Name</th>
+              <th scope="col">Description</th>
+              <th scope="col" class="text-center" width="10%">Status</th>
+              <th scope="col" class="text-center" width="10%">Action</th>
+            {%- elif pagetype == vars.pagetype_workshopmanager %}
+              <th scope="col" width="1%"></th>
+              <th scope="col" width="20%">Name</th>
+              <th scope="col">Description</th>
+              <th scope="col" class="text-center" width="10%">Action</th>
+            {%- else %}
             <tr>
-              {%- if macro_headerlayout %}
-                {{ macro_headerlayout() }}
-              {%- endif %}
+              <th scope="col" style="width: 1%;"></th>
+              <th scope="col" style="width: 20%;">Name</th>
+              <th scope="col">Configuration</th>
+              <th scope="col" class="text-center" style="width: 10%;">Status</th>
+              <th scope="col" class="text-center" style="width: 10%;">Action</th>
             </tr>
+            {%- endif %}
           </thead>
-          {#- TABLE BODY #}
-          <tbody>
-            {# - List existing workshops #}
-            {%- for type in ["workshop", "default", "r2d", "share"] %}
-            {%- set is_first_type = loop.first %}
-            {%- for row_id, row_options in table_rows.items() %}
-              {%- set is_first_row = loop.first %}
-              {%- if "r2d_id" in row_options.keys() %}
-                {%- set spawnertype = "r2d" %}
-              {%- elif "workshop_id" in row_options.keys() %}
-                {%- set spawnertype = "workshop" %}
-              {%- elif "share_id" in row_options.keys() %}
-                {%- set spawnertype = "share" %}
-              {%- else %}
-                {%- set spawnertype = "default" %}
-              {%- endif %}              
-              {%- if (is_first_type and row_id == vars.first_row_id) or (spawnertype == type and row_id != vars.first_row_id) %}
-                <!-- summary of row -->
-                
-                <tr id="{{ service_id }}-{{ row_id }}-summary-tr" data-server-id="{{ service_id }}-{{ row_id }}" 
-                {% if not (is_first_row and is_first_type) %}
-                  style="display: none"
-                {% endif %}
-                class="summary-tr
-                {%- if is_first_row and is_first_type %}
-                new-spawner-tr
-                {%- else %}
-                existing-spawner-tr
-                {%- endif %}                
-                "
-                  data-sse-servers
-                  data-sse-progress
-                  data-service="{{ service_id }}"
-                  data-row="{{ row_id }}"
-                {%- if pagetype == vars.pagetype_home %}
-                  {%- if "r2d_id" in row_options.keys() %}
-                    data-spawner-type="r2d"
-                  {%- elif row_options.get("workshop_id", false) %}
-                    data-spawner-type="workshop"
-                  {%- elif "share_id" in row_options.keys() %}
-                    data-spawner-type="share"
-                  {%- else %}
-                    data-spawner-type="default"
-                  {%- endif %}
-                  {%- if row_id in user.spawners.keys() %}
-                    data-spawner-active="{{ user.spawners.get(row_id).active | lower }}"
-                    data-spawner-ready="{{ user.spawners.get(row_id).ready | lower }}"
-                  {%- else %}
-                    data-spawner-active="false"
-                    data-spawner-ready="false"
-                  {%- endif %}
-                {%- elif pagetype == vars.pagetype_workshop %}
-                  data-spawner-active="{{ spawner.active | lower }}"
-                  data-spawner-ready="{{ spawner.ready | lower }}"
-                {%- endif %}
-                >
-                  <td class="details-td" data-bs-target="#{{ row_id }}-collapse">
-                    {%- if loop.first %}
-                      <div class="d-flex mx-4">
-                        {{ svg.plus_svg | safe }}
-                      </div>
-                    {%- else %}
-                      <div class="d-flex mx-auto accordion-icon collapsed mx-4"></div>
-                    {%- endif %}
-                  </td>
-                  {%- if loop.index0 and macro_defaultheader %}
-                    {{ macro_defaultheader(service_id, row_id, row_options, service_options) }}
-                  {%- else %}
-                    {%- if macro_firstheader %}
-
-                      {{ macro_firstheader(service_id, row_id, row_options, service_options) }}
-                    {%- endif %}
-                  {%- endif %}
-                </tr>
-                {%- if loop.index0 and macro_defaultheader and pagetype == vars.pagetype_home %}
-                <tr id="{{ service_id }}-{{ row_id }}-loading-tr"
-                class="summary-tr"
-                  data-service="{{ service_id }}"
-                  data-row="{{ row_id }}"
-                >
-                  <th></th>
-                  <th></th>
-                  <th>
-                    <div style="display: flex; align-items: center; justify-content: center; height: 100%;">
-                      <div class="spinner-border" role="status" style="margin-right: 10px;">
-                        <span class="sr-only">Loading...</span>
-                      </div>
-                      <p style="margin: 0;">Loading ...</p>
-                    </div>
-                  </th>
-                  <th></th>
-                  <th></th>
-                </tr>
-                {%- endif %}
-                {%- if loop.index0 and macro_defaultheader and pagetype == vars.pagetype_workshopmanager %}
-                <tr id="{{ service_id }}-{{ row_id }}-loading-tr"
-                class="summary-tr"
-                  data-service="{{ service_id }}"
-                  data-row="{{ row_id }}"
-                >
-                  <th></th>
-                  <th></th>
-                  <th>
-                    <div style="display: flex; align-items: center; justify-content: center; height: 100%;">
-                      <div class="spinner-border" role="status" style="margin-right: 10px;">
-                        <span class="sr-only">Loading...</span>
-                      </div>
-                      <p style="margin: 0;">Loading ...</p>
-                    </div>
-                  </th>
-                  <th></th>
-                </tr>
-                {%- endif %}
-
-                {%- if pagetype == vars.pagetype_home and row_options.get("workshop_id", false ) %}
-                {%- else %}
-                  <!-- collapsible row -->
-                  <tr data-server-id="{{ service_id }}-{{ row_id }}" class="collapsible-tr">
-                    <td colspan="100%" class="p-0">
-                      <div class="collapse {%- if loop.first and (table_rows | length == 1) %} show {%- endif -%}" id="{{ service_id }}-{{row_id}}-collapse" data-row="{{ row_id }}">
-                        <div class="d-flex align-items-start m-3">
-                          {%- if service_options.navbar | length > 0 %}
-                            <div class="nav flex-column nav-pills p-3 ps-0" style="min-width: 15% !important" id="{{ service_id }}-{{ row_id }}-tab-button-div" role="tablist">
-                              {%- for button_id, button_options in service_options.navbar.items() %}
-                                {%- if ( is_first_row and button_options.get("firstRow", true) ) or 
-                                      ( (not is_first_row) and button_options.get("defaultRow", true) ) or
-                                      ( pagetype == vars.pagetype_spawn or pagetype == vars.pagetype_start )
-                                %}
-                                  {%- set style_hide = 'height: 0 !important; overflow: hidden !important; padding-top: 0 !important; padding-bottom: 0 !important; border: none !important; margin: 0 !important;' %}
-                                  <button
-                                    class="nav-link {{ 'active' if show else '' }} {{ button_options.get("margins", "mb-3") }} {%- if loop.index0 == 0 %} active {%- endif -%}" 
-                                    id="{{ service_id }}-{{ row_id }}-{{ button_id }}-navbar-button"
-                                    {%- if not button_options.get("show", false) %}
-                                      {#
-                                        Instead of just .hide() it, we want to keep the width of the buttons, 
-                                        so the interface does not wabble around when showing / hiding buttons.
-                                      #}
-                                      style="{{ style_hide }}"
-                                    {%- endif %}
-                                    name="{{ button_id }}"
-                                    data-tab="{{ button_id }}"
-                                    data-service="{{ service_id }}"
-                                    data-row="{{ row_id }}"
-                                    data-bs-toggle="pill" 
-                                    data-bs-target="#{{ service_id }}-{{ row_id }}-{{ button_id }}"
-                                    {%- if button_options.get("show", true) %}
-                                      data-show="true"
-                                    {%- endif %}
-                                    type="button"
-                                    {%- for specific_key, specific_values in button_options.get("dependency", {}).items() %}
-                                      data-dependency-{{ specific_key }}="true"
-                                      {%- for specific_value in specific_values %}
-                                        data-dependency-{{ specific_key }}-{{ specific_value }}="true"
-                                      {%- endfor %}
-                                    {%- endfor %}
-                                    role="tab">
-                                    <span>{{ button_options.get("displayName", "Unknown Button") }}</span>
-                                    <span id="{{ service_id }}-{{ row_id }}-{{ button_id }}-tab-input-warning" data-type="span-warning" class="d-flex invisible">
-                                      {{ svg.warning_svg | safe }}
-                                      <span class="visually-hidden">settings changed</span>
-                                    </span>
-                                  </button>
-                                {%- endif %}
-                              {%- endfor %}
-                            </div>
-                          {%- endif %}
-                          <div class="tab-content w-100" data-row="{{ row_id }}" data-service="{{ service_id }}" id="{{ service_id }}-{{ row_id }}-tabContent-div">
-                            <form id="{{ service_id }}-{{ row_id }}-form">
-                              {%- for tab_id, tab_options in service_options.get("tabs", {}).items() %}
-                                <div class="tab-pane fade {%- if loop.first or tab_id == "buttonrow" %} show active"{%- else -%}" style="display: none" {%- endif %} id="{{ service_id }}-{{ row_id }}-{{ tab_id }}-contenttab-div" role="tabpanel">
-                                  <div class="row">
-                                    {{ macro_row_content(service_id, service_options, row_id, tab_id) }}
-                                  </div>
-                                </div>
-                              {%- endfor %}
-                            </form>
-                          </div>
-                        </div>
-                      </div>
-                    </td>
-                  </tr>
-                {%- endif %}
-              {%- endif %}
-            {%- endfor %}
-            {%- endfor %}
+          <tbody id="{{ service_id }}-tbody">
+            {%- if pagetype == vars.pagetype_workshopmanager %}
+            <tr id="{{ service_id }}-loading-tr">
+              <th></th>
+              <th></th>
+              <th>
+              <div style="display: flex; align-items: center; justify-content: center; height: 100%;">
+              <div class="spinner-border" role="status" style="margin-right: 10px;">
+              <span class="sr-only">Loading...</span>
+              </div>
+              <p style="margin: 0;">Loading ...</p>
+              </div>
+              </th>
+              <th></th>
+            </tr>
+            {%- else %}
+            <tr id="{{ service_id }}-loading-tr">
+              <th></th>
+              <th></th>
+              <th>
+              <div style="display: flex; align-items: center; justify-content: center; height: 100%;">
+              <div class="spinner-border" role="status" style="margin-right: 10px;">
+              <span class="sr-only">Loading...</span>
+              </div>
+              <p style="margin: 0;">Loading ...</p>
+              </div>
+              </th>
+              <th></th>
+              <th></th>
+            </tr>
+            {%- endif %}
           </tbody>
         </table>
-      </div>  {#- table responsive #}
+      </div>
     {%- endfor %}
 
     {% if user.orm_user.shared_with_me and user.orm_user.shared_with_me|length > 0 and pagetype == vars.pagetype_home %}
@@ -233,8 +89,8 @@
             <tr>
               <th scope="col" width="10%">Service</th>
               <th scope="col">Owner</th>
-              <th scope="col  width="20%">Server Name</th>
-              <th scope="col  width="20%">Configuration</th>
+              <th scope="col" width="20%">Server Name</th>
+              <th scope="col" class="text-center" width="20%">Configuration</th>
               <th scope="col" class="text-center" width="10%">Status</th>
               <th scope="col" class="text-center" width="10%">Action</th>
             </tr>
@@ -256,6 +112,14 @@
               {% set sharedspawner = sharedserver.spawner %}
               {% set row_id = sharedspawner.name %}
               {% set service_id = sharedspawner.user_options.service | lower %}
+              {%- set orig_user = sharedserver.owner %}
+              {%- set ns = namespace(owner_name=orig_user.name) %}
+              {%- for group in orig_user.groups %}
+                {%- if group.name and group.name.startswith("email:") %}
+                  {%- set ns.owner_name = group.name[6:] %}
+                  {%- break %}
+                {%- endif %}
+              {%- endfor %}
               <tr id="sharedservers-{{ row_id }}-summary-tr" data-server-id="sharedservers-{{ row_id }}" 
                 class="summary-tr existing-spawner-tr"
                 data-service="{{ service_id }}"
@@ -265,7 +129,7 @@
                 data-spawner-ready="{{ sharedspawner.ready }}"
               >
                 <th scope="row" class="service-td">{{ sharedspawner.user_options.service }}/{{ sharedspawner.user_options.option }}</th>
-                <th scope="row" class="owner-td">{{ sharedserver.owner.name }}</th>
+                <th scope="row" class="owner-td">{{ ns.owner_name }}</th>
                 <th scope="row" class="owner-td">{{ sharedspawner.user_options.get("name", sharedspawner.name) }}</th>
                 <td scope="row" class="config-td">
                   <div style="max-height: 152px; overflow: auto;">
@@ -283,7 +147,7 @@
                     </div>
                   </div>
                 </td>
-                <th scope="row" class="status-td">
+                <th scope="row" class="status-td" style="text-align: center">
                   {% if not sharedspawner.server %}
                   Not running
                   {% else %}
@@ -313,94 +177,5 @@
       </div>
     {%-endif %}
   </div>  {#- container fluid #}
-  <script>
-    require(["jquery", "jhapi", "utils"], function (
-      $,      
-      JHAPI,
-      utils
-    ) {
-      "use strict";
-      var base_url = window.jhdata.base_url;
-      var user = window.jhdata.user;
-      var api = new JHAPI(base_url);
-      
-      {%- for service_id, service_options in frontend_config.get("services", {}).get("options", {}).items() %}
-        {%- for button_key, button_func in service_options.get("summaryButtons", {}).items() %}
-          $(`button[id^='{{ service_id }}-'][id$='-{{ button_key }}-btn-header']`).on("click", function() {
-            const $this = $(this);
-            const forUser = $this.attr('data-user') || user;
-            {{ button_func }}($this.attr('data-service'), $this.attr('data-row'), $this.attr('data-element'), {}, forUser, api, base_url, utils)
-          });
-        {%- endfor %}
-      {%- endfor %}      
-      
-      $(`[data-sse-progress][id$='-summary-tr']`).on("sse", function (event, data) {
-        if (event.target !== this) {
-          return; // Ignore events bubbling up from child elements
-        }
-        const $this = $(this);
-        const serviceId = $this.attr("data-service");
-        const rowId = $this.attr("data-row");
-        if ( Object.keys(data).includes(rowId) ){
-          const ready = data[rowId]?.ready ?? false;
-          const failed = data[rowId]?.failed ?? false;
-          const progress = data[rowId]?.progress ?? 10;
-
-          let status = "starting";
-          if ( ready ) status = "connecting";
-          else if ( failed ) status = "stopped";
-          else if ( progress == 99 ) status = "cancelling";
-          else if ( progress == 0 ) status = "";
-          progressBarUpdate(serviceId, rowId, status, progress);
-
-          if ( ready ) {
-            {%- if pagetype == vars.pagetype_start or pagetype == vars.pagetype_spawn %}
-            updateHeaderButtons(serviceId, rowId, "waiting");
-            const url = data[rowId]?.url ?? "{{ url }}";
-            checkAndOpenUrl(serviceId, rowId, url);
-            {% else %}
-            updateHeaderButtons(serviceId, rowId, "running");
-            progressBarUpdate(serviceId, rowId, "running", 100);
-            $(`button[id^='${serviceId}-${rowId}-'][id$='-btn']`).prop("disabled", false);
-            {%- endif %}
-          } else if ( failed ) {
-            updateHeaderButtons(serviceId, rowId, "stopped");
-            $(`button[id^='${serviceId}-${rowId}-'][id$='-btn']`).prop("disabled", false);
-          } else if ( progress == 99 ) {
-            updateHeaderButtons(serviceId, rowId, "cancelling");
-            $(`button[id^='${serviceId}-${rowId}-'][id$='-btn']`).prop("disabled", true);
-          } else {
-            updateHeaderButtons(serviceId, rowId, "starting");
-            $(`button[id^='${serviceId}-${rowId}-'][id$='-btn']`).prop("disabled", true);
-          }
-          appendToLog(serviceId, rowId, data[rowId]);
-          
-        }
-      });
-
-      $(`[data-sse-reservations]`).on("sse", function (event, data) {
-        if (event.target !== this) {
-          return; // Ignore events bubbling up from child elements
-        }
-        setReservations(data);
-        $(`[id$='-reservation-input']`).trigger("change");
-      });
-
-
-      $(`[data-sse-servers][id$='-summary-tr']`).on("sse", function (event, data) {
-        if (event.target !== this) {
-          return; // Ignore events bubbling up from child elements
-        }
-        const $this = $(this);
-        const serviceId = $this.attr("data-service");
-        const rowId = $this.attr("data-row");
-        const stopped = data?.stopped ?? [];
-        if ( stopped.includes(rowId) ){
-          progressBarUpdate(serviceId, rowId, "", 0);
-          updateHeaderButtons(serviceId, rowId, "stopped");
-        }
-      });
-    });
-  </script>
 {%- endmacro %}
 

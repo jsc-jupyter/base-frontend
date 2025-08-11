@@ -3,7 +3,7 @@
     "default": "jupyterlab",
     "options": {
       "jupyterlab": {
-        "fillingOrder": ["expertmode", "option", "system", "project", "partition"],
+        "fillingOrder": ["expertmode", "option", "system", "account", "project", "partition", "flavor", "privaterepo"],
         "navbar": {},
         "tabs": {
           "default": {
@@ -76,28 +76,13 @@
                   "type": "buttons",
                   "options": {
                     "buttons": [
-                      "reset",
                       "delete",
-                      "share",
                       "save"
                     ],
-                    "share": {
-                      "text": "Share",
-                      "trigger": "wmTriggerButtonShare",
-                      "firstRow": false,
-                      "alignRight": true
-                    },
                     "save": {
                       "trigger": "wmTriggerButtonSave",
                       "firstRow": false,
                       "alignRight": false
-                    },
-                    "reset": {
-                      "firstRow": false,
-                      "trigger": "wmTriggerButtonReset",
-                      "options": {
-                        "fillingOrder": ["option", "system", "account", "project", "partition", "flavor", "privaterepo"]
-                      }
                     },
                     "delete": {
                       "firstRow": false,
@@ -759,25 +744,6 @@
                     "tud",
                     "denbi"
                   ]
-                }
-              },
-              "envvariables": {
-                "input": {
-                  "type": "textgrower",
-                  "options": {
-                    "enabled": false,
-                    "required": true,
-                    "show": false,
-                    "pattern": "^[A-Za-z_][A-Za-z0-9_]*=[^\\s]+$",
-                    "placeholder": "KEY=VALUE"
-                  }
-                },
-                "label": {
-                  "type": "textcheckbox",
-                  "value": "Add environment variables",
-                  "options": {
-                    "default": false
-                  }
                 }
               }
             }

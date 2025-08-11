@@ -9,12 +9,29 @@
 
 {%- block main -%}
 {%- import "macros/table/config/home.jinja" as config %}
-{%- import "macros/svgs.jinja" as svg -%}
-{%- import "macros/table/variables.jinja" as vars with context %}
-
+{%- import "macros/table/variables.jinja" as vars %}
 {%- set pagetype = vars.pagetype_home %}
 
-{%- set table_rows = {vars.first_row_id: {}} %}
+{%- from "macros/table/table.jinja" import tables with context %}
+
+{% macro description() %}
+  <p>You can configure your existing JupyterLabs by expanding the corresponding table row.</p>
+{% endmacro %}
+
+{{ tables(
+  config.frontend_config,
+  description
+) }}
+{%- endblock -%}
+
+
+{%- block script -%}
+{%- import "macros/table/config/home.jinja" as config %}
+{%- import "macros/table/variables.jinja" as vars %}
+{%- set pagetype = vars.pagetype_home %}
+
+{%- import "macros/svgs.jinja" as svg -%}
+{%- set table_rows = {} %}
 
 {%- for active in [True, False] %}
   {%- for spawner in spawners %}
@@ -26,26 +43,6 @@
   {%- endfor %}
 {%- endfor %}
 
-{%- from "macros/table/table.jinja" import tables with context %}
-{%- import "macros/table/content.jinja" as functions with context %}
-{{ tables(
-  config.frontend_config,
-  functions.home_description,
-  functions.home_headerlayout,
-  functions.home_defaultheader,
-  functions.home_firstheader,
-  functions.row_content
-) }}
-
-
-{%- endblock -%}
-
-
-{%- block script -%}
-{%- import "macros/table/config/home.jinja" as config with context %}
-{%- import "macros/svgs.jinja" as svg -%}
-{%- import "macros/table/variables.jinja" as vars with context %}
-{%- set pagetype = vars.pagetype_home %}
 <script>
   /* Jinja dependent functions:
   * Define get funtions to enable the use of jinja variables (supplied by the backend) within the JavaScript classes (otherwise they are not reachable)
@@ -53,9 +50,13 @@
   function getFrontendCollection() {
     return {{ frontendCollection | tojson}} || {};
   }
-  function getFrontendConfig() {
-    return {{ config.frontend_config | tojson}} || {};
+  function getTableRows() {
+    return {{ table_rows | tojson }} || {};
   }
+  function getFirstRowId() {
+    return "{{ vars.first_row_id }}";
+  }
+  {%- include "macros/table/config/home_js.jinja" %}
   function getSvg(name) {
     if ( name === "check" ) {
       return `{{ svg.check_svg | safe }}`;
@@ -71,6 +72,40 @@
       return `{{ svg.plus_svg | safe }}`;
     } else if ( name === "info" ) {
       return `{{ svg.info_svg | safe }}`;
+    } else if ( name === "start" ) {
+      return `{{ svg.start_svg | safe }}`;
+    } else if ( name === "stop" ) {
+      return `{{ svg.stop_svg | safe }}`;
+    } else if ( name === "na" ) {
+      return `{{ svg.na_svg | safe }}`;
+    } else if ( name === "rtc" ) {
+      return `{{ svg.rtc_svg | safe }}`;
+    } else if ( name === "link" ) {
+      return `{{ svg.link_svg | safe }}`;
+    } else if ( name === "servers" ) {
+      return `{{ svg.servers_svg | safe }}`;
+    } else if ( name === "users" ) {
+      return `{{ svg.users_svg | safe }}`;
+    } else if ( name === "warning" ) {
+      return `{{ svg.warning_svg | safe }}`;
+    } else if ( name === "logs" ) {
+      return `{{ svg.logs_svg | safe }}`;
+    } else if ( name === "info_filled" ) {
+      return `{{ svg.info_filled_svg | safe }}`;
+    } else if ( name === "announcement" ) {
+      return `{{ svg.announcement_svg | safe }}`;
+    } else if ( name === "retry" ) {
+      return `{{ svg.retry_svg | safe }}`;
+    } else if ( name === "share" ) {
+      return `{{ svg.share_svg | safe }}`;
+    } else if ( name === "reset" ) {
+      return `{{ svg.reset_svg | safe }}`;
+    } else if ( name === "save" ) {
+      return `{{ svg.save_svg | safe }}`;
+    } else if ( name === "open" ) {
+      return `{{ svg.open_svg | safe }}`;
+    } else if ( name === "settings" ) {
+      return `{{ svg.settings_svg | safe }}`;
     }
   }
   function getAuthState() {
@@ -82,6 +117,7 @@
   function isFirstRow(rowId) {
     return rowId === "{{ vars.first_row_id }}";
   }
+
   function getSpawnerUserOptions() {
     {% set spawner_map = {} %}
     {% for spawner in spawners %}
@@ -91,6 +127,40 @@
     {% endfor %}
     return {{ spawner_map | tojson | safe }};
   }
+
+  function getSpawner(rowId) {
+    const spawnerMap = {};
+    {%- for spawner_ in spawners %}
+      {%- if spawner_.user_options and spawner_.name %}
+        {%- if user.spawners.get(spawner_.name) and user.spawners.get(spawner_.name).user_options.get("option") %}
+          {%- set spawner = user.spawners.get(spawner_.name) %}
+        {%- else %}
+          {%- set spawner = spawner_ %}
+        {%- endif %}
+        {%- set events = spawner.events if spawner.events is iterable and spawner.events is not string else [] %}
+        {%- set last_event = events | last %}
+        {%- set progress = 0 %}
+        {%- if spawner.ready %}
+          {%- set progress = 100 %}
+        {%- elif spawner.active and last_event is mapping %}
+          {%- set progress = last_event.get("progress", 0) %}
+        {%- endif %}
+        spawnerMap["{{ spawner.name }}"] = {
+          decrypted_user_options: {{ frontendCollection.get("decrypted_user_options").get(spawner.name, spawner.user_options) | tojson }},
+          user_options: {{ spawner.user_options | tojson }},
+          active: {{ spawner.active | tojson }},
+          ready: {{ spawner.ready | tojson }},
+          failed: {{ spawner.failed | default(false) | tojson }},
+          events: {{ events | default([]) | tojson }},
+          last_event: {{ last_event | default({}) | tojson }},
+          progress: {{ progress }}
+        };
+      {%- endif %}
+    {%- endfor %}
+    return spawnerMap[rowId] || {};
+  }
+
+
   function pageType(name) {
     if ( name === "home" ) {
       return "{{ vars.pagetype_home }}";
@@ -110,7 +180,10 @@
   }
 </script>
 
-<script src="{{static_url("js/table.js") }}" type="text/javascript" charset="utf-8"></script>
 
 {%- include "macros/table/elements_js.jinja" with context %}
+
+<script src="{{static_url("js/table_elements.js") }}" type="text/javascript" charset="utf-8"></script>
+<script src="{{static_url("js/table.js") }}" type="text/javascript" charset="utf-8"></script>
+
 {%- endblock %}

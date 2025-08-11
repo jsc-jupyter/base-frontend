@@ -1,5 +1,5 @@
 {# lmod --> #}
-  function getModuleValues(serviceId, rowId, name, setName) {
+  function getModuleValuesWW(serviceId, rowId, name, setName) {
     const options = val(getInputElement(serviceId, rowId, "option"));
     let values = [];
     let keys = new Set();
@@ -25,7 +25,7 @@
   }
 
 
-  function updateModule(serviceId, rowId, tabId, elementId, elementOptions, name, setName) {
+  function updateModuleWW(serviceId, rowId, tabId, elementId, elementOptions, name, setName) {
     const containerDiv = $(`div[id^='${serviceId}-${rowId}-${modulesTabName}-'][id$='${elementId}-checkboxes-div']`);
     const inputDiv = $(`div[id^='${serviceId}-${rowId}-${modulesTabName}-'][id$='${elementId}-input-div']`);
     let values = getModuleValues(serviceId, rowId, name, setName);
