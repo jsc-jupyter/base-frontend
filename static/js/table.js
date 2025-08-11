@@ -4943,6 +4943,15 @@ function triggerInitUntilValuesSet(serviceId, rowId, firstRow = false, maxTries 
       tries++;
 
       if (allSet) {
+        const frontendConfig = getFrontendConfig();
+        const defaults = frontendConfig?.services?.options[serviceId]?.default || {};
+        const defaultTab = defaults?.tab || "None";
+        const defaultOptions = defaults?.options || {};
+
+        for (const [key, value] of Object.entries(defaultOptions)) {
+            $(`[id^='${serviceId}-${rowId}-${defaultTab}-'][id$='-${key}-input']`).val(value);
+        }
+
         console.timeEnd(`Init Row ${serviceId}-${rowId} (${tries})`);
 
         if (pageType(null) === pageType("workshopmanager") && firstRow) {
