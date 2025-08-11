@@ -6,30 +6,156 @@
 
 {%- block main -%}
 {%- import "macros/table/config/workshop.jinja" as config %}
-{%- import "macros/svgs.jinja" as svg -%}
 {%- import "macros/table/variables.jinja" as vars with context %}
-
 {%- set pagetype = vars.pagetype_workshop %}
 
-{%- set table_rows = { spawner.name: spawner.user_options } %}
 {%- from "macros/table/table.jinja" import tables with context %}
-{%- import "macros/table/content.jinja" as functions with context %}
 <div id="workshopnotusable"></div>
-{{ tables(
-  config.frontend_config,
-  functions.workshop_description,
-  functions.workshop_headerlayout,
-  false,
-  functions.workshop_firstheader,
-  functions.row_content
-) }}
 
+{{ tables(
+  config.frontend_config
+) }}
 {%- endblock -%}
 
 
 {%- block script -%}
-{%- import "macros/table/variables.jinja" as vars with context %}
+{%- import "macros/table/config/workshop.jinja" as config %}
+{%- import "macros/table/variables.jinja" as vars %}
 {%- set pagetype = vars.pagetype_workshop %}
-{%- import "macros/table/config/workshop.jinja" as config with context %}
+
+{%- import "macros/svgs.jinja" as svg -%}
+{%- set table_rows = { spawner.name: workshop_options } %}
+
+<script>
+  /* Jinja dependent functions:
+  * Define get funtions to enable the use of jinja variables (supplied by the backend) within the JavaScript classes (otherwise they are not reachable)
+  */
+  function getFrontendCollection() {
+    return {{ frontendCollection | tojson}} || {};
+  }
+  function getFrontendConfig() {
+    return {{ config.frontend_config | tojson}} || {};
+  }
+  function getTableRows() {
+    return {{ table_rows | tojson }} || {};
+  }
+  {%- include "macros/table/config/workshop_js.jinja" %}
+  function getSvg(name) {
+    if ( name === "check" ) {
+      return `{{ svg.check_svg | safe }}`;
+    } else if ( name === "copy" ) {
+      return `{{ svg.copy_svg | safe }}`;
+    } else if ( name === "failed" ) {
+      return `{{ svg.failed_svg | safe }}`;
+    } else if ( name === "link" ) {
+      return `{{ svg.link_svg | safe }}`;
+    } else if ( name === "delete" ) {
+      return `{{ svg.delete_svg | safe }}`;
+    } else if ( name === "plus" ) {
+      return `{{ svg.plus_svg | safe }}`;
+    } else if ( name === "info" ) {
+      return `{{ svg.info_svg | safe }}`;
+    } else if ( name === "start" ) {
+      return `{{ svg.start_svg | safe }}`;
+    } else if ( name === "stop" ) {
+      return `{{ svg.stop_svg | safe }}`;
+    } else if ( name === "na" ) {
+      return `{{ svg.na_svg | safe }}`;
+    } else if ( name === "rtc" ) {
+      return `{{ svg.rtc_svg | safe }}`;
+    } else if ( name === "link" ) {
+      return `{{ svg.link_svg | safe }}`;
+    } else if ( name === "servers" ) {
+      return `{{ svg.servers_svg | safe }}`;
+    } else if ( name === "users" ) {
+      return `{{ svg.users_svg | safe }}`;
+    } else if ( name === "warning" ) {
+      return `{{ svg.warning_svg | safe }}`;
+    } else if ( name === "logs" ) {
+      return `{{ svg.logs_svg | safe }}`;
+    } else if ( name === "info_filled" ) {
+      return `{{ svg.info_filled_svg | safe }}`;
+    } else if ( name === "announcement" ) {
+      return `{{ svg.announcement_svg | safe }}`;
+    } else if ( name === "retry" ) {
+      return `{{ svg.retry_svg | safe }}`;
+    } else if ( name === "share" ) {
+      return `{{ svg.share_svg | safe }}`;
+    } else if ( name === "reset" ) {
+      return `{{ svg.reset_svg | safe }}`;
+    } else if ( name === "save" ) {
+      return `{{ svg.save_svg | safe }}`;
+    } else if ( name === "open" ) {
+      return `{{ svg.open_svg | safe }}`;
+    } else if ( name === "settings" ) {
+      return `{{ svg.settings_svg | safe }}`;
+    }
+  }
+  function getAuthState() {
+    return {{ auth_state | default({}) | tojson }};
+  }
+  function getWorkshopOptions() {
+    return {{ workshop_options | default({}) | tojson }};
+  }
+  function isFirstRow(rowId) {
+    return rowId === "{{ vars.first_row_id }}";
+  }
+  function getSpawnerUserOptions() {
+    return {{ {spawner.name: spawner.user_options } | tojson | safe }};
+  }
+
+  function getSpawner(rowId) {
+    
+      {%- if spawner.user_options and spawner.name %}
+        {%- if user.spawners.get(spawner.name) and user.spawners.get(spawner.name).user_options.get("option") %}
+          {%- set s = user.spawners.get(spawner.name) %}
+        {%- else %}
+          {%- set s = spawner %}
+        {%- endif %}
+        {%- set events = s.events if s.events is iterable and s.events is not string else [] %}
+        {%- set last_event = events | last %}
+        {%- set progress = 0 %}
+        {%- if s.ready %}
+          {%- set progress = 100 %}
+        {%- elif s.active and last_event is mapping %}
+          {%- set progress = last_event.get("progress", 0) %}
+        {%- endif %}
+        const spawnerMap = {
+          decrypted_user_options: {{ frontendCollection.get("decrypted_user_options").get(s.name, s.user_options) | tojson }},
+          user_options: {{ s.user_options | tojson }},
+          active: {{ s.active | tojson }},
+          ready: {{ s.ready | tojson }},
+          failed: {{ s.failed | default(false) | tojson }},
+          events: {{ events | default([]) | tojson }},
+          last_event: {{ last_event | default({}) | tojson }},
+          progress: {{ progress }}
+        };
+      {%- endif %}
+    return spawnerMap || {};
+  }
+
+  function pageType(name) {
+    if ( name === "home" ) {
+      return "{{ vars.pagetype_home }}";
+    } else if ( name === "share" ) {
+      return "{{ vars.pagetype_share }}";
+    } else if ( name === "spawn" ) {
+      return "{{ vars.pagetype_spawn }}";
+    } else if ( name === "start" ) {
+      return "{{ vars.pagetype_start }}";
+    } else if ( name === "workshop" ) {
+      return "{{ vars.pagetype_workshop }}";
+    } else if ( name === "workshopmanager" ) {
+      return "{{ vars.pagetype_workshopmanager }}";
+    } else {
+      return "{{ pagetype }}";
+    }
+  }
+</script>
+
 {%- include "macros/table/elements_js.jinja" with context %}
+
+<script src="{{static_url("js/table_elements.js") }}" type="text/javascript" charset="utf-8"></script>
+<script src="{{static_url("js/table.js") }}" type="text/javascript" charset="utf-8"></script>
+
 {%- endblock %}

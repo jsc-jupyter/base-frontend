@@ -1,12 +1,18 @@
 {%- macro create_user_widget() -%}
 {%- if user %}
 <div class="dropdown">
+  {%- set ns = namespace(display_name=user.name) %}
   {%- if auth_state %}
-    {%- set display_name = auth_state.get("oauth_user", {}).get("name", user.name) %}
+    {%- set ns.display_name = auth_state.get("oauth_user", auth_state).get("name", user.name) %}
   {%- else %}
-    {%- set display_name = user.name %}
+    {%- for group in user.orm_user.groups %}
+      {%- if group.name and group.name.startswith("displayname:") %}
+        {%- set ns.display_name = group.name[12:] %}
+        {%- break %}
+      {%- endif %}
+    {%- endfor %}
   {%- endif %}
-  <button class="btn btn-outline-primary dropdown-toggle mb-2" type="button" data-bs-toggle="dropdown" data-bs-auto-close="outside">{{ display_name }}</button>
+  <button class="btn btn-outline-primary dropdown-toggle mb-2" type="button" data-bs-toggle="dropdown" data-bs-auto-close="outside">{{ ns.display_name }}</button>
   <ul class="dropdown-menu dropdown-menu-end w-100">
     <li>
       <button id="logout" class="dropdown-item">
