@@ -2009,7 +2009,13 @@ function homeDefaultHeaderTypeNormal(spawner, service_id, row_id, row_options, s
     'N/A'
   );
 
-  [btnOpen, btnStop, btnCancel, btnStart, btnNA].forEach(btn => thActions.appendChild(btn));
+  const btnDel = createActionButton(
+    'del', 'btn btn-danger', 'del',
+    false,
+    getSvg("delete") + ' '
+  );
+
+  [btnOpen, btnStop, btnCancel, btnStart, btnNA, btnDel].forEach(btn => thActions.appendChild(btn));
   tr.appendChild(thActions);
   return tr.innerHTML;
 }
