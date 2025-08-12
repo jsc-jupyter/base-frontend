@@ -2670,6 +2670,9 @@ function appendRowToServiceTableHome(serviceId, rowId, rowOptions, serviceOption
             dependencyAttributes += ` data-dependency-${key}-${val}="true"`;
           }
         }
+        const triggerKeys = Object.keys(buttonOptions?.trigger ?? {})
+          .map(key => `data-trigger-${key}`)
+          .join(' ');
         buttons += `
           <button 
             class="${buttonClass}"
@@ -2678,6 +2681,7 @@ function appendRowToServiceTableHome(serviceId, rowId, rowOptions, serviceOption
             data-tab="${buttonId}"
             data-service="${serviceId}"
             data-row="${rowId}"
+            ${triggerKeys}
             data-bs-toggle="pill"
             data-bs-target="#${serviceId}-${rowId}-${buttonId}"
             ${show ? 'data-show="true"' : ""}
