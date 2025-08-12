@@ -2532,7 +2532,7 @@ $(document).on("sse", `[data-sse-servers][id$='-summary-tr']`, function (event, 
       $(`[id^='${serviceId}-${rowId}-'][id$='-input']`).prop("disabled", true);
       $(`[id^='${serviceId}-${rowId}-'][id$='-input-cb']`).prop("disabled", true);
       $(`button[id^='${serviceId}-${rowId}-'][id$='-view-password']`).prop("disabled", true);
-      $(`[id^='${serviceId}-${rowId}-'][id$='-btn']:not([id$='-delete-btn']):not([id$='-rtc-btn'])`).remove();
+      $(`[id^='${serviceId}-${rowId}-'][id$='-btn']:not([id$='-delete-btn']):not([id$='-copy-btn']):not([id$='-rtc-btn'])`).remove();
     }
 
   }
