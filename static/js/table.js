@@ -928,13 +928,6 @@ require(["jquery", "utils"], function (
     const elementId = $this.attr("data-element");
 
 
-    logDebug && console.time(`Trigger trigger_${elementId}`);
-    logDebug && console.log(`Trigger trigger_${elementId}`);
-    const toTrigger = dataRow.find(`[data-trigger-${elementId}]`)
-    toTrigger.trigger(`triggerNo_${elementId}`);
-    logDebug && console.timeEnd(`Trigger trigger_${elementId}`);
-
-
     logDebug && console.log(`${rowId} - ${elementId} changed ( ${$this.val()} )`);
     $this.trigger("change_select");
     dataRow.find(`[data-trigger-${elementId}][id^='${serviceId}-${rowId}-']`).trigger(`trigger_${elementId}`);
@@ -4956,9 +4949,11 @@ function triggerInitUntilValuesSet(serviceId, rowId, firstRow = false, maxTries 
                     const hasOption = $el.find(`option[value="${value}"]`).length > 0;
                     if (hasOption) {
                         $el.val(value);
+                        $el.trigger("change");
                     }
                 } else {
                     $el.val(value);
+                    $el.trigger("change");
                 }
             }
         }
