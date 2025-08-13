@@ -4948,11 +4948,11 @@ function triggerInitUntilValuesSet(serviceId, rowId, firstRow = false, maxTries 
                     const hasOption = $el.find(`option[value="${value}"]`).length > 0;
                     if (hasOption) {
                         $el.val(value);
-                        $(`[id^='${serviceId}-${rowId}-'][id$='-input']`).trigger(`trigger_${key}`)
+                        $el.trigger("change");
                     }
                 } else {
                     $el.val(value);
-                    $(`[id^='${serviceId}-${rowId}-'][id$='-input']`).trigger(`trigger_${key}`)
+                    $el.trigger("change");
                 }
             }
         }
