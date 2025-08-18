@@ -2201,7 +2201,6 @@ function homeDefaultHeaderTypeWorkshop(spawner, service_id, row_id, row_options,
       >
         ${getSvg("delete")}
       </button>
-      }
     </th>
   `;
 }
