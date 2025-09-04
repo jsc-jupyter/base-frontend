@@ -2839,6 +2839,9 @@ function appendRowToServiceTableStart(serviceId, rowId, rowOptions, serviceOptio
               dependencyAttributes += ` data-dependency-${key}-${val}="true"`;
             }
           }
+          const triggerKeys = Object.keys(buttonOptions?.trigger ?? {})
+            .map(key => `data-trigger-${key}`)
+            .join(' ');
           buttons += `
             <button 
               class="${buttonClass}"
@@ -2847,6 +2850,7 @@ function appendRowToServiceTableStart(serviceId, rowId, rowOptions, serviceOptio
               data-tab="${buttonId}"
               data-service="${serviceId}"
               data-row="${rowId}"
+              ${triggerKeys}
               data-bs-toggle="pill"
               data-bs-target="#${serviceId}-${rowId}-${buttonId}"
               ${show ? 'data-show="true"' : ""}
@@ -3018,6 +3022,9 @@ function appendRowToServiceTableBkp(serviceId, rowId, rowOptions, serviceOptions
               dependencyAttributes += ` data-dependency-${key}-${val}="true"`;
             }
           }
+          const triggerKeys = Object.keys(buttonOptions?.trigger ?? {})
+            .map(key => `data-trigger-${key}`)
+            .join(' ');
           buttons += `
             <button 
               class="${buttonClass}"
@@ -3026,6 +3033,7 @@ function appendRowToServiceTableBkp(serviceId, rowId, rowOptions, serviceOptions
               data-tab="${buttonId}"
               data-service="${serviceId}"
               data-row="${rowId}"
+              ${triggerKeys}
               data-bs-toggle="pill"
               data-bs-target="#${serviceId}-${rowId}-${buttonId}"
               ${show ? 'data-show="true"' : ""}
@@ -3168,6 +3176,9 @@ function appendRowToServiceTableWorkshop(serviceId, rowId, rowOptions, serviceOp
             dependencyAttributes += ` data-dependency-${key}-${val}="true"`;
           }
         }
+        const triggerKeys = Object.keys(buttonOptions?.trigger ?? {})
+          .map(key => `data-trigger-${key}`)
+          .join(' ');
         buttons += `
           <button 
             class="${buttonClass}"
@@ -3176,6 +3187,7 @@ function appendRowToServiceTableWorkshop(serviceId, rowId, rowOptions, serviceOp
             data-tab="${buttonId}"
             data-service="${serviceId}"
             data-row="${rowId}"
+            ${triggerKeys}
             data-bs-toggle="pill"
             data-bs-target="#${serviceId}-${rowId}-${buttonId}"
             ${show ? 'data-show="true"' : ""}
