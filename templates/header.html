@@ -43,7 +43,7 @@
        #}
        {% for s in user._orm_spawners %}
          {%- if s.user_options and s.user_options.get("system", "") in ["JUWELS", "JURECA", "JUSUF", "DEEP", "JUPITER"]%}
-           {%- set ns.show_hpc_message = "Missing HPC Access?" %}
+           {%- set ns.show_hpc_message = "Missing HPC Access? Re-Login using JSC-Account" %}
            {%- set ns.show_hpc_link = "https://jupyterjsc.pages.jsc.fz-juelich.de/docs/jupyterjsc/authentication/#hpc-access" %}
            {%- break %}
          {%- endif %}
@@ -52,7 +52,6 @@
     {%- if not ns.show_hpc_message and frontendCollection.get("userage", 300) < 1800 %}
       {%- set ns.show_hpc_message = "Missing HPC Access?" %}
       {%- set ns.show_hpc_link = "https://jupyterjsc.pages.jsc.fz-juelich.de/docs/jupyterjsc/authentication/#new-accounts" %}
-                                 
     {%- endif %}
   {%- endif %}
 <ul class="nav">
