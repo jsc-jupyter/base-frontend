@@ -31,6 +31,29 @@
 {%- endmacro -%}
 
 {%- macro create_navigation(prefix="") -%}
+  {%- set ns = namespace() %}
+  {%- set ns.show_hpc_message = false %}
+  {%- set ns.show_hpc_link = false %}
+  {%- if user and auth_state %}
+    {%- set ns.last_idp = auth_state.get("oauth_user", auth_state).get("last_idp", "none") %}
+    {%- if auth_state.get("oauth_user", auth_state).get("last_idp", "none") == "https://login.helmholtz.de/oauth2/token" %}
+      {# Two Cases should trigger the hpc hint:
+        1. No JupyterLabs for now
+        2. JupyterLabs has an HPC System in user_options
+       #}
+       {% for s in user._orm_spawners %}
+         {%- if s.user_options and s.user_options.get("system", "") in ["JUWELS", "JURECA", "JUSUF", "DEEP", "JUPITER"]%}
+           {%- set ns.show_hpc_message = "Missing HPC Access?" %}
+           {%- set ns.show_hpc_link = "https://docs.jupyter.jsc.fz-juelich.de/docs/jupyterjsc/authentication/#hpc-access" %}
+           {%- break %}
+         {%- endif %}
+       {% endfor %}
+    {%- endif %}
+    {%- if not ns.show_hpc_message and frontendCollection.get("userage", 300) < 1800 %}
+      {%- set ns.show_hpc_message = "Missing HPC Access?" %}
+      {%- set ns.show_hpc_link = "https://docs.jupyter.jsc.fz-juelich.de/docs/jupyterjsc/authentication/#new-accounts" %}
+    {%- endif %}
+  {%- endif %}
 <ul class="nav">
   {#- Show different headers depending on if a user is logged in or not -#}
   
@@ -46,6 +69,9 @@
     {%- endif -%}
     {%- endif %}
     <li class="nav-item"><a id="{{prefix}}docs-nav-item" class="nav-link text-decoration-none" target="_blank" href="https://docs.jupyter.jsc.fz-juelich.de">Documentation</a></li>
+    {%- if ns.show_hpc_message %}
+    <li class="nav-item"><a id="{{prefix}}hpchint-nav-item" class="nav-link text-decoration-none" target="_blank" style="color: red" href="{{ ns.show_hpc_link }}">{{ ns.show_hpc_message }}</a></li>
+    {%- endif %}
   </div>
 </ul>
 {%- endmacro -%}
