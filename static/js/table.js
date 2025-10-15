@@ -2265,6 +2265,18 @@ require(["jquery", "utils"], function (
   }
 
 
+let sseTimeout = null;
+const SSE_TIMEOUT_MS = 40_000;
+
+function resetSSEWatchdog() {
+  if (sseTimeout) {
+    clearTimeout(sseTimeout);
+  }
+  sseTimeout = setTimeout(() => {
+    console.warn("No SSE updates for 40s — reloading page...");
+    location.reload();
+  }, SSE_TIMEOUT_MS);
+}
 
 $(document).on("sse", `[data-sse-progress][id$='-summary-tr']`, function (event, data) {
   if (event.target !== this) {
@@ -2284,6 +2296,10 @@ $(document).on("sse", `[data-sse-progress][id$='-summary-tr']`, function (event,
     else if ( progress == 99 ) status = "cancelling";
     else if ( progress == 0 ) status = "";
     progressBarUpdate(serviceId, rowId, status, progress);
+
+    if ( (pageType() == pageType("start") || pageType() == pageType("spawn") ) && progress >= 85 && progress < 99 ) {
+      resetSSEWatchdog();
+    }
 
     if ( ready ) {
       if ( pageType(null) == pageType("start") || pageType(null) == pageType("spawn") ) {
