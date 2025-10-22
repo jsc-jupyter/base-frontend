@@ -316,7 +316,7 @@ function tcCreateLabel(idPrefix, serviceId, rowId, tabId, elementId, elementOpti
 }
 
 
-function tcElementParameters(serviceId, rowId, tabId, elementId, elementOptions = {}, defineShow = false, collect = true, isInstructor = false) {
+function tcElementParameters(serviceId, rowId, tabId, elementId, elementOptions = {}, defineShow = false, collect = true) {
   const inputOptions = elementOptions?.input?.options || {};
   const dependencies = elementOptions?.dependency || {};
   const type = elementOptions?.input?.type || "default";
@@ -368,7 +368,7 @@ function tcElementParameters(serviceId, rowId, tabId, elementId, elementOptions 
   }
 
   const enabled = inputOptions["enabled"] !== false ||
-    (isInstructor && inputOptions["instructor"] === "enabled");
+    (isWorkshopInstructor() && inputOptions["instructor"] === "enabled");
 
   if (!enabled) {
     attrs["disabled"] = "";
@@ -405,11 +405,11 @@ function tcElementParameters(serviceId, rowId, tabId, elementId, elementOptions 
   // Handle show/hide behavior
   if (defineShow) {
     const show = inputOptions["show"] !== false ||
-      (isInstructor && inputOptions["instructor"] === "show");
+      (isWorkshopInstructor() && inputOptions["instructor"] === "show");
 
     attrs["data-show"] = show ? "true" : "false";
 
-    if (!inputOptions["show"] && !(isInstructor && inputOptions["instructor"] === "show")) {
+    if (!inputOptions["show"] && !(isWorkshopInstructor() && inputOptions["instructor"] === "show")) {
       attrs["style"] = "display: none";
     }
   }
@@ -418,10 +418,10 @@ function tcElementParameters(serviceId, rowId, tabId, elementId, elementOptions 
 }
 
 
-function tcCreateMultipleCheckboxes(idPrefix, serviceId, rowId, tabId, elementId, elementOptions, isInstructor = false) {
+function tcCreateMultipleCheckboxes(idPrefix, serviceId, rowId, tabId, elementId, elementOptions) {
   const wrapper = document.createElement("div");
   wrapper.id = `${idPrefix}-${elementId}-input-div`;
-  Object.entries(tcElementParameters(serviceId, rowId, tabId, elementId, elementOptions, true, true, isInstructor))
+  Object.entries(tcElementParameters(serviceId, rowId, tabId, elementId, elementOptions, true, true))
     .forEach(([k, v]) => wrapper.setAttribute(k, v));
 
   const label = tcCreateLabel(idPrefix, serviceId, rowId, tabId, elementId, elementOptions);
@@ -430,7 +430,7 @@ function tcCreateMultipleCheckboxes(idPrefix, serviceId, rowId, tabId, elementId
   const checkboxDiv = document.createElement("div");
   checkboxDiv.id = `${idPrefix}-${elementId}-checkboxes-div`;
   checkboxDiv.classList.add("row", "g-0");
-  Object.entries(tcElementParameters(serviceId, rowId, tabId, elementId, elementOptions, false, true, isInstructor))
+  Object.entries(tcElementParameters(serviceId, rowId, tabId, elementId, elementOptions, false, true))
     .forEach(([k, v]) => checkboxDiv.setAttribute(k, v));
 
   wrapper.appendChild(checkboxDiv);
@@ -439,12 +439,12 @@ function tcCreateMultipleCheckboxes(idPrefix, serviceId, rowId, tabId, elementId
 }
 
 
-function tcCreateLabelInput(idPrefix, serviceId, rowId, tabId, elementId, elementOptions, isInstructor = false) {
+function tcCreateLabelInput(idPrefix, serviceId, rowId, tabId, elementId, elementOptions) {
   const div = document.createElement("div");
   div.id = `${idPrefix}-${elementId}-input-div`;
   div.classList.add("row", "mb-1");
 
-  Object.entries(tcElementParameters(serviceId, rowId, tabId, elementId, elementOptions, true, true, isInstructor))
+  Object.entries(tcElementParameters(serviceId, rowId, tabId, elementId, elementOptions, true, true))
     .forEach(([k, v]) => div.setAttribute(k, v));
 
   const label = tcCreateLabel(idPrefix, serviceId, rowId, tabId, elementId, elementOptions);
@@ -453,12 +453,12 @@ function tcCreateLabelInput(idPrefix, serviceId, rowId, tabId, elementId, elemen
   return div.outerHTML.trim();
 }
 
-function tcCreateTextInput(idPrefix, serviceId, rowId, tabId, elementId, elementOptions, isInstructor = false) {
+function tcCreateTextInput(idPrefix, serviceId, rowId, tabId, elementId, elementOptions) {
   const wrapper = document.createElement("div");
   wrapper.id = `${idPrefix}-${elementId}-input-div`;
   wrapper.classList.add("row", "mb-1");
 
-  Object.entries(tcElementParameters(serviceId, rowId, tabId, elementId, elementOptions, true, true, isInstructor))
+  Object.entries(tcElementParameters(serviceId, rowId, tabId, elementId, elementOptions, true, true))
     .forEach(([k, v]) => wrapper.setAttribute(k, v));
 
   const label = tcCreateLabel(idPrefix, serviceId, rowId, tabId, elementId, elementOptions);
@@ -481,7 +481,7 @@ function tcCreateTextInput(idPrefix, serviceId, rowId, tabId, elementId, element
   input.type = secret ? "password" : "text";
   input.classList.add("form-control");
 
-  Object.entries(tcElementParameters(serviceId, rowId, tabId, elementId, elementOptions, false, true, isInstructor))
+  Object.entries(tcElementParameters(serviceId, rowId, tabId, elementId, elementOptions, false, true))
     .forEach(([k, v]) => input.setAttribute(k, v));
 
   if (copy) input.setAttribute("data-copy-key", elementId);
