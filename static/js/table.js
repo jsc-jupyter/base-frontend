@@ -2018,12 +2018,12 @@ require(["jquery", "utils"], function (
           }
         }
 
-        const workshopSystems = workshop?.system || [];
-        let workshopProject = workshop?.project || [];
+        const workshopSystems = workshopValues?.system || [];
+        let workshopProject = workshopValues?.project || [];
         if ( !Array.isArray(workshopProject) ){
           workshopProject = [workshopProject];
         }
-        let workshopPartition = workshop?.partition || [];
+        let workshopPartition = workshopValues?.partition || [];
         if ( !Array.isArray(workshopPartition) ){
           workshopPartition = [workshopPartition];
         }
@@ -2156,7 +2156,7 @@ require(["jquery", "utils"], function (
         
         var genericHtml = `
           <div style="width: 80%; margin: auto; margin-top: 20px; margin-bottom: 20px; padding: 20px; border: 1px solid #ccc; border-radius: 10px; background-color: #f9f9f9;">
-            <h2 style="text-align: center; color: #333;">Workshop "${workshop.workshopid}" not available for you.</h2>
+            <h2 style="text-align: center; color: #333;">Workshop "${workshopValues.workshopid}" not available for you.</h2>
             <h4 style="text-align: center; color: #333;">Reason: ${description}</h4>
             <p style="text-align: center; color: #666; font-weight: bold;">Your account is not yet ready to access this workshop. Please complete the steps below to proceed. Contact your workshop instructor or support, if this does not help</p>
             
