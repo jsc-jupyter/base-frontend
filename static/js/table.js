@@ -2314,9 +2314,15 @@ $(document).on("sse", `[data-sse-progress][id$='-summary-tr']`, function (event,
           $(`button[id^='${serviceId}-${rowId}-'][id$='-btn']`).prop("disabled", false);
       }
     } else if ( failed ) {
+      if (sseTimeout) {
+        clearTimeout(sseTimeout);
+      }
       updateHeaderButtons(serviceId, rowId, "stopped");
       $(`button[id^='${serviceId}-${rowId}-'][id$='-btn']`).prop("disabled", false);
     } else if ( progress == 99 ) {
+      if (sseTimeout) {
+        clearTimeout(sseTimeout);
+      }
       updateHeaderButtons(serviceId, rowId, "cancelling");
       $(`button[id^='${serviceId}-${rowId}-'][id$='-btn']`).prop("disabled", true);
     } else {
