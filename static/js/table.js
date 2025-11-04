@@ -2289,6 +2289,8 @@ $(document).on("sse", `[data-sse-progress][id$='-summary-tr']`, function (event,
     const ready = data[rowId]?.ready ?? false;
     const failed = data[rowId]?.failed ?? false;
     const progress = data[rowId]?.progress ?? 10;
+    const spawner = getSpawner(rowId);
+    const pending = spawner.pending;
 
     let status = "starting";
     if ( ready ) status = "connecting";
@@ -2343,9 +2345,14 @@ $(document).on("sse", `[data-sse-servers][id$='-summary-tr']`, function (event, 
   const serviceId = $this.attr("data-service");
   const rowId = $this.attr("data-row");
   const stopped = data?.stopped ?? [];
+  const stopping = data?.stopping ?? [];
   if ( stopped.includes(rowId) ){
     progressBarUpdate(serviceId, rowId, "", 0);
     updateHeaderButtons(serviceId, rowId, "stopped");
+  }
+  if ( stopping.includes(rowId) ){
+    progressBarUpdate(serviceId, rowId, "stopping", 100);
+    updateHeaderButtons(serviceId, rowId, "stopping");
   }
 });
 
@@ -2442,13 +2449,18 @@ $(document).on("sse", `[data-sse-servers][id$='-summary-tr']`, function (event, 
     } else if ( !spawner.active ) {
       $(`[id^='${serviceId}-${rowId}-'][id$='-start-btn-header']`).trigger("click");
     } else {
-      homeHeaderUpdate(serviceId, rowId);
-      if ( serviceId === "jupyterlab" && option === "repo2docker" ) {
-        updateHeaderButtons(serviceId, rowId, "building");
-        progressBarUpdate(serviceId, rowId, "building", 2);
+      if ( spawner.pending === "stop" ) {
+        updateHeaderButtons(serviceId, rowId, "stopping");
+        progressBarUpdate(serviceId, rowId, "stopping", 100);
       } else {
-        updateHeaderButtons(serviceId, rowId, "starting");
-        progressBarUpdate(serviceId, rowId, "starting", 10);
+        homeHeaderUpdate(serviceId, rowId);
+        if ( serviceId === "jupyterlab" && option === "repo2docker" ) {
+          updateHeaderButtons(serviceId, rowId, "building");
+          progressBarUpdate(serviceId, rowId, "building", 2);
+        } else {
+          updateHeaderButtons(serviceId, rowId, "starting");
+          progressBarUpdate(serviceId, rowId, "starting", 10);
+        }
       }
     }
     $(`[id^='${serviceId}-${rowId}-'][id$='-logs-navbar-button']`).trigger("click");
@@ -2544,6 +2556,27 @@ $(document).on("sse", `[data-sse-servers][id$='-summary-tr']`, function (event, 
       $(`[id^='${serviceId}-${rowId}-'][id$='-btn']:not([id$='-delete-btn']):not([id$='-copy-btn']):not([id$='-rtc-btn'])`).remove();
     }
 
+    const spawner = getSpawner(rowId);
+    for ( const event of spawner.events ) {
+      appendToLog(serviceId, rowId, event);
+    }
+    const optionElement = getInputElement(serviceId, rowId, "option");
+    const option = optionElement.length > 0 && optionElement[0].value;
+    if ( !spawner.ready && spawner.active ) {
+      if ( spawner.pending === "stop" ) {
+        updateHeaderButtons(serviceId, rowId, "stopping");
+        progressBarUpdate(serviceId, rowId, "stopping", 100);
+      } else {
+        homeHeaderUpdate(serviceId, rowId);
+        if ( serviceId === "jupyterlab" && option === "repo2docker" ) {
+          updateHeaderButtons(serviceId, rowId, "building");
+          progressBarUpdate(serviceId, rowId, "building", 2);
+        } else {
+          updateHeaderButtons(serviceId, rowId, "starting");
+          progressBarUpdate(serviceId, rowId, "starting", 10);
+        }
+      }
+    }
   }
 
 
@@ -2754,6 +2787,28 @@ $(document).on("sse", `[data-sse-servers][id$='-summary-tr']`, function (event, 
         }
       }
     });
+
+    const spawner = getSpawner(rowId);
+    const optionElement = getInputElement(serviceId, rowId, "option");
+    const option = optionElement.length > 0 && optionElement[0].value;
+    for ( const event of spawner.events ) {
+      appendToLog(serviceId, rowId, event);
+    }
+    if ( !spawner.ready && spawner.active ) {
+      if ( spawner.pending === "stop" ) {
+        updateHeaderButtons(serviceId, rowId, "stopping");
+        progressBarUpdate(serviceId, rowId, "stopping", 100);
+      } else {
+        homeHeaderUpdate(serviceId, rowId);
+        if ( serviceId === "jupyterlab" && option === "repo2docker" ) {
+          updateHeaderButtons(serviceId, rowId, "building");
+          progressBarUpdate(serviceId, rowId, "building", 2);
+        } else {
+          updateHeaderButtons(serviceId, rowId, "starting");
+          progressBarUpdate(serviceId, rowId, "starting", 10);
+        }
+      }
+    }
   }
 
 
@@ -4019,7 +4074,7 @@ $(document).on("sse", `[data-sse-servers][id$='-summary-tr']`, function (event, 
     }
     const baseSelector = `button[id^="${serviceId}-${rowId}"][id$="-btn-header"]`;
 
-    if ( summaryTr.attr("data-spawner-type") == "workshop" ) {
+    if ( summaryTr.attr("data-spawner-type") == "workshop" && pageType() == pageType("home") ) {
       toShow.push("manage");
       toShow.push("del");
     }
@@ -4086,20 +4141,6 @@ $(document).on("sse", `[data-sse-servers][id$='-summary-tr']`, function (event, 
 
   function homeSummaryButtonStop(serviceId, rowId, buttonId, button_options, user, api, base_url, utils) {
     const options = getAPIOptions();
-    options["success"] = function (data, textStatus, jqXHR) {
-      updateHeaderButtons(serviceId, rowId, "stopped");
-      progressBarUpdate(serviceId, rowId, "", 0);
-      appendToLog(serviceId, rowId, getStopEvent(buttonId));
-      if ( pageType(null) != pageType("start") && pageType(null) != pageType("spawn") ) {
-        const navbarLogsButton = $(`[id^='${serviceId}-${rowId}-'][id$='-logs-navbar-button']`);
-        if ( navbarLogsButton.hasClass("active") ) {
-          const navbarLabConfigButton = $(`[id^='${serviceId}-${rowId}-'][id$='-labconfig-navbar-button']`);
-          if ( navbarLabConfigButton ) {
-            navbarLabConfigButton.trigger("click");
-          }
-        }
-      }
-    }
     updateHeaderButtons(serviceId, rowId, "stopping");
     progressBarUpdate(serviceId, rowId, "stopping", 100);
     api.stop_named_server(user, rowId, options);
@@ -4107,20 +4148,6 @@ $(document).on("sse", `[data-sse-servers][id$='-summary-tr']`, function (event, 
 
   function homeSummaryButtonCancel(serviceId, rowId, buttonId, button_options, user, api, base_url, utils) {
     const options = getAPIOptions();
-    options["success"] = function (data, textStatus, jqXHR) {
-      updateHeaderButtons(serviceId, rowId, "stopped");
-      progressBarUpdate(serviceId, rowId, "", 0);
-      appendToLog(serviceId, rowId, getStopEvent(buttonId));    
-      if ( pageType(null) != pageType("start") && pageType(null) != pageType("spawn") ) {
-        const navbarLogsButton = $(`[id^='${serviceId}-${rowId}-'][id$='-logs-navbar-button']`);
-        if ( navbarLogsButton.hasClass("active") ) {
-          const navbarLabConfigButton = $(`[id^='${serviceId}-${rowId}-'][id$='-labconfig-navbar-button']`);
-          if ( navbarLabConfigButton ) {
-            navbarLabConfigButton.trigger("click");
-          }
-        }
-      }
-    }
     updateHeaderButtons(serviceId, rowId, "cancelling");
     progressBarUpdate(serviceId, rowId, "cancelling", 99);
     api.cancel_named_server(user, rowId, options);
@@ -5122,20 +5149,26 @@ document.addEventListener('DOMContentLoaded', async function () {
             if ( storageStart ) {
               const spawner = getSpawner(rowId);
               const ready = spawner.ready;
+              const pending = spawner.pending;
               const active = spawner.active;
               if ( ready ) {
                 window.open(`/user/${window.jhdata.user}/${rowId}`, "_blank");
               } else if ( !active ) {
                 $(`[id^='${serviceId}-${rowId}-'][id$='-start-btn-header']`).trigger("click");
               } else {
-                $(`[id^='${serviceId}-${rowId}-'][id$='-logs-navbar-button']`).trigger("click");
-                homeHeaderUpdate(serviceId, rowId);
-                if ( serviceId === "jupyterlab" && option === "repo2docker" ) {
-                  updateHeaderButtons(serviceId, rowId, "building");
-                  progressBarUpdate(serviceId, rowId, "building", 2);
+                if ( pending === "stop" ) {
+                  updateHeaderButtons(serviceId, rowId, "stopping");
+                  progressBarUpdate(serviceId, rowId, "stopping", 100);
                 } else {
-                  updateHeaderButtons(serviceId, rowId, "starting");
-                  progressBarUpdate(serviceId, rowId, "starting", 10);
+                  $(`[id^='${serviceId}-${rowId}-'][id$='-logs-navbar-button']`).trigger("click");
+                  homeHeaderUpdate(serviceId, rowId);
+                  if ( serviceId === "jupyterlab" && option === "repo2docker" ) {
+                    updateHeaderButtons(serviceId, rowId, "building");
+                    progressBarUpdate(serviceId, rowId, "building", 2);
+                  } else {
+                    updateHeaderButtons(serviceId, rowId, "starting");
+                    progressBarUpdate(serviceId, rowId, "starting", 10);
+                  }
                 }
               }
             }

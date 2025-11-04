@@ -127,6 +127,7 @@
           ready: {{ s.ready | tojson }},
           failed: {{ s.failed | default(false) | tojson }},
           events: {{ events | default([]) | tojson }},
+          pending: {{ (s.pending if s.pending else false) | tojson }},
           last_event: {{ last_event | default({}) | tojson }},
           progress: {{ progress }}
         };

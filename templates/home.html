@@ -150,6 +150,7 @@
           user_options: {{ spawner.user_options | tojson }},
           active: {{ spawner.active | tojson }},
           ready: {{ spawner.ready | tojson }},
+          pending: {{ (spawner.pending if spawner.pending else false) | tojson }},
           failed: {{ spawner.failed | default(false) | tojson }},
           events: {{ events | default([]) | tojson }},
           last_event: {{ last_event | default({}) | tojson }},
