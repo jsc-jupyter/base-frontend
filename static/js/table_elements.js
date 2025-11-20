@@ -916,7 +916,6 @@ function tcCreateSelectInput(
   const values = elementOptions.input?.values || {};
   const nameAttr = inputOpts.name ?? elementId;
   const labelWidth = parseInt(elementOptions.label?.width ?? "4", 10);
-
   // Container div
   const container = document.createElement("div");
   container.id = `${idPrefix}-${elementId}-input-div`;
@@ -942,6 +941,10 @@ function tcCreateSelectInput(
   select.name = nameAttr;
   select.id = `${idPrefix}-${elementId}-input`;
   select.className = "form-select";
+  if ( inputOpts?.credits === true ) {
+    select.setAttribute("data-sse-credits", "");
+    select.setAttribute("data-sse-credits-key", `${elementId}`);
+  }
 
   // Add element parameters without define_show
   const selectParams = tcElementParameters(serviceId, rowId, tabId, elementId, elementOptions);
@@ -954,6 +957,7 @@ function tcCreateSelectInput(
   for (const [key, value] of Object.entries(values)) {
     const option = document.createElement("option");
     option.value = key;
+
     option.textContent = value;
     select.appendChild(option);
   }

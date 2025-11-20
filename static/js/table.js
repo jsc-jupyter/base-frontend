@@ -1814,6 +1814,33 @@ require(["jquery", "utils"], function (
     }
   });
 
+  $(document).on("sse", "[data-sse-credits]", function (event, datalist) {
+    const $this = $(this);
+    for (const data of datalist) {
+      const creditsUserOptions = data?.user_options || {};
+
+      const selectCreditsKey = $this.attr("data-sse-credits-key") || false;
+      if (selectCreditsKey && (selectCreditsKey in creditsUserOptions)) {
+        $this.find("option").each(function() {
+          if ( $(this).val() === creditsUserOptions[selectCreditsKey] ) {
+            var creditsProject = "";
+            if ( data.project ) {
+              creditsProject = ` ( ${data.project.name}: ${data.project.balance} / ${data.project.cap} )`;
+            }
+            const creditsText = `Credits: ${data.balance} / ${data.cap} ${creditsProject}`;
+            $(this).text(`${$(this).val()} ( ${creditsText} )`);
+          }
+        });
+      } else if (!selectCreditsKey && Object.keys(creditsUserOptions).length === 0 ) {
+          var creditsProject = "";
+          if ( data.project ) {
+            creditsProject = ` ( ${data.project.name}: ${data.project.balance} / ${data.project.cap} )`;
+          }
+          const creditsText = `Global Credits: ${data.balance} / ${data.cap} ${creditsProject}`;
+          $(this).text(`${creditsText}`);
+      }
+    }
+  });
 
   $(document).on("click", "input[id$='-select-all-input']", function () {
     const $this = $(this);
@@ -5138,6 +5165,12 @@ document.addEventListener('DOMContentLoaded', async function () {
 
       if (index > 0 || ["spawn", "start", "workshop"].includes(page)) {
         await fillingRowsRetry(serviceId, rowId, getSpawner(rowId).decrypted_user_options, serviceOptions?.fillingOrder || []);
+        if ( initSSEValues.initialized ) {
+          for (const [key, value] of Object.entries(initSSEValues)) {
+            let payload = Array.isArray(value) ? [value] : value;
+            $(`[data-sse-${key}][data-service=${serviceId}][data-row=${rowId}]`).trigger("sse", payload);
+          }
+        }
         $(`#${serviceId}-${rowId}-summary-tr`).show();
         $(`#${serviceId}-${rowId}-loading-tr`).hide();
         if ( page === "home" ) {
