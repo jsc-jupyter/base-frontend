@@ -1816,28 +1816,47 @@ require(["jquery", "utils"], function (
 
   $(document).on("sse", "[data-sse-credits]", function (event, datalist) {
     const $this = $(this);
-    for (const data of datalist) {
-      const creditsUserOptions = data?.user_options || {};
+    if ( $this.attr("data-header-element") === "true" ) {
+      const service = $this.attr("data-service");
+      const row = $this.attr("data-row");
+      const system = $(`[data-service="${service}"][data-row="${row}"][id$='-system-input']`).val();
 
-      const selectCreditsKey = $this.attr("data-sse-credits-key") || false;
-      if (selectCreditsKey && (selectCreditsKey in creditsUserOptions)) {
-        $this.find("option").each(function() {
-          if ( $(this).val() === creditsUserOptions[selectCreditsKey] ) {
+      for (const data of datalist) {
+        const creditsUserOptions = data?.user_options || {};
+        if ( system && "system" in creditsUserOptions ) {
+          if ( system === creditsUserOptions["system"] ) {
             var creditsProject = "";
             if ( data.project ) {
               creditsProject = ` ( ${data.project.name}: ${data.project.balance} / ${data.project.cap} )`;
             }
             const creditsText = `Credits: ${data.balance} / ${data.cap} ${creditsProject}`;
-            $(this).text(`${$(this).val()} ( ${creditsText} )`);
+            $this.text(`${system} ( ${creditsText} )`);
           }
-        });
-      } else if (!selectCreditsKey && Object.keys(creditsUserOptions).length === 0 ) {
-          var creditsProject = "";
-          if ( data.project ) {
-            creditsProject = ` ( ${data.project.name}: ${data.project.balance} / ${data.project.cap} )`;
-          }
-          const creditsText = `Global Credits: ${data.balance} / ${data.cap} ${creditsProject}`;
-          $(this).text(`${creditsText}`);
+        }
+      }
+    } else {
+      for (const data of datalist) {
+        const creditsUserOptions = data?.user_options || {};
+        const selectCreditsKey = $this.attr("data-sse-credits-key") || false;
+        if (selectCreditsKey && (selectCreditsKey in creditsUserOptions)) {
+          $this.find("option").each(function() {
+            if ( $(this).val() === creditsUserOptions[selectCreditsKey] ) {
+              var creditsProject = "";
+              if ( data.project ) {
+                creditsProject = ` ( ${data.project.name}: ${data.project.balance} / ${data.project.cap} )`;
+              }
+              const creditsText = `Credits: ${data.balance} / ${data.cap} ${creditsProject}`;
+              $(this).text(`${$(this).val()} ( ${creditsText} )`);
+            }
+          });
+        } else if (!selectCreditsKey && Object.keys(creditsUserOptions).length === 0 ) {
+            var creditsProject = "";
+            if ( data.project ) {
+              creditsProject = ` ( ${data.project.name}: ${data.project.balance} / ${data.project.cap} )`;
+            }
+            const creditsText = `Global Credits: ${data.balance} / ${data.cap} ${creditsProject}`;
+            $(this).text(`${creditsText}`);
+        }
       }
     }
   });
@@ -3867,23 +3886,42 @@ $(document).on("sse", `[data-sse-servers][id$='-summary-tr']`, function (event, 
 
 
   function homeHeaderUpdate(serviceId, rowId) {
-    const option = $(`[id^='${serviceId}-${rowId}-'][id$='-option-input']`).val();
-    const system = $(`[id^='${serviceId}-${rowId}-'][id$='-system-input']`).val();
+    var elementsCount = 2;
+    const optionElement = $(`[id^='${serviceId}-${rowId}-'][id$='-option-input']`);
+    const option = optionElement.val();
+    var optionText = option;
+    optionElement.find("option").each(function() {
+      if ( $(this).val() === option ) {
+        optionText = $(this).text();
+      }
+    });
+
+    const systemElement = $(`[id^='${serviceId}-${rowId}-'][id$='-system-input']`);
+    const system = systemElement.val();
+    var systemText = system;
+    systemElement.find("option").each(function() {
+      if ( $(this).val() === system ) {
+        systemText = $(this).text();
+      }
+    });
     const project = $(`[id^='${serviceId}-${rowId}-'][id$='-project-input']`);
     const partition = $(`[id^='${serviceId}-${rowId}-'][id$='-partition-input']`);
 
-    $(`#${serviceId}-${rowId}-config-td-option`).html(`${option}`);
-    $(`#${serviceId}-${rowId}-config-td-system`).html(`${system}`);
+    $(`#${serviceId}-${rowId}-config-td-option`).html(`${optionText}`);
+    $(`#${serviceId}-${rowId}-config-td-system`).html(`${systemText}`);
 
     const nameThElement = $(`#${serviceId}-${rowId}-summary-tr th.name-td`);
     const name = $(`[id^='${serviceId}-${rowId}-'][id$='-name-input']`).val();
     nameThElement.html(name);
 
+    const optionDiv = $(`#${serviceId}-${rowId}-config-td-option-div`);
+    const systemDiv = $(`#${serviceId}-${rowId}-config-td-system-div`);
     const projectDiv = $(`#${serviceId}-${rowId}-config-td-project-div`);
     const partitionDiv = $(`#${serviceId}-${rowId}-config-td-partition-div`);
 
     if ( project.attr("data-collect") === "true" ) {
       projectDiv.show();
+      elementsCount += 1;
       $(`#${serviceId}-${rowId}-config-td-project`).html(`${project.val()}`);
     } else {
       projectDiv.hide();
@@ -3891,6 +3929,7 @@ $(document).on("sse", `[data-sse-servers][id$='-summary-tr']`, function (event, 
 
     if ( partition.attr("data-collect") === "true" ) {
       partitionDiv.show();
+      elementsCount += 1;
       $(`#${serviceId}-${rowId}-config-td-partition`).html(`${partition.val()}`);
     } else {
       partitionDiv.hide();
@@ -3916,6 +3955,7 @@ $(document).on("sse", `[data-sse-servers][id$='-summary-tr']`, function (event, 
 
     if ( repotypeShort.attr("data-collect") === "true" ) {
       repotypeDiv.show();
+      elementsCount += 1;
       $(`#${serviceId}-${rowId}-config-td-repotype`).html(`${repotype}`);
     } else {
       repotypeDiv.hide();
@@ -3923,10 +3963,23 @@ $(document).on("sse", `[data-sse-servers][id$='-summary-tr']`, function (event, 
 
     if ( repourl.attr("data-collect") === "true" ) {
       repourlDiv.show();
+      elementsCount += 1;
       const repourlVal = repourl.val().split("/").filter(Boolean).pop();
       $(`#${serviceId}-${rowId}-config-td-repourl`).html(`${repourlVal}`);
     } else {
       repourlDiv.hide();
+    }
+
+    if ( elementsCount == 2 ) {
+        optionDiv.removeClass("col-lg-3");
+        systemDiv.removeClass("col-lg-3");
+        optionDiv.addClass("col-lg-6");
+        systemDiv.addClass("col-lg-6");
+    } else {
+        optionDiv.removeClass("col-lg-6");
+        systemDiv.removeClass("col-lg-6");
+        optionDiv.addClass("col-lg-3");
+        systemDiv.addClass("col-lg-3");
     }
   }
 

@@ -1777,6 +1777,7 @@ function homeDefaultHeaderTypeNormal(spawner, service_id, row_id, row_options, s
 
   const defaultSystem = service_options?.default?.options?.system ?? false;
   const system = spawner.user_options?.system ?? defaultSystem;
+  
 
   // Mapping for repotype
   const repotypeMapping = {
@@ -1792,9 +1793,9 @@ function homeDefaultHeaderTypeNormal(spawner, service_id, row_id, row_options, s
   };
 
   // Helper to create styled span with label and value
-  function createConfigItem(idPrefix, label, value, show = true) {
+  function createConfigItem(service_id, row_id, idPrefix, label, value, show = true, columnswidth = 3) {
     const container = document.createElement('div');
-    container.className = 'col text-lg-center col-12 col-lg-3';
+    container.className = `col text-lg-center col-12 col-lg-${columnswidth}`;
     container.id = `${service_id}-${row_id}-config-td-${idPrefix}-div`;
     if (!show) container.style.display = 'none';
 
@@ -1809,6 +1810,13 @@ function homeDefaultHeaderTypeNormal(spawner, service_id, row_id, row_options, s
     const valueSpan = document.createElement('span');
     valueSpan.id = `${service_id}-${row_id}-config-td-${idPrefix}`;
     valueSpan.textContent = value || '';
+    if ( idPrefix === "system" ) {
+      valueSpan.setAttribute("data-header-element", "true");
+      valueSpan.setAttribute("data-service", service_id);
+      valueSpan.setAttribute("data-row", row_id);
+      valueSpan.setAttribute("data-sse-credits", "");
+      valueSpan.setAttribute("data-sse-credits-key", idPrefix);
+    }
     container.appendChild(valueSpan);
 
     return container;
@@ -1817,6 +1825,7 @@ function homeDefaultHeaderTypeNormal(spawner, service_id, row_id, row_options, s
   // Create main table row
   const tr = document.createElement('tr');
 
+  var elementsNo = 2;
   // 1. Name <th>
   const thName = document.createElement('th');
   thName.scope = 'row';
@@ -1840,34 +1849,17 @@ function homeDefaultHeaderTypeNormal(spawner, service_id, row_id, row_options, s
   configInnerDiv.id = `${service_id}-${row_id}-config-td-div`;
   configInnerDiv.className = 'row col-12 col-md-6 col-lg-12 d-flex align-items-center';
 
-  // Add system
-  configInnerDiv.appendChild(createConfigItem(
-    'system', 'System', system
-  ));
 
-  // Add option
-  configInnerDiv.appendChild(createConfigItem(
-    'option', 'Option', option
-  ));
-
+  
   // Project (hide if empty)
   const project = spawner.user_options?.hpc?.project || '';
-  configInnerDiv.appendChild(createConfigItem(
-    'project', 'Project', project, !!project
-  ));
 
   // Partition (hide if empty)
   const partition = spawner.user_options?.hpc?.partition || '';
-  configInnerDiv.appendChild(createConfigItem(
-    'partition', 'Partition', partition, !!partition
-  ));
-
+  
   // Repository Type (hide if empty)
   const repotypeRaw = spawner.user_options?.repo2docker?.repotype || '';
   const repotype = repotypeMapping[repotypeRaw] || repotypeRaw;
-  configInnerDiv.appendChild(createConfigItem(
-    'repotype', 'Repository Type', repotype, !!repotypeRaw
-  ));
 
   // Repo URL Value (last path segment) (hide if empty)
   const repourlRaw = spawner.user_options?.repo2docker?.repourl || '';
@@ -1880,9 +1872,49 @@ function homeDefaultHeaderTypeNormal(spawner, service_id, row_id, row_options, s
       repourlVal = repourlRaw;
     }
   }
+
+  if (!!project) {
+    elementsNo += 1;
+  }
+  if (!!partition) {
+    elementsNo += 1;
+  }
+  if (!!repotypeRaw) {
+    elementsNo += 1;
+  }
+  if (!!repourlRaw) {
+    elementsNo += 1;
+  }
+
+  // Adjust columns based on number of elements
+  let columnswidth = 3;
+  if (elementsNo == 2) {
+    columnswidth = 6;
+  } else {
+    columnswidth = 3;
+  }
+
   configInnerDiv.appendChild(createConfigItem(
-    'repourl', 'Value', repourlVal, !!repourlRaw
+    service_id, row_id, 'system', 'System', system, true, columnswidth
   ));
+  const optionText = getServiceConfig(service_id).options[option].name;
+  configInnerDiv.appendChild(createConfigItem(
+    service_id, row_id, 'option', 'Option', optionText, true, columnswidth
+  ));
+  configInnerDiv.appendChild(createConfigItem(
+    service_id, row_id, 'project', 'Project', project, !!project
+  ));
+  configInnerDiv.appendChild(createConfigItem(
+    service_id, row_id, 'partition', 'Partition', partition, !!partition
+  ));
+  configInnerDiv.appendChild(createConfigItem(
+    service_id, row_id, 'repotype', 'Repository Type', repotype, !!repotypeRaw
+  ));
+  configInnerDiv.appendChild(createConfigItem(
+    service_id, row_id, 'repourl', 'Value', repourlVal, !!repourlRaw
+  ));
+
+  var elementsCount = configInnerDiv.children.length
 
   rowDiv.appendChild(configInnerDiv);
   outerDiv.appendChild(rowDiv);
@@ -2067,17 +2099,29 @@ function homeDefaultHeaderTypeWorkshop(spawner, service_id, row_id, row_options,
           <div id="${service_id}-${row_id}-config-td-div" class="row col-12 col-md-6 col-lg-12 d-flex align-items-center">
             ${
               showWorkshopUse
-              ? `<div id="${service_id}-${row_id}-config-td-system-div" class="col text-lg-center col-12 col-lg-3">
+              ? `<div id="${service_id}-${row_id}-config-td-system-div" class="col text-lg-center col-12 col-lg-6">
                   <span class="text-muted" style="font-size: smaller;">System</span><br>
-                  <span id="${service_id}-${row_id}-config-td-system">${system}</span>
+                  <span id="${service_id}-${row_id}-config-td-system"
+                    data-header-element="true"
+                    data-service="${service_id}"
+                    data-row="${row_id}"
+                    data-sse-credits=""
+                    data-sse-credits-key="system"
+                  >${system}</span>
                 </div>
-                <div id="${service_id}-${row_id}-config-td-info-div" class="col text-lg-center col-12 col-lg-9">
+                <div id="${service_id}-${row_id}-config-td-info-div" class="col text-lg-center col-12 col-lg-6">
                   <span class="text-muted" style="font-size: smaller;">Workshop ${name}</span><br>
                   <span id="${service_id}-${row_id}-config-td-info">Click "Use" to open workshop website.</span>
                 </div>`
-              : `<div id="${service_id}-${row_id}-config-td-system-div" class="col text-lg-center col-12 col-lg-3">
+              : `<div id="${service_id}-${row_id}-config-td-system-div" class="col text-lg-center col-12 col-lg-6">
                   <span class="text-muted" style="font-size: smaller;">System</span><br>
-                  <span id="${service_id}-${row_id}-config-td-system">${system}</span>
+                  <span id="${service_id}-${row_id}-config-td-system"
+                    data-header-element="true"
+                    data-service="${service_id}"
+                    data-row="${row_id}"
+                    data-sse-credits=""
+                    data-sse-credits-key="system"
+                  >${system}</span>
                 </div>`
             }
           </div>
@@ -2255,11 +2299,17 @@ function homeDefaultHeaderTypeShare(spawner, service_id, row_id, row_options, se
         <div class="row mx-3 mb-1 justify-content-between">
           <div id="${service_id}-${row_id}-config-td-div" class="row col-12 col-md-6 col-lg-12 d-flex align-items-center">
             ${system ? `
-              <div id="${service_id}-${row_id}-config-td-system-div" class="col text-lg-center col-12 col-lg-3">
+              <div id="${service_id}-${row_id}-config-td-system-div" class="col text-lg-center col-12 col-lg-6">
                 <span class="text-muted" style="font-size: smaller;">System</span><br>
-                <span id="${service_id}-${row_id}-config-td-system">${system}</span>
+                <span id="${service_id}-${row_id}-config-td-system"
+                    data-header-element="true"
+                    data-service="${service_id}"
+                    data-row="${row_id}"
+                    data-sse-credits=""
+                    data-sse-credits-key="system"
+                  >${system}</span>
               </div>
-              <div id="${service_id}-${row_id}-config-td-info-div" class="col text-lg-center col-12 col-lg-9">
+              <div id="${service_id}-${row_id}-config-td-info-div" class="col text-lg-center col-12 col-lg-6">
                 <span class="text-muted" style="font-size: smaller;">Shared ${service_id}</span><br>
                 <span id="${service_id}-${row_id}-config-td-info">Shared configuration (${share_id}).</span>
               </div>
@@ -2412,7 +2462,13 @@ function homeDefaultHeaderTypeR2D(spawner, service_id, row_id, row_options, serv
         ${system ? `
           <div id="${service_id}-${row_id}-config-td-system-div" class="col text-lg-center col-12 col-lg-3">
             <span class="text-muted" style="font-size: smaller;">System</span><br>
-            <span id="${service_id}-${row_id}-config-td-system">${system}</span>
+            <span id="${service_id}-${row_id}-config-td-system"
+                    data-header-element="true"
+                    data-service="${service_id}"
+                    data-row="${row_id}"
+                    data-sse-credits=""
+                    data-sse-credits-key="system"
+                  >${system}</span>
           </div>
           <div id="${service_id}-${row_id}-config-td-info-div" class="col text-lg-center col-12 col-lg-9">
             <span class="text-muted" style="font-size: smaller;">Binder Configuration</span><br>
