@@ -77,6 +77,9 @@
     {%- if ns.show_hpc_message %}
     <li class="nav-item"><a id="{{prefix}}hpchint-nav-item" class="nav-link text-decoration-none" target="_blank" style="color: red" href="{{ ns.show_hpc_link }}">{{ ns.show_hpc_message }}</a></li>
     {%- endif %}
+    {%- if user %}
+    <li class="nav-item"><a id="{{prefix}}start-nav-item" class="nav-link text-decoration-none" href="{{ base_url }}credits">Credits</a></li>
+    {%- endif %}
   </div>
 </ul>
 {%- endmacro -%}
