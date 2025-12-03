@@ -1,0 +1,68 @@
+{%- extends "page.html" -%}
+
+{%- block stylesheet -%}
+  <link rel="stylesheet" href='{{static_url("css/legal.css")}}' type="text/css" />
+  <style>
+    p { margin-bottom: 0; }
+    th, td { padding: 1rem 0.5rem !important; }
+  </style>
+{%- endblock -%}
+
+
+{%- block main -%}
+
+<div class="container">
+  <h1>Available Credits</h1>
+
+  <div class="text-container table-responsive">
+    <p>Please note that credits are not required on all systems.</p>
+    <table class="table table-bordered">
+      <tr>
+        <th style="width: 35%; font-weight: normal">System</th>
+        <th style="width: 65%; font-weight: normal">
+          <p>Credits</p>
+        </th>
+      </tr>
+      {% for system, values in credits.items() %}
+      <tr>
+        <td>{{ system }}</td>
+        <td>
+          <span style="font-weight: bold">{{ values.get("balance") }}/{{ values.get("cap") }}</span> - Gain <span style="font-weight: bold">{{ values.get("grant_value") }}</span> Credits every <span style="font-weight: bold">{{ values.get("grant_interval") }}</span>. Next update is expected between <span style="font-weight: bold">{{ values.get("grant_next_update") }}</span> from now.</td>
+      </tr>
+      {% if values.get("project") %}
+      <tr>
+        <td style="padding-left: 2rem;">{{ system }} - Project {{ values.project.get("name") }}</td>
+        <td>
+          <span style="font-weight: bold">{{ values.get("project", {}).get("balance") }}/{{ values.get("project", {}).get("cap") }}</span> - Gain <span style="font-weight: bold">{{ values.get("project", {}).get("grant_value") }}</span> Credits every <span style="font-weight: bold">{{ values.get("project", {}).get("grant_interval") }}</span>. Next update is expected between <span style="font-weight: bold">{{ values.get("project", {}).get("grant_next_update") }}</span> from now.</td>
+      </tr>
+      {% endif %}
+      {% endfor %}
+    </table>
+
+  </div>
+  <h3>What are Credits?</h3>
+  <div class="text-container">
+    <p>Credits represent a user's ability to start and run computing environments on various systems.</p>
+    <p>Every user receives an allocation of credits. As long as credits are available, users can continue running sessions on the platform.</p>
+    <p>The <span style="font-weight: bold">amount of credits you receive may depend on your selected AAI</span>. Different AAIs may lead to different credit budgets.</p>
+    <p>Checkout documentation for more.</p>
+  </div>
+</div>
+{%- endblock -%}
+
+{%- block script -%}
+{{ super() }}
+<script>
+  function setTextContainerHeight() {
+    let headerHeight = $("#header").outerHeight();
+    let footerHeight = $("#footer").outerHeight();
+    let h1Height = $("#dps-page>h1").outerHeight()
+    let h = headerHeight + footerHeight + h1Height;
+    $(".text-container").css({ height: 'calc(92vh - ' + h + 'px' });
+  }
+
+  $(document).ready(setTextContainerHeight);
+  $(window).resize(setTextContainerHeight);
+</script>
+{%- endblock -%}
+
