@@ -4433,8 +4433,10 @@ $(document).on("sse", `[data-sse-servers][id$='-summary-tr']`, function (event, 
           $(`input[id^='${serviceId}-${rowId}-'][id$='-select-none-input']`).prop("checked", false);
         });
       });
+      inputDiv.show();
+    } else if ( containerDiv.length > 0 && values.length == 0 ) {
+      inputDiv.hide();
     }
-    inputDiv.show();
   }
 
   function wTriggerModules(trigger, serviceId, rowId, tabId, elementId, elementOptions) {
