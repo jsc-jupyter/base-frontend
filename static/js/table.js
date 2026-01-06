@@ -74,6 +74,7 @@ require(["jquery", "utils"], function (
     const globalUserOptions = {};
     const globalFillingOrder = {};
     const globalStorageCounter = {};
+    let globalCredits = {};
     const initIncidents = getFrontendCollection()?.incidents || {};
     // initIncidents.JSCCLOUD.health = 50;
     const incidentsmapping = {
@@ -1816,6 +1817,7 @@ require(["jquery", "utils"], function (
 
   $(document).on("sse", "[data-sse-credits]", function (event, datalist) {
     const $this = $(this);
+    globalCredits = datalist;
     if ( $this.attr("data-header-element") === "true" ) {
       const service = $this.attr("data-service");
       const row = $this.attr("data-row");
@@ -2012,15 +2014,17 @@ require(["jquery", "utils"], function (
       valueIndex++;
     }
 
-    // Add a horizontal line if there are inactive options
-    if (inactive_values.length > 0) {
-        select.append('<hr>');
-    }
+    if (!isWorkshop) {
+      // Add a horizontal line if there are inactive options
+      if (inactive_values.length > 0) {
+          select.append('<hr>');
+      }
 
-    // Add inactive options at the end of the dropdown
-    inactive_values.forEach(([key, value]) => {
-      select.append(`<option value="${key}" disabled>${value} (${inactive_text})</option>`);
-    });
+      // Add inactive options at the end of the dropdown
+      inactive_values.forEach(([key, value]) => {
+        select.append(`<option value="${key}" disabled>${value} (${inactive_text})</option>`);
+      });
+    }
 
     if ( defaultValue && select.find(`option[value="${defaultValue}"]:not(:disabled)`).length) {
       select.val(defaultValue);
@@ -2039,6 +2043,9 @@ require(["jquery", "utils"], function (
           }
         }
       }
+    }
+    if ( select.attr("data-sse-credits-key") && select.attr("data-sse-credits-key") == elementId && globalCredits.length > 0 ) {
+      select.trigger("sse", [globalCredits]);
     }
   }
 
@@ -4433,10 +4440,8 @@ $(document).on("sse", `[data-sse-servers][id$='-summary-tr']`, function (event, 
           $(`input[id^='${serviceId}-${rowId}-'][id$='-select-none-input']`).prop("checked", false);
         });
       });
-      inputDiv.show();
-    } else if ( containerDiv.length > 0 && values.length == 0 ) {
-      inputDiv.hide();
     }
+    inputDiv.show();
   }
 
   function wTriggerModules(trigger, serviceId, rowId, tabId, elementId, elementOptions) {
@@ -5300,3 +5305,4 @@ document.addEventListener('DOMContentLoaded', async function () {
     }
   });
 // });
+
