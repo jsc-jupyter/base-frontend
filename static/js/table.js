@@ -1827,9 +1827,9 @@ require(["jquery", "utils"], function (
           if ( system === creditsUserOptions["system"] ) {
             var creditsProject = "";
             if ( data.project ) {
-              creditsProject = ` ( ${data.project.name}: ${data.project.balance} / ${data.project.cap} )`;
+              creditsProject = ` ( ${data.project.name}: ${data.project.balance} / ${data.project.cap} per day )`;
             }
-            const creditsText = `Credits: ${data.balance} / ${data.cap} ${creditsProject}`;
+            const creditsText = `Credits: ${data.balance} / ${data.cap} per day ${creditsProject}`;
             $this.text(`${system} ( ${creditsText} )`);
           }
         }
@@ -1843,9 +1843,9 @@ require(["jquery", "utils"], function (
             if ( $(this).val() === creditsUserOptions[selectCreditsKey] ) {
               var creditsProject = "";
               if ( data.project ) {
-                creditsProject = ` ( ${data.project.name}: ${data.project.balance} / ${data.project.cap} )`;
+                creditsProject = `( ${data.project.name}: ${data.project.balance} / ${data.project.cap} per day )`;
               }
-              const creditsText = `Credits: ${data.balance} / ${data.cap} ${creditsProject}`;
+              const creditsText = `Credits: ${data.balance} / ${data.cap} per day ${creditsProject}`;
               $(this).text(`${$(this).val()} ( ${creditsText} )`);
             }
           });
