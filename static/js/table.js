@@ -1829,9 +1829,9 @@ require(["jquery", "utils"], function (
           if ( system === creditsUserOptions["system"] ) {
             var creditsProject = "";
             if ( data.project ) {
-              creditsProject = ` ( ${data.project.name}: ${data.project.balance} / ${data.project.cap} per day )`;
+              creditsProject = ` ( ${data.project.name}: ${data.project.balance} / ${data.project.cap} ${data.project.refresh_text} )`;
             }
-            const creditsText = `Credits: ${data.balance} / ${data.cap} per day ${creditsProject}`;
+            const creditsText = `Credits: ${data.balance} / ${data.cap} ${data.refresh_text} ${creditsProject}`;
             $this.text(`${system} ( ${creditsText} )`);
           }
         }
@@ -1845,18 +1845,18 @@ require(["jquery", "utils"], function (
             if ( $(this).val() === creditsUserOptions[selectCreditsKey] ) {
               var creditsProject = "";
               if ( data.project ) {
-                creditsProject = `( ${data.project.name}: ${data.project.balance} / ${data.project.cap} per day )`;
+                creditsProject = `( ${data.project.name}: ${data.project.balance} / ${data.project.cap} ${data.project.refresh_text} )`;
               }
-              const creditsText = `Credits: ${data.balance} / ${data.cap} per day ${creditsProject}`;
+              const creditsText = `Credits: ${data.balance} / ${data.cap} ${data.refresh_text} ${creditsProject}`;
               $(this).text(`${$(this).val()} ( ${creditsText} )`);
             }
           });
         } else if (!selectCreditsKey && Object.keys(creditsUserOptions).length === 0 ) {
             var creditsProject = "";
             if ( data.project ) {
-              creditsProject = ` ( ${data.project.name}: ${data.project.balance} / ${data.project.cap} )`;
+              creditsProject = ` ( ${data.project.name}: ${data.project.balance} / ${data.project.cap} ${data.project.refresh_text} )`;
             }
-            const creditsText = `Global Credits: ${data.balance} / ${data.cap} ${creditsProject}`;
+            const creditsText = `Global Credits: ${data.balance} / ${data.cap} ${data.refresh_text} ${creditsProject}`;
             $(this).text(`${creditsText}`);
         }
       }
@@ -4359,7 +4359,8 @@ $(document).on("sse", `[data-sse-servers][id$='-summary-tr']`, function (event, 
                   value.displayName,
                   typeof value.default === 'object' && value.default !== null ? value.default.default : value.default,
                   value.href,
-                  value.weight ?? 10
+                  value.weight ?? 10,
+                  value.options || false
                 ]);
               }
             });
@@ -4415,21 +4416,39 @@ $(document).on("sse", `[data-sse-servers][id$='-summary-tr']`, function (event, 
             });
           }
         }
-        
+        let checkboxDropdown = '';
+        if ( item[5]) {
+          // item 5 is a list of values for the dropdown
+          checkboxDropdown = `
+            <select class="form-select form-select-sm ms-2 version-select"
+              style="width: auto;"
+              id="${idPrefix}-${item[0]}-version-input">
+          `;
+          for (const option of item[5]) {
+            const selected = (option === item[2]) ? 'selected' : '';
+            checkboxDropdown += `<option value="${option}" ${selected}>${option}</option>`;
+          }
+          checkboxDropdown += `
+            </select>
+          `;
+        }
         // Create the new div block
         const newDiv = $(`
           <div id="${idPrefix}-${item[0]}-input-div" class="form-check col-sm-6 col-md-4 col-lg-3">
-            <input type="checkbox" name="${item[0]}" data-collect="true" ${dependencies}                
-              data-checked="${isChecked}" data-parent="${elementId}" data-group="${group}" data-element="${item[0]}" data-type="multiplecheckbox" data-row="${rowId}" data-tab="${tabId}" class="form-check-input" id="${idPrefix}-${item[0]}-input" value="${item[0]}" ${isChecked} ${isDisabled}/>
-            <label class="form-check-label" for="${idPrefix}-${item[0]}-input">
-              <span class="align-middle">${item[1]}</span>
+            <div class="d-flex align-items-center mb-1">
+              <input type="checkbox" name="${item[0]}" data-collect="true" ${dependencies}
+                data-checked="${isChecked}" data-parent="${elementId}" data-group="${group}" data-element="${item[0]}" data-type="multiplecheckbox" data-row="${rowId}" data-tab="${tabId}" class="form-check-input" id="${idPrefix}-${item[0]}-input" value="${item[0]}" ${isChecked} ${isDisabled}/>
+              <label class="form-check-label" for="${idPrefix}-${item[0]}-input">
+                <span class="align-middle">${item[1]}</span>
+              </label>
+              ${checkboxDropdown}
               <a href="${item[3]}" target="_blank" class="module-info text-muted ms-3">
                 <span>${getSvg("info")}</span>
                 <div class="module-info-link-div d-inline-block">
                   <span class="module-info-link" id="nbdev-info-link"> ${getSvg("link")}</span>
                 </div>
               </a>
-            </label>
+            </div>
           </div>
         `);
         // Append the new div to the container
