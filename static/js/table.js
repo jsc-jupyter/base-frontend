@@ -2915,12 +2915,13 @@ $(document).on("sse", `[data-sse-servers][id$='-summary-tr']`, function (event, 
           addValue = false;
         } else {
           if ( $this.is("input[type='checkbox']") ){
-            value = $this.prop('checked');
+            // value = $this.prop('checked');
+            value = $this.attr("name");
             if ( allCheckboxes && !parent ) {
               addValue = true;
-            } else if ( parent && value ) {
+            } else if ( parent && $this.prop('checked') ) {
               addValue = true;
-            } else if ( value ) {
+            } else if ( $this.prop('checked') ) {
               addValue = true;
             } else {
               addValue = false;
@@ -2937,7 +2938,8 @@ $(document).on("sse", `[data-sse-servers][id$='-summary-tr']`, function (event, 
             if ( !Object.keys(ret).includes(name) ) {
               ret[name] = [];
             }
-            ret[name].push($this.attr("name"))
+            // ret[name].push($this.attr("name"))
+            ret[name].push(value)
           } else {
             ret[name] = value;
           }            
@@ -2954,7 +2956,8 @@ $(document).on("sse", `[data-sse-servers][id$='-summary-tr']`, function (event, 
             if ( !Object.keys(ret[dataGroupValue]).includes(name) ) {
               ret[dataGroupValue][name] = [];
             }
-            ret[dataGroupValue][name].push($this.attr("name"))
+            // ret[dataGroupValue][name].push($this.attr("name"))
+            ret[dataGroupValue][name].push(value);
           } else {
             ret[dataGroupValue][name] = value;
           }
@@ -4422,12 +4425,19 @@ $(document).on("sse", `[data-sse-servers][id$='-summary-tr']`, function (event, 
           checkboxDropdown = `
             <select class="form-select form-select-sm ms-2 version-select"
               style="width: auto;"
+              data-collect="true"
+              data-parent="${elementId}_${item[0]}"
+              data-group="${group}_versions"
+              data-element="${elementId}_${item[0]}"
+              data-type="dropdown"
+              data-row="${rowId}"
+              data-tab="${tabId}"
               id="${idPrefix}-${item[0]}-version-input">
           `;
-          for (const option of item[5]) {
-            const selected = (option === item[2]) ? 'selected' : '';
+          item[5].forEach((option, index) => {
+            const selected = index === 0 ? 'selected' : '';
             checkboxDropdown += `<option value="${option}" ${selected}>${option}</option>`;
-          }
+          });
           checkboxDropdown += `
             </select>
           `;
