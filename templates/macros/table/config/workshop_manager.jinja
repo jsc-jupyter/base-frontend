@@ -388,6 +388,33 @@
                   "triggerOnChange": "textGrowLabelChange"
                 },
               },
+              "communities": {
+                "input": {
+                  "type": "select",
+                  "options": {
+                    "group": "modules",
+                    "enabled": false,
+                    "size": 4,
+                    "multiple": true,
+                    "setName": "communitySet"
+                  }
+                },
+                "label": {
+                  "type": "textcheckbox",
+                  "value": "Communities",
+                  "options": {
+                    "default": false
+                  }
+                },
+                "trigger": {
+                  "option": "wmTriggerModules"
+                },
+                "dependency": {
+                  "option": [
+                    "lmod"
+                  ]
+                }
+              },
               "extensions": {
                 "input": {
                   "type": "select",
