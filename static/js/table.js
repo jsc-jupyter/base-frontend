@@ -3080,6 +3080,7 @@ $(document).on("sse", `[data-sse-servers][id$='-summary-tr']`, function (event, 
       $(`#${serviceId}-${rowId}-${envvariablesTabId}-table tbody`).append(newRowHtml);
       $(`[id^='${serviceId}-${rowId}-${envvariablesTabId}-'][id$='-input']`).prop("disabled", true);
     }
+    $(`[id^='${serviceId}-${rowId}-${envvariablesTabId}-'][id$='-addbtn-input']`).prop("disabled", false);
 
     const spawner = getSpawner(rowId);
     const optionElement = getInputElement(serviceId, rowId, "option");
