@@ -630,6 +630,29 @@
           },
           "modules": {
             "center": {
+              "communities": {
+                "input": {
+                  "type": "multiple_checkboxes"
+                },
+                "options": {
+                  "group": "modules",
+                  "setName": "communitySet"
+                },
+                "label": {
+                  "type": "header",
+                  "value": "Communities"
+                },
+                "triggerSuffix": "checkboxes-div",
+                "trigger": {
+                  "option": "homeTriggerModules",
+                  "system": "homeTriggerModules"
+                },
+                "dependency": {
+                  "option": [
+                    "lmod"
+                  ]
+                }
+              },
               "extensions": {
                 "input": {
                   "type": "multiple_checkboxes"
@@ -687,29 +710,6 @@
                 "label": {
                   "type": "header",
                   "value": "Proxies"
-                },
-                "triggerSuffix": "checkboxes-div",
-                "trigger": {
-                  "option": "homeTriggerModules",
-                  "system": "homeTriggerModules"
-                },
-                "dependency": {
-                  "option": [
-                    "lmod"
-                  ]
-                }
-              },
-              "communities": {
-                "input": {
-                  "type": "multiple_checkboxes"
-                },
-                "options": {
-                  "group": "modules",
-                  "setName": "communitySet"
-                },
-                "label": {
-                  "type": "header",
-                  "value": "Communities"
                 },
                 "triggerSuffix": "checkboxes-div",
                 "trigger": {
