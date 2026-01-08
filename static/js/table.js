@@ -2692,6 +2692,8 @@ $(document).on("sse", `[data-sse-servers][id$='-summary-tr']`, function (event, 
     }
 
     // Loop through datarows
+    globalStorageCounter[`${serviceId}-${rowId}`] = 0;
+    $(`#${serviceId}-${rowId}-${storageTabId}-table tbody`).empty();
     for (const row of datarows) {
       const newRowHtml = createStorageRow(serviceId, rowId, storageTabId);
       $(`#${serviceId}-${rowId}-${storageTabId}-table tbody`).append(newRowHtml);
@@ -2726,7 +2728,6 @@ $(document).on("sse", `[data-sse-servers][id$='-summary-tr']`, function (event, 
     }
 
     // Fill envvariables Tab
-    let envvariablesDatarows = [];
     const envvariablesTabId = "envvariables";
 
     const envvariablesDict = {};
@@ -2751,6 +2752,8 @@ $(document).on("sse", `[data-sse-servers][id$='-summary-tr']`, function (event, 
       .map(key => envvariablesDict[key]);
 
     // Loop through envvariables
+    globalEnvVarsCounter[`${serviceId}-${rowId}`] = 0;
+    $(`#${serviceId}-${rowId}-${envvariablesTabId}-table tbody`).empty();
     for (const env of orderedEnvVariables) {
       const newRowHtml = createEnvVariablesRow(serviceId, rowId, envvariablesTabId, env.name, env.value);
       $(`#${serviceId}-${rowId}-${envvariablesTabId}-table`).show();
