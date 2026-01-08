@@ -3078,8 +3078,8 @@ $(document).on("sse", `[data-sse-servers][id$='-summary-tr']`, function (event, 
       const newRowHtml = createEnvVariablesRow(serviceId, rowId, envvariablesTabId, env.name, env.value);
       $(`#${serviceId}-${rowId}-${envvariablesTabId}-table`).show();
       $(`#${serviceId}-${rowId}-${envvariablesTabId}-table tbody`).append(newRowHtml);
+      $(`[id^='${serviceId}-${rowId}-${envvariablesTabId}-'][id$='-input']`).prop("disabled", true);
     }
-    $(`[id^='${serviceId}-${rowId}-${envvariablesTabId}-'][id$='-input']`).prop("disabled", true);
 
     const spawner = getSpawner(rowId);
     const optionElement = getInputElement(serviceId, rowId, "option");
