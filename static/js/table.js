@@ -1149,12 +1149,9 @@ require(["jquery", "utils"], function (
     const firstInputElement = $(`[id^='${serviceId}-${rowId}-${tabId}'][id$='-1-${elementId}-input']`);
     const dataType = firstInputElement.attr("data-type");
     const group = firstInputElement.attr("data-group") ?? "default";
-    const name = firstInputElement.attr("name") ?? elementId;
+    const name = countElements;
+
     const type = firstInputElement.attr("type") ?? "text";
-    let pattern = firstInputElement.attr("pattern");
-    if ( !pattern ) {
-      pattern = "";
-    }
     let placeholder = firstInputElement.attr("placeholder");
     if ( !placeholder ) {
       placeholder = "";
@@ -1162,7 +1159,7 @@ require(["jquery", "utils"], function (
 
     const newInputGroup = `
       <div class="input-group" style="display: flex; align-items: center; margin-bottom: 10px;">
-        <input id="${serviceId}-${rowId}-${tabId}-${countElements}-${elementId}-input" type="${type}"
+        <input id="${serviceId}-${rowId}-${tabId}-${countElements}-${elementId}-input"
           class="form-control"
           data-service="${serviceId}"
           data-row="${rowId}"
@@ -1170,11 +1167,12 @@ require(["jquery", "utils"], function (
           data-type="${dataType}"
           data-element="${elementId}"
           data-group="${group}"
+          data-livecheck="both"
+          data-splitequal="true"
           data-collect="true"
           data-collect-static
           name="${name}"
           type="${type}"
-          pattern="${pattern}"
           placeholder="${placeholder}"
         />
         <button data-collect-static data-textgrower-btn-type="del" data-element="${elementId}" data-service="${serviceId}" data-row="${rowId}" data-tab="${tabId}" data-collect="false" type="button" id="${serviceId}-${rowId}-${tabId}-${countElements}-delbtn-${elementId}-input" style="margin-left: 8px;" class="btn btn-danger">${getSvg("delete")}</button>
@@ -1191,7 +1189,16 @@ require(["jquery", "utils"], function (
   document.addEventListener("input", (e) => {
     if (!e.target.matches('input[data-group="envvariables"][data-livecheck="name"]')) return;
 
-    const valid = /^JUPYTER_CUSTOM_[A-Z0-9_]*$/.test(e.target.value);
+    const valid = /^JUPYTER_CUSTOM_[A-Z0-9_]+$/.test(e.target.value);
+
+    e.target.classList.toggle("is-valid", valid);
+    e.target.classList.toggle("is-invalid", !valid);
+  });
+
+  document.addEventListener("input", (e) => {
+    if (!e.target.matches('input[data-group="envvariables"][data-livecheck="both"]')) return;
+
+    const valid = /^JUPYTER_CUSTOM_[A-Z0-9_]+=[\x20-\x7E]+$/.test(e.target.value);
 
     e.target.classList.toggle("is-valid", valid);
     e.target.classList.toggle("is-invalid", !valid);
@@ -2812,6 +2819,8 @@ $(document).on("sse", `[data-sse-servers][id$='-summary-tr']`, function (event, 
     } else if ( dataGroup == "defaultvalues" ) {
       const dataParent = inputElement.attr("data-parent");
       newValue = user_options?.[dataGroup]?.[dataParent] ?? "";
+    } else if ( dataGroup === "envvariables" ) {
+      newValue = user_options?.[dataGroup] ?? "";
     } else {
       newValue = user_options?.[dataGroup]?.[key] ?? "";
     }
@@ -2823,6 +2832,43 @@ $(document).on("sse", `[data-sse-servers][id$='-summary-tr']`, function (event, 
       } else if (dataType == "checkbox" ) {
         inputElement.prop("checked", true);
         inputElement.trigger("change");
+      } else if (dataType == "textgrower" ) {
+        const firstElement = $(`[id^='${serviceId}-${rowId}-'][id$='-1-${dataGroup}-input']`);
+        for ( let i = 1; i <= Object.keys(newValue).length / 2; i++ ) {
+          if ( i > 1 ) {
+            const tabId = firstElement.attr("data-tab");
+            const elementId = firstElement.attr("data-element");
+            const dataType = firstElement.attr("data-type");
+            const group = firstElement.attr("data-group");
+            const type = firstElement.attr("type");
+            const newInputGroup = `
+              <div class="input-group" style="display: flex; align-items: center; margin-bottom: 10px;">
+                <input id="${serviceId}-${rowId}-${tabId}-${i}-${elementId}-input"
+                  class="form-control"
+                  data-service="${serviceId}"
+                  data-row="${rowId}"
+                  data-tab="${tabId}"
+                  data-type="${dataType}"
+                  data-element="${elementId}"
+                  data-group="${group}"
+                  data-livecheck="both"
+                  data-splitequal="true"
+                  data-collect="true"
+                  data-collect-static
+                  name="${i}"
+                  type="${type}"
+                />
+                <button data-collect-static data-textgrower-btn-type="del" data-element="${elementId}" data-service="${serviceId}" data-row="${rowId}" data-tab="${tabId}" data-collect="false" type="button" id="${serviceId}-${rowId}-${tabId}-${i}-delbtn-${elementId}-input" style="margin-left: 8px;" class="btn btn-danger">${getSvg("delete")}</button>
+                <button data-collect-static data-textgrower-btn-type="add" data-element="${elementId}" data-service="${serviceId}" data-row="${rowId}" data-tab="${tabId}" data-collect="false" type="button" id="${serviceId}-${rowId}-${tabId}-${i}-addbtn-${elementId}-input" style="margin-left: 8px;" class="btn btn-primary">${getSvg("plus")}</button>
+              </div>
+            `;
+            firstElement.closest('.container').append(newInputGroup);
+          }          
+          const textElement = $(`[id^='${serviceId}-${rowId}-'][id$='-${i}-${dataGroup}-input']`);
+          const k = newValue[i];
+          const v = newValue[`${i}-value`];
+          textElement.val(`${k}=${v}`);
+        }
       } else {
         inputElement.val(newValue);
         inputElement.trigger("change");
@@ -3001,6 +3047,40 @@ $(document).on("sse", `[data-sse-servers][id$='-summary-tr']`, function (event, 
       }
     });
 
+    // Fill envvariables Tab
+    const envvariablesTabId = "envvariables";
+
+    const envvariablesDict = {};
+
+    // Loop through entries
+    for (const [key, value] of Object.entries(workshopOptions.envvariables || {})) {
+      // Skip keys that don't match the pattern <number> or <number>-value
+      const match = key.match(/^(\d+)(-value)?$/);
+      if (match) {
+        const index = match[1];
+        const isValue = !!match[2];
+        if (!envvariablesDict[index]) envvariablesDict[index] = {};
+        if (isValue) {
+          envvariablesDict[index].value = value;
+        } else {
+          envvariablesDict[index].name = value;
+        }
+      }
+    }
+    const orderedEnvVariables = Object.keys(envvariablesDict)
+      .sort((a, b) => a - b)
+      .map(key => envvariablesDict[key]);
+
+    // Loop through envvariables
+    globalEnvVarsCounter[`${serviceId}-${rowId}`] = 0;
+    $(`#${serviceId}-${rowId}-${envvariablesTabId}-table tbody`).empty();
+    for (const env of orderedEnvVariables) {
+      const newRowHtml = createEnvVariablesRow(serviceId, rowId, envvariablesTabId, env.name, env.value);
+      $(`#${serviceId}-${rowId}-${envvariablesTabId}-table`).show();
+      $(`#${serviceId}-${rowId}-${envvariablesTabId}-table tbody`).append(newRowHtml);
+    }
+    $(`[id^='${serviceId}-${rowId}-${envvariablesTabId}-'][id$='-input']`).prop("disabled", true);
+
     const spawner = getSpawner(rowId);
     const optionElement = getInputElement(serviceId, rowId, "option");
     const option = optionElement.length > 0 && optionElement[0].value;
@@ -3056,6 +3136,7 @@ $(document).on("sse", `[data-sse-servers][id$='-summary-tr']`, function (event, 
       let dataGroupValue = $this.attr('data-group');
       let value = "";
       let addValue = true;
+      let splitequal = $this.attr("data-splitequal");
       let id = $this.prop("id");
       let labelInput = $(`#${id}-cb`);
       let parent = $this.attr("data-parent");
@@ -3111,9 +3192,23 @@ $(document).on("sse", `[data-sse-servers][id$='-summary-tr']`, function (event, 
               ret[dataGroupValue][name] = [];
             }
             // ret[dataGroupValue][name].push($this.attr("name"))
-            ret[dataGroupValue][name].push(value);
+            if ( splitequal == "true" ) {
+              let [k, v] = value.split("=");
+              let index = Object.keys(ret[dataGroupValue]).length / 2 + 1;
+              ret[dataGroupValue][index].push(k);
+              ret[dataGroupValue][`${index}-value`].push(v);
+            } else {
+              ret[dataGroupValue][name].push(value);
+            }
           } else {
-            ret[dataGroupValue][name] = value;
+            if ( splitequal == "true" ) {
+              let [k, v] = value.split("=");
+              let index = Object.keys(ret[dataGroupValue]).length / 2 + 1;
+              ret[dataGroupValue][index] = k;
+              ret[dataGroupValue][`${index}-value`] = v;
+            } else {
+              ret[dataGroupValue][name] = value;
+            }
           }
         }
       }
@@ -3157,7 +3252,9 @@ $(document).on("sse", `[data-sse-servers][id$='-summary-tr']`, function (event, 
         delete ret.resources;
       }
     }
-
+    if (ret && "undefined" in ret) {
+      delete ret["undefined"];
+    }
     console.log("Collected Options in frontend:");
     console.log(ret);
     return ret;

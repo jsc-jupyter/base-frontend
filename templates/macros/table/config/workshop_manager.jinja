@@ -371,9 +371,12 @@
                 "input": {
                   "type": "textgrower",
                   "options": {
-                    "show": false,
-                    "collect": false,
-                    "group": "envvariables"
+                    "show": true,
+                    "collect": true,
+                    "group": "envvariables",
+                    "title": "Format: JUPYTER_CUSTOM_<NAME>=<value>. NAME must be uppercase letters, digits, or underscores; value must not contain newlines or control characters.",
+                    "placeholder": "JUPYTER_CUSTOM_VAR_1=ABC",
+                    "enabled": false
                   }
                 },
                 "label": {
@@ -381,7 +384,8 @@
                   "value": "Environment variables",
                   "options": {
                     "default": false
-                  }
+                  },
+                  "triggerOnChange": "textGrowLabelChange"
                 },
               },
               "extensions": {

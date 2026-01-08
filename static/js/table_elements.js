@@ -672,6 +672,12 @@ function tcCreateStorageEntryInput(idPrefix, serviceId, rowId, tabId, elementId,
 }
 
 
+function textGrowLabelChange(trigger, serviceId, rowId, tabId, elementId, elementOptions) {
+  const labelInput = $(`[id^="${serviceId}-${rowId}-${tabId}"][id$="-${elementId}-input-cb"]`);
+  const inputFields = $(`[id^="${serviceId}-${rowId}-${tabId}"][id$="-${elementId}-input"]`);
+  inputFields.attr("data-collect", labelInput.prop("checked") ? "true" : "false");
+}
+
 function tcCreateTextGrowerInput(idPrefix, serviceId, rowId, tabId, elementId, elementOptions = {}) {
   const container = document.createElement("div");
   container.id = `${idPrefix}-${elementId}-input-div`;
@@ -707,6 +713,10 @@ function tcCreateTextGrowerInput(idPrefix, serviceId, rowId, tabId, elementId, e
   input.id = `${idPrefix}-1-${elementId}-input`;
   input.type = (elementOptions.input?.options?.secret) ? "password" : "text";
   input.className = "form-control";
+  input.title = elementOptions.input?.options?.title || "";
+  input.placeholder = elementOptions.input?.options?.placeholder || "";
+  input.setAttribute("data-livecheck", "both");
+  input.setAttribute("data-splitequal", "true");
 
   // Add element parameters for the input itself
   const inputParams = tcElementParameters(serviceId, rowId, tabId, elementId, elementOptions);
@@ -717,8 +727,8 @@ function tcCreateTextGrowerInput(idPrefix, serviceId, rowId, tabId, elementId, e
       input.setAttribute(key, value);
     }
   }
-
-  input.name = elementOptions.input?.options?.name ?? elementId;
+  
+  input.name = "1";
 
   // Add input to inputGroup
   inputGroup.appendChild(input);
@@ -728,7 +738,7 @@ function tcCreateTextGrowerInput(idPrefix, serviceId, rowId, tabId, elementId, e
   btn.dataset.service = serviceId;
   btn.dataset.row = rowId;
   btn.dataset.tab = tabId;
-  btn.dataset.collectStatic = ""; // data-collect-static attribute, empty string for boolean
+  btn.dataset.collectStatic = "";
   btn.dataset.element = elementId;
   btn.dataset.textgrowerBtnType = "add";
   btn.dataset.collect = "false";
