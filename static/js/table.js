@@ -74,6 +74,8 @@ require(["jquery", "utils"], function (
     const globalUserOptions = {};
     const globalFillingOrder = {};
     const globalStorageCounter = {};
+    const globalEnvVarsCounter = {};
+    let globalCredits = {};
     const initIncidents = getFrontendCollection()?.incidents || {};
     // initIncidents.JSCCLOUD.health = 50;
     const incidentsmapping = {
@@ -779,9 +781,30 @@ require(["jquery", "utils"], function (
 
 
 
+  // Environment Variables Logic
+  $(document).on("click", '.add-env-variable', function (event) {
+    const $this = $(this);
+    const serviceId = $this.data('service');
+    const rowId = $this.data('row');
+    const tabId = $this.data('tab');
+    const newRowHtml = createEnvVariablesRow(serviceId, rowId, tabId);
+    $(`#${serviceId}-${rowId}-${tabId}-table`).show();
+    $(`#${serviceId}-${rowId}-${tabId}-table tbody`).append(newRowHtml);
+  });
 
+  $(document).on('click', '.del-env-variable', function (event) {
+    event.stopPropagation();
+    const $this = $(this);
+    const summaryRow = $this.closest('tr');
+    const collapseRow = summaryRow.next('.collapsible-tr');
+    const table = summaryRow.closest('table');
+    collapseRow.remove();
+    summaryRow.remove();
 
-
+    if (table.find('tbody tr').length === 0) {
+      table.hide();
+    }
+  })
 
 
 
@@ -1126,12 +1149,9 @@ require(["jquery", "utils"], function (
     const firstInputElement = $(`[id^='${serviceId}-${rowId}-${tabId}'][id$='-1-${elementId}-input']`);
     const dataType = firstInputElement.attr("data-type");
     const group = firstInputElement.attr("data-group") ?? "default";
-    const name = firstInputElement.attr("name") ?? elementId;
+    const name = countElements;
+
     const type = firstInputElement.attr("type") ?? "text";
-    let pattern = firstInputElement.attr("pattern");
-    if ( !pattern ) {
-      pattern = "";
-    }
     let placeholder = firstInputElement.attr("placeholder");
     if ( !placeholder ) {
       placeholder = "";
@@ -1139,7 +1159,7 @@ require(["jquery", "utils"], function (
 
     const newInputGroup = `
       <div class="input-group" style="display: flex; align-items: center; margin-bottom: 10px;">
-        <input id="${serviceId}-${rowId}-${tabId}-${countElements}-${elementId}-input" type="${type}"
+        <input id="${serviceId}-${rowId}-${tabId}-${countElements}-${elementId}-input"
           class="form-control"
           data-service="${serviceId}"
           data-row="${rowId}"
@@ -1147,11 +1167,12 @@ require(["jquery", "utils"], function (
           data-type="${dataType}"
           data-element="${elementId}"
           data-group="${group}"
+          data-livecheck="both"
+          data-splitequal="true"
           data-collect="true"
           data-collect-static
           name="${name}"
           type="${type}"
-          pattern="${pattern}"
           placeholder="${placeholder}"
         />
         <button data-collect-static data-textgrower-btn-type="del" data-element="${elementId}" data-service="${serviceId}" data-row="${rowId}" data-tab="${tabId}" data-collect="false" type="button" id="${serviceId}-${rowId}-${tabId}-${countElements}-delbtn-${elementId}-input" style="margin-left: 8px;" class="btn btn-danger">${getSvg("delete")}</button>
@@ -1165,6 +1186,112 @@ require(["jquery", "utils"], function (
     $(this).closest('.input-group').remove();
   });
 
+  document.addEventListener("input", (e) => {
+    if (!e.target.matches('input[data-group="envvariables"][data-livecheck="name"]')) return;
+
+    const valid = /^JUPYTER_CUSTOM_[A-Z0-9_]+$/.test(e.target.value);
+
+    e.target.classList.toggle("is-valid", valid);
+    e.target.classList.toggle("is-invalid", !valid);
+  });
+
+  document.addEventListener("input", (e) => {
+    if (!e.target.matches('input[data-group="envvariables"][data-livecheck="both"]')) return;
+
+    const valid = /^JUPYTER_CUSTOM_[A-Z0-9_]+=[\x20-\x7E]+$/.test(e.target.value);
+
+    e.target.classList.toggle("is-valid", valid);
+    e.target.classList.toggle("is-invalid", !valid);
+  });
+
+  document.addEventListener("input", (e) => {
+    if (!e.target.matches('input[data-group="envvariables"][data-livecheck="value"]')) {
+      return;
+    }
+    const ENV_VALUE_REGEX = /^[\x20-\x7E]*$/;
+    const value = e.target.value;
+    const valid = ENV_VALUE_REGEX.test(value);
+
+    e.target.classList.toggle("is-valid", valid);
+    e.target.classList.toggle("is-invalid", !valid);
+
+    // Optional: custom validity message (HTML5 validation)
+    e.target.setCustomValidity(
+      valid ? "" : "Value must not contain newlines or control characters"
+    );
+  });
+
+  function createEnvVariablesRow(serviceId, rowId, tabId, existing_name = false, existing_value = false) {
+    let currentCount;
+    const key = `${serviceId}-${rowId}`;
+    if (globalEnvVarsCounter.hasOwnProperty(key)) {
+      globalEnvVarsCounter[key] += 1;
+      currentCount = globalEnvVarsCounter[key];
+    } else {
+      globalEnvVarsCounter[key] = 1;
+      currentCount = 1;
+    }
+    let name = `JUPYTER_CUSTOM_VAR_${currentCount}`
+    if (existing_name !== false) {
+      name = existing_name;
+    }
+    let value = '';
+    if (existing_value !== false) {
+      value = existing_value;
+    }
+    return `
+      <tr id="${serviceId}-${rowId}-${tabId}-${currentCount}-summary-tr"
+        class="summary-tr existing-spawner-tr env-variables-summary-tr">
+        <td id="${serviceId}-${rowId}-${tabId}-${currentCount}-e1-template" class="env-variables-e1-template">
+          <input type="text"
+            class="form-control"
+            data-service="${serviceId}"
+            data-row="${rowId}"
+            data-tab="${tabId}"
+            data-type="text"
+            data-collect="true"
+            data-enabled="true"
+            data-group="envvariables"
+            data-livecheck="name"
+            placeholder="JUPYTER_CUSTOM_"
+            value="${name}"
+            name="${currentCount}"
+            required
+            pattern="^JUPYTER_CUSTOM_[A-Z0-9_]*$"
+            title="Must start with JUPYTER_CUSTOM_ and contain only uppercase letters, digits, and underscores"
+            id="${serviceId}-${rowId}-${tabId}-${currentCount}-input">
+        </td>
+        <td id="${serviceId}-${rowId}-${tabId}-${currentCount}-e1-template" class="env-variables-e1-template">
+          <input type="text"
+            class="form-control"
+            data-service="${serviceId}"
+            data-row="${rowId}"
+            data-tab="${tabId}"
+            data-type="text"
+            data-collect="true"
+            data-enabled="true"
+            data-group="envvariables"
+            data-livecheck="value"
+            name="${currentCount}-value"
+            placeholder="1"
+            value="${value}"
+            pattern="^[\x20-\x7E]*$"
+            title="Value must not contain newlines or control characters"
+            id="${serviceId}-${rowId}-${tabId}-${currentCount}-value-input">
+        </td>
+        
+        <th class="text-center">
+          <button
+            type="button"
+            id="${serviceId}-${rowId}-${tabId}-${currentCount}-delbtn-input"
+            class="btn btn-danger del-env-variable"
+          >
+            ${getSvg("delete")}
+          </button>
+        </th>
+      </tr>
+    `;
+  }
 
   function createStorageRow(serviceId, rowId, tabId) {
     let currentCount;
@@ -1816,6 +1943,7 @@ require(["jquery", "utils"], function (
 
   $(document).on("sse", "[data-sse-credits]", function (event, datalist) {
     const $this = $(this);
+    globalCredits = datalist;
     if ( $this.attr("data-header-element") === "true" ) {
       const service = $this.attr("data-service");
       const row = $this.attr("data-row");
@@ -1827,9 +1955,9 @@ require(["jquery", "utils"], function (
           if ( system === creditsUserOptions["system"] ) {
             var creditsProject = "";
             if ( data.project ) {
-              creditsProject = ` ( ${data.project.name}: ${data.project.balance} / ${data.project.cap} per day )`;
+              creditsProject = ` ( ${data.project.name}: ${data.project.balance} / ${data.project.cap} ${data.project.refresh_text} )`;
             }
-            const creditsText = `Credits: ${data.balance} / ${data.cap} per day ${creditsProject}`;
+            const creditsText = `Credits: ${data.balance} / ${data.cap} ${data.refresh_text} ${creditsProject}`;
             $this.text(`${system} ( ${creditsText} )`);
           }
         }
@@ -1843,18 +1971,18 @@ require(["jquery", "utils"], function (
             if ( $(this).val() === creditsUserOptions[selectCreditsKey] ) {
               var creditsProject = "";
               if ( data.project ) {
-                creditsProject = `( ${data.project.name}: ${data.project.balance} / ${data.project.cap} per day )`;
+                creditsProject = `( ${data.project.name}: ${data.project.balance} / ${data.project.cap} ${data.project.refresh_text} )`;
               }
-              const creditsText = `Credits: ${data.balance} / ${data.cap} per day ${creditsProject}`;
+              const creditsText = `Credits: ${data.balance} / ${data.cap} ${data.refresh_text} ${creditsProject}`;
               $(this).text(`${$(this).val()} ( ${creditsText} )`);
             }
           });
         } else if (!selectCreditsKey && Object.keys(creditsUserOptions).length === 0 ) {
             var creditsProject = "";
             if ( data.project ) {
-              creditsProject = ` ( ${data.project.name}: ${data.project.balance} / ${data.project.cap} )`;
+              creditsProject = ` ( ${data.project.name}: ${data.project.balance} / ${data.project.cap} ${data.project.refresh_text} )`;
             }
-            const creditsText = `Global Credits: ${data.balance} / ${data.cap} ${creditsProject}`;
+            const creditsText = `Global Credits: ${data.balance} / ${data.cap} ${data.refresh_text} ${creditsProject}`;
             $(this).text(`${creditsText}`);
         }
       }
@@ -2012,15 +2140,17 @@ require(["jquery", "utils"], function (
       valueIndex++;
     }
 
-    // Add a horizontal line if there are inactive options
-    if (inactive_values.length > 0) {
-        select.append('<hr>');
-    }
+    if (!isWorkshop) {
+      // Add a horizontal line if there are inactive options
+      if (inactive_values.length > 0) {
+          select.append('<hr>');
+      }
 
-    // Add inactive options at the end of the dropdown
-    inactive_values.forEach(([key, value]) => {
-      select.append(`<option value="${key}" disabled>${value} (${inactive_text})</option>`);
-    });
+      // Add inactive options at the end of the dropdown
+      inactive_values.forEach(([key, value]) => {
+        select.append(`<option value="${key}" disabled>${value} (${inactive_text})</option>`);
+      });
+    }
 
     if ( defaultValue && select.find(`option[value="${defaultValue}"]:not(:disabled)`).length) {
       select.val(defaultValue);
@@ -2039,6 +2169,9 @@ require(["jquery", "utils"], function (
           }
         }
       }
+    }
+    if ( select.attr("data-sse-credits-key") && select.attr("data-sse-credits-key") == elementId && globalCredits.length > 0 ) {
+      select.trigger("sse", [globalCredits]);
     }
   }
 
@@ -2566,6 +2699,8 @@ $(document).on("sse", `[data-sse-servers][id$='-summary-tr']`, function (event, 
     }
 
     // Loop through datarows
+    globalStorageCounter[`${serviceId}-${rowId}`] = 0;
+    $(`#${serviceId}-${rowId}-${storageTabId}-table tbody`).empty();
     for (const row of datarows) {
       const newRowHtml = createStorageRow(serviceId, rowId, storageTabId);
       $(`#${serviceId}-${rowId}-${storageTabId}-table tbody`).append(newRowHtml);
@@ -2597,6 +2732,39 @@ $(document).on("sse", `[data-sse-servers][id$='-summary-tr']`, function (event, 
       }
 
       datarowcount++;
+    }
+
+    // Fill envvariables Tab
+    const envvariablesTabId = "envvariables";
+
+    const envvariablesDict = {};
+
+    // Loop through entries
+    for (const [key, value] of Object.entries(user_options.envvariables || {})) {
+      // Skip keys that don't match the pattern <number> or <number>-value
+      const match = key.match(/^(\d+)(-value)?$/);
+      if (match) {
+        const index = match[1];
+        const isValue = !!match[2];
+        if (!envvariablesDict[index]) envvariablesDict[index] = {};
+        if (isValue) {
+          envvariablesDict[index].value = value;
+        } else {
+          envvariablesDict[index].name = value;
+        }
+      }
+    }
+    const orderedEnvVariables = Object.keys(envvariablesDict)
+      .sort((a, b) => a - b)
+      .map(key => envvariablesDict[key]);
+
+    // Loop through envvariables
+    globalEnvVarsCounter[`${serviceId}-${rowId}`] = 0;
+    $(`#${serviceId}-${rowId}-${envvariablesTabId}-table tbody`).empty();
+    for (const env of orderedEnvVariables) {
+      const newRowHtml = createEnvVariablesRow(serviceId, rowId, envvariablesTabId, env.name, env.value);
+      $(`#${serviceId}-${rowId}-${envvariablesTabId}-table`).show();
+      $(`#${serviceId}-${rowId}-${envvariablesTabId}-table tbody`).append(newRowHtml);
     }
 
     const shareId = user_options?.share_id ?? false;
@@ -2651,6 +2819,8 @@ $(document).on("sse", `[data-sse-servers][id$='-summary-tr']`, function (event, 
     } else if ( dataGroup == "defaultvalues" ) {
       const dataParent = inputElement.attr("data-parent");
       newValue = user_options?.[dataGroup]?.[dataParent] ?? "";
+    } else if ( dataGroup === "envvariables" ) {
+      newValue = user_options?.[dataGroup] ?? "";
     } else {
       newValue = user_options?.[dataGroup]?.[key] ?? "";
     }
@@ -2662,6 +2832,43 @@ $(document).on("sse", `[data-sse-servers][id$='-summary-tr']`, function (event, 
       } else if (dataType == "checkbox" ) {
         inputElement.prop("checked", true);
         inputElement.trigger("change");
+      } else if (dataType == "textgrower" ) {
+        const firstElement = $(`[id^='${serviceId}-${rowId}-'][id$='-1-${dataGroup}-input']`);
+        for ( let i = 1; i <= Object.keys(newValue).length / 2; i++ ) {
+          if ( i > 1 ) {
+            const tabId = firstElement.attr("data-tab");
+            const elementId = firstElement.attr("data-element");
+            const dataType = firstElement.attr("data-type");
+            const group = firstElement.attr("data-group");
+            const type = firstElement.attr("type");
+            const newInputGroup = `
+              <div class="input-group" style="display: flex; align-items: center; margin-bottom: 10px;">
+                <input id="${serviceId}-${rowId}-${tabId}-${i}-${elementId}-input"
+                  class="form-control"
+                  data-service="${serviceId}"
+                  data-row="${rowId}"
+                  data-tab="${tabId}"
+                  data-type="${dataType}"
+                  data-element="${elementId}"
+                  data-group="${group}"
+                  data-livecheck="both"
+                  data-splitequal="true"
+                  data-collect="true"
+                  data-collect-static
+                  name="${i}"
+                  type="${type}"
+                />
+                <button data-collect-static data-textgrower-btn-type="del" data-element="${elementId}" data-service="${serviceId}" data-row="${rowId}" data-tab="${tabId}" data-collect="false" type="button" id="${serviceId}-${rowId}-${tabId}-${i}-delbtn-${elementId}-input" style="margin-left: 8px;" class="btn btn-danger">${getSvg("delete")}</button>
+                <button data-collect-static data-textgrower-btn-type="add" data-element="${elementId}" data-service="${serviceId}" data-row="${rowId}" data-tab="${tabId}" data-collect="false" type="button" id="${serviceId}-${rowId}-${tabId}-${i}-addbtn-${elementId}-input" style="margin-left: 8px;" class="btn btn-primary">${getSvg("plus")}</button>
+              </div>
+            `;
+            firstElement.closest('.container').append(newInputGroup);
+          }          
+          const textElement = $(`[id^='${serviceId}-${rowId}-'][id$='-${i}-${dataGroup}-input']`);
+          const k = newValue[i];
+          const v = newValue[`${i}-value`];
+          textElement.val(`${k}=${v}`);
+        }
       } else {
         inputElement.val(newValue);
         inputElement.trigger("change");
@@ -2840,6 +3047,41 @@ $(document).on("sse", `[data-sse-servers][id$='-summary-tr']`, function (event, 
       }
     });
 
+    // Fill envvariables Tab
+    const envvariablesTabId = "envvariables";
+
+    const envvariablesDict = {};
+
+    // Loop through entries
+    for (const [key, value] of Object.entries(workshopOptions.envvariables || {})) {
+      // Skip keys that don't match the pattern <number> or <number>-value
+      const match = key.match(/^(\d+)(-value)?$/);
+      if (match) {
+        const index = match[1];
+        const isValue = !!match[2];
+        if (!envvariablesDict[index]) envvariablesDict[index] = {};
+        if (isValue) {
+          envvariablesDict[index].value = value;
+        } else {
+          envvariablesDict[index].name = value;
+        }
+      }
+    }
+    const orderedEnvVariables = Object.keys(envvariablesDict)
+      .sort((a, b) => a - b)
+      .map(key => envvariablesDict[key]);
+
+    // Loop through envvariables
+    globalEnvVarsCounter[`${serviceId}-${rowId}`] = 0;
+    $(`#${serviceId}-${rowId}-${envvariablesTabId}-table tbody`).empty();
+    for (const env of orderedEnvVariables) {
+      const newRowHtml = createEnvVariablesRow(serviceId, rowId, envvariablesTabId, env.name, env.value);
+      $(`#${serviceId}-${rowId}-${envvariablesTabId}-table`).show();
+      $(`#${serviceId}-${rowId}-${envvariablesTabId}-table tbody`).append(newRowHtml);
+      $(`[id^='${serviceId}-${rowId}-${envvariablesTabId}-'][id$='-input']`).prop("disabled", true);
+    }
+    $(`[id^='${serviceId}-${rowId}-${envvariablesTabId}-'][id$='-addbtn-input']`).prop("disabled", false);
+
     const spawner = getSpawner(rowId);
     const optionElement = getInputElement(serviceId, rowId, "option");
     const option = optionElement.length > 0 && optionElement[0].value;
@@ -2895,6 +3137,7 @@ $(document).on("sse", `[data-sse-servers][id$='-summary-tr']`, function (event, 
       let dataGroupValue = $this.attr('data-group');
       let value = "";
       let addValue = true;
+      let splitequal = $this.attr("data-splitequal");
       let id = $this.prop("id");
       let labelInput = $(`#${id}-cb`);
       let parent = $this.attr("data-parent");
@@ -2908,12 +3151,13 @@ $(document).on("sse", `[data-sse-servers][id$='-summary-tr']`, function (event, 
           addValue = false;
         } else {
           if ( $this.is("input[type='checkbox']") ){
-            value = $this.prop('checked');
+            // value = $this.prop('checked');
+            value = $this.attr("name");
             if ( allCheckboxes && !parent ) {
               addValue = true;
-            } else if ( parent && value ) {
+            } else if ( parent && $this.prop('checked') ) {
               addValue = true;
-            } else if ( value ) {
+            } else if ( $this.prop('checked') ) {
               addValue = true;
             } else {
               addValue = false;
@@ -2930,7 +3174,8 @@ $(document).on("sse", `[data-sse-servers][id$='-summary-tr']`, function (event, 
             if ( !Object.keys(ret).includes(name) ) {
               ret[name] = [];
             }
-            ret[name].push($this.attr("name"))
+            // ret[name].push($this.attr("name"))
+            ret[name].push(value)
           } else {
             ret[name] = value;
           }            
@@ -2947,9 +3192,24 @@ $(document).on("sse", `[data-sse-servers][id$='-summary-tr']`, function (event, 
             if ( !Object.keys(ret[dataGroupValue]).includes(name) ) {
               ret[dataGroupValue][name] = [];
             }
-            ret[dataGroupValue][name].push($this.attr("name"))
+            // ret[dataGroupValue][name].push($this.attr("name"))
+            if ( splitequal == "true" ) {
+              let [k, v] = value.split("=");
+              let index = Object.keys(ret[dataGroupValue]).length / 2 + 1;
+              ret[dataGroupValue][index].push(k);
+              ret[dataGroupValue][`${index}-value`].push(v);
+            } else {
+              ret[dataGroupValue][name].push(value);
+            }
           } else {
-            ret[dataGroupValue][name] = value;
+            if ( splitequal == "true" ) {
+              let [k, v] = value.split("=");
+              let index = Object.keys(ret[dataGroupValue]).length / 2 + 1;
+              ret[dataGroupValue][index] = k;
+              ret[dataGroupValue][`${index}-value`] = v;
+            } else {
+              ret[dataGroupValue][name] = value;
+            }
           }
         }
       }
@@ -2993,7 +3253,9 @@ $(document).on("sse", `[data-sse-servers][id$='-summary-tr']`, function (event, 
         delete ret.resources;
       }
     }
-
+    if (ret && "undefined" in ret) {
+      delete ret["undefined"];
+    }
     console.log("Collected Options in frontend:");
     console.log(ret);
     return ret;
@@ -4352,7 +4614,8 @@ $(document).on("sse", `[data-sse-servers][id$='-summary-tr']`, function (event, 
                   value.displayName,
                   typeof value.default === 'object' && value.default !== null ? value.default.default : value.default,
                   value.href,
-                  value.weight ?? 10
+                  value.weight ?? 10,
+                  value.options || false
                 ]);
               }
             });
@@ -4408,21 +4671,46 @@ $(document).on("sse", `[data-sse-servers][id$='-summary-tr']`, function (event, 
             });
           }
         }
-        
+        let checkboxDropdown = '';
+        if ( item[5]) {
+          // item 5 is a list of values for the dropdown
+          checkboxDropdown = `
+            <select class="form-select form-select-sm ms-2 version-select"
+              style="width: auto;"
+              data-collect="true"
+              data-parent="${elementId}_${item[0]}"
+              data-group="${group}_versions"
+              data-element="${elementId}_${item[0]}"
+              data-type="dropdown"
+              data-row="${rowId}"
+              data-tab="${tabId}"
+              id="${idPrefix}-${item[0]}-version-input">
+          `;
+          item[5].forEach((option, index) => {
+            const selected = index === 0 ? 'selected' : '';
+            checkboxDropdown += `<option value="${option}" ${selected}>${option}</option>`;
+          });
+          checkboxDropdown += `
+            </select>
+          `;
+        }
         // Create the new div block
         const newDiv = $(`
           <div id="${idPrefix}-${item[0]}-input-div" class="form-check col-sm-6 col-md-4 col-lg-3">
-            <input type="checkbox" name="${item[0]}" data-collect="true" ${dependencies}                
-              data-checked="${isChecked}" data-parent="${elementId}" data-group="${group}" data-element="${item[0]}" data-type="multiplecheckbox" data-row="${rowId}" data-tab="${tabId}" class="form-check-input" id="${idPrefix}-${item[0]}-input" value="${item[0]}" ${isChecked} ${isDisabled}/>
-            <label class="form-check-label" for="${idPrefix}-${item[0]}-input">
-              <span class="align-middle">${item[1]}</span>
+            <div class="d-flex align-items-center mb-1">
+              <input type="checkbox" name="${item[0]}" data-collect="true" ${dependencies}
+                data-checked="${isChecked}" data-parent="${elementId}" data-group="${group}" data-element="${item[0]}" data-type="multiplecheckbox" data-row="${rowId}" data-tab="${tabId}" class="form-check-input" id="${idPrefix}-${item[0]}-input" value="${item[0]}" ${isChecked} ${isDisabled}/>
+              <label class="form-check-label" for="${idPrefix}-${item[0]}-input">
+                <span class="align-middle">${item[1]}</span>
+              </label>
+              ${checkboxDropdown}
               <a href="${item[3]}" target="_blank" class="module-info text-muted ms-3">
                 <span>${getSvg("info")}</span>
                 <div class="module-info-link-div d-inline-block">
                   <span class="module-info-link" id="nbdev-info-link"> ${getSvg("link")}</span>
                 </div>
               </a>
-            </label>
+            </div>
           </div>
         `);
         // Append the new div to the container
@@ -5298,3 +5586,5 @@ document.addEventListener('DOMContentLoaded', async function () {
     }
   });
 // });
+
+

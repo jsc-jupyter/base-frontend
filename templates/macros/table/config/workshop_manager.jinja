@@ -367,6 +367,27 @@
                   ]
                 }
               },
+              "envvariables": {
+                "input": {
+                  "type": "textgrower",
+                  "options": {
+                    "show": true,
+                    "collect": true,
+                    "group": "envvariables",
+                    "title": "Format: JUPYTER_CUSTOM_<NAME>=<value>. NAME must be uppercase letters, digits, or underscores; value must not contain newlines or control characters.",
+                    "placeholder": "JUPYTER_CUSTOM_VAR_1=ABC",
+                    "enabled": false
+                  }
+                },
+                "label": {
+                  "type": "textcheckbox",
+                  "value": "Environment variables",
+                  "options": {
+                    "default": false
+                  },
+                  "triggerOnChange": "textGrowLabelChange"
+                },
+              },
               "extensions": {
                 "input": {
                   "type": "select",
