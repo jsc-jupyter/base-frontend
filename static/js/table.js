@@ -74,6 +74,7 @@ require(["jquery", "utils"], function (
     const globalUserOptions = {};
     const globalFillingOrder = {};
     const globalStorageCounter = {};
+    const globalEnvVarsCounter = {};
     let globalCredits = {};
     const initIncidents = getFrontendCollection()?.incidents || {};
     // initIncidents.JSCCLOUD.health = 50;
@@ -780,9 +781,30 @@ require(["jquery", "utils"], function (
 
 
 
+  // Environment Variables Logic
+  $(document).on("click", '.add-env-variable', function (event) {
+    const $this = $(this);
+    const serviceId = $this.data('service');
+    const rowId = $this.data('row');
+    const tabId = $this.data('tab');
+    const newRowHtml = createEnvVariablesRow(serviceId, rowId, tabId);
+    $(`#${serviceId}-${rowId}-${tabId}-table`).show();
+    $(`#${serviceId}-${rowId}-${tabId}-table tbody`).append(newRowHtml);
+  });
 
+  $(document).on('click', '.del-env-variable', function (event) {
+    event.stopPropagation();
+    const $this = $(this);
+    const summaryRow = $this.closest('tr');
+    const collapseRow = summaryRow.next('.collapsible-tr');
+    const table = summaryRow.closest('table');
+    collapseRow.remove();
+    summaryRow.remove();
 
-
+    if (table.find('tbody tr').length === 0) {
+      table.hide();
+    }
+  })
 
 
 
@@ -1166,6 +1188,103 @@ require(["jquery", "utils"], function (
     $(this).closest('.input-group').remove();
   });
 
+  document.addEventListener("input", (e) => {
+    if (!e.target.matches('input[data-group="envvariables"][data-livecheck="name"]')) return;
+
+    const valid = /^JUPYTER_CUSTOM_[A-Z0-9_]*$/.test(e.target.value);
+
+    e.target.classList.toggle("is-valid", valid);
+    e.target.classList.toggle("is-invalid", !valid);
+  });
+
+  document.addEventListener("input", (e) => {
+    if (!e.target.matches('input[data-group="envvariables"][data-livecheck="value"]')) {
+      return;
+    }
+    const ENV_VALUE_REGEX = /^[\x20-\x7E]*$/;
+    const value = e.target.value;
+    const valid = ENV_VALUE_REGEX.test(value);
+
+    e.target.classList.toggle("is-valid", valid);
+    e.target.classList.toggle("is-invalid", !valid);
+
+    // Optional: custom validity message (HTML5 validation)
+    e.target.setCustomValidity(
+      valid ? "" : "Value must not contain newlines or control characters"
+    );
+  });
+
+  function createEnvVariablesRow(serviceId, rowId, tabId, existing_name = false, existing_value = false) {
+    let currentCount;
+    const key = `${serviceId}-${rowId}`;
+    if (globalEnvVarsCounter.hasOwnProperty(key)) {
+      globalEnvVarsCounter[key] += 1;
+      currentCount = globalEnvVarsCounter[key];
+    } else {
+      globalEnvVarsCounter[key] = 1;
+      currentCount = 1;
+    }
+    let name = `JUPYTER_CUSTOM_VAR_${currentCount}`
+    if (existing_name !== false) {
+      name = existing_name;
+    }
+    let value = '';
+    if (existing_value !== false) {
+      value = existing_value;
+    }
+    return `
+      <tr id="${serviceId}-${rowId}-${tabId}-${currentCount}-summary-tr"
+        class="summary-tr existing-spawner-tr env-variables-summary-tr">
+        <td id="${serviceId}-${rowId}-${tabId}-${currentCount}-e1-template" class="env-variables-e1-template">
+          <input type="text"
+            class="form-control"
+            data-service="${serviceId}"
+            data-row="${rowId}"
+            data-tab="${tabId}"
+            data-type="text"
+            data-collect="true"
+            data-enabled="true"
+            data-group="envvariables"
+            data-livecheck="name"
+            placeholder="JUPYTER_CUSTOM_"
+            value="${name}"
+            name="${currentCount}"
+            required
+            pattern="^JUPYTER_CUSTOM_[A-Z0-9_]*$"
+            title="Must start with JUPYTER_CUSTOM_ and contain only uppercase letters, digits, and underscores"
+            id="${serviceId}-${rowId}-${tabId}-${currentCount}-input">
+        </td>
+        <td id="${serviceId}-${rowId}-${tabId}-${currentCount}-e1-template" class="env-variables-e1-template">
+          <input type="text"
+            class="form-control"
+            data-service="${serviceId}"
+            data-row="${rowId}"
+            data-tab="${tabId}"
+            data-type="text"
+            data-collect="true"
+            data-enabled="true"
+            data-group="envvariables"
+            data-livecheck="value"
+            name="${currentCount}-value"
+            placeholder="1"
+            value="${value}"
+            pattern="^[\x20-\x7E]*$"
+            title="Value must not contain newlines or control characters"
+            id="${serviceId}-${rowId}-${tabId}-${currentCount}-value-input">
+        </td>
+        
+        <th class="text-center">
+          <button
+            type="button"
+            id="${serviceId}-${rowId}-${tabId}-${currentCount}-delbtn-input"
+            class="btn btn-danger del-env-variable"
+          >
+            ${getSvg("delete")}
+          </button>
+        </th>
+      </tr>
+    `;
+  }
 
   function createStorageRow(serviceId, rowId, tabId) {
     let currentCount;
@@ -2604,6 +2723,38 @@ $(document).on("sse", `[data-sse-servers][id$='-summary-tr']`, function (event, 
       }
 
       datarowcount++;
+    }
+
+    // Fill envvariables Tab
+    let envvariablesDatarows = [];
+    const envvariablesTabId = "envvariables";
+
+    const envvariablesDict = {};
+
+    // Loop through entries
+    for (const [key, value] of Object.entries(user_options.envvariables || {})) {
+      // Skip keys that don't match the pattern <number> or <number>-value
+      const match = key.match(/^(\d+)(-value)?$/);
+      if (match) {
+        const index = match[1];
+        const isValue = !!match[2];
+        if (!envvariablesDict[index]) envvariablesDict[index] = {};
+        if (isValue) {
+          envvariablesDict[index].value = value;
+        } else {
+          envvariablesDict[index].name = value;
+        }
+      }
+    }
+    const orderedEnvVariables = Object.keys(envvariablesDict)
+      .sort((a, b) => a - b)
+      .map(key => envvariablesDict[key]);
+
+    // Loop through envvariables
+    for (const env of orderedEnvVariables) {
+      const newRowHtml = createEnvVariablesRow(serviceId, rowId, envvariablesTabId, env.name, env.value);
+      $(`#${serviceId}-${rowId}-${envvariablesTabId}-table`).show();
+      $(`#${serviceId}-${rowId}-${envvariablesTabId}-table tbody`).append(newRowHtml);
     }
 
     const shareId = user_options?.share_id ?? false;
@@ -5334,4 +5485,5 @@ document.addEventListener('DOMContentLoaded', async function () {
     }
   });
 // });
+
 

@@ -523,7 +523,7 @@ function tcCreateTextInput(idPrefix, serviceId, rowId, tabId, elementId, element
     copyBtn.setAttribute("data-bs-toggle", "tooltip");
     copyBtn.setAttribute("data-bs-placement", "top");
     copyBtn.setAttribute("title", "Copy to clipboard");
-    copyBtn.innerHTML = getSvg("copy");  // assumes `getSvg("copy")` returns the SVG HTML string
+    copyBtn.innerHTML = getSvg("copy");
 
     inputGroup.appendChild(copyBtn);
   }
@@ -544,7 +544,69 @@ function tcCreateTextInput(idPrefix, serviceId, rowId, tabId, elementId, element
   return wrapper.outerHTML.trim();
 }
 
+function tcCreateEnvVariablesEntryInput(idPrefix, serviceId, rowId, tabId, elementId, elementOptions = {}) {
+  const container = document.createElement("div");
 
+  // Paragraph with button
+  const p = document.createElement("p");
+  p.style.justifySelf = "center";
+  p.innerText = "Add Environment Variables";
+
+  const addBtn = document.createElement("button");
+  addBtn.classList.add("btn", "btn-success", "add-env-variable");
+  addBtn.id = `${idPrefix}-addbtn-input`;
+  addBtn.dataset.btnType = "add";
+  addBtn.dataset.service = serviceId;
+  addBtn.dataset.row = rowId;
+  addBtn.dataset.tab = tabId;
+  addBtn.dataset.element = elementId;
+  addBtn.dataset.collect = "false";
+  addBtn.type = "button";
+  addBtn.style.marginLeft = "8px";
+  addBtn.innerHTML = getSvg("plus");
+
+  p.appendChild(addBtn);
+  container.appendChild(p);
+
+  // Table
+  const table = document.createElement("table");
+  table.id = `${serviceId}-${rowId}-${tabId}-table`;
+  table.style.display = "none";
+  table.style.justifySelf = "center";
+  table.className = "table table-bordered table-striped table-hover table-light align-middle";
+
+  const thead = document.createElement("thead");
+  thead.className = "table-secondary";
+  thead.style.width = "50%";
+
+  const tr = document.createElement("tr");
+
+  const th1 = document.createElement("th");
+  th1.scope = "col";
+  th1.style.width = "45%";
+  th1.innerText = "Variable Name"
+
+  const th2 = document.createElement("th");
+  th2.scope = "col";
+  th2.style.width = "45%";
+  th2.innerText = "Variable Value";
+
+  const th3 = document.createElement("th");
+  th3.scope = "col";
+  th3.style.width = "10%";
+  th3.className = "text-center";
+  th3.innerText = "Action";
+
+  tr.append(th1, th2, th3);
+  thead.appendChild(tr);
+  table.appendChild(thead);
+
+  const tbody = document.createElement("tbody");
+  table.appendChild(tbody);
+
+  container.appendChild(table);
+  return container.outerHTML.trim();
+}
 
 function tcCreateStorageEntryInput(idPrefix, serviceId, rowId, tabId, elementId, elementOptions = {}) {
   const container = document.createElement("div");
@@ -565,7 +627,7 @@ function tcCreateStorageEntryInput(idPrefix, serviceId, rowId, tabId, elementId,
   addBtn.dataset.collect = "false";
   addBtn.type = "button";
   addBtn.style.marginLeft = "8px";
-  addBtn.innerHTML = getSvg("plus");  // assumes getSvg("plus") returns your SVG markup
+  addBtn.innerHTML = getSvg("plus");
 
   p.appendChild(addBtn);
   container.appendChild(p);
@@ -680,7 +742,6 @@ function tcCreateTextGrowerInput(idPrefix, serviceId, rowId, tabId, elementId, e
     btn.disabled = true;
   }
 
-  // Assuming you have a function getSvg("plus") for the SVG icon
   btn.innerHTML = getSvg("plus");
 
   inputGroup.appendChild(btn);
@@ -1288,6 +1349,9 @@ function tcCreateElement(
     case "storageentry":
       element += tcCreateStorageEntryInput(idPrefix, serviceId, rowId, tabId, elementId, elementOptions);
       break;
+    case "envvariablesentry":
+      element += tcCreateEnvVariablesEntryInput(idPrefix, serviceId, rowId, tabId, elementId, elementOptions);
+      break;
     case "textgrower":
       element += tcCreateTextGrowerInput(idPrefix, serviceId, rowId, tabId, elementId, elementOptions);
       break;
@@ -1440,7 +1504,6 @@ function tcWorkshopManagerDefaultHeader(serviceId, rowId, rowOptions, serviceOpt
   btn.setAttribute('data-row', rowId);
   btn.setAttribute('data-target', `#${rowId}-workshop-link`);
 
-  // Insert svg icon + text, assume svgOpenIcon is a string with SVG markup
   btn.innerHTML = `${getSvg("open")} Open`;
 
   thAction.appendChild(btn);
@@ -1489,7 +1552,6 @@ function tcWorkshopManagerFirstHeader(serviceId, rowId, rowOptions, serviceOptio
 }
 
 // Creates row content with two columns, each column containing elements
-// Assumes table_elements.create_element() is available and returns a DOM element
 function tcWorkshopManagerRowContent(serviceId, serviceOptions, rowId, tabId, tableElements) {
   const container = document.createElement('div');
   container.classList.add('row');
@@ -3437,3 +3499,4 @@ function appendRowToServiceTableWorkshopManager(serviceId, rowId, rowOptions, se
 
   tbody.appendChild(htmlToElement(collapsibleHtml));
 }
+

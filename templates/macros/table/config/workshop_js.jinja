@@ -10,6 +10,10 @@ function getFrontendConfig() {
               "show": true,
               "displayName": "Lab Config"
             },
+            "envvariables": {
+              "show": true,
+              "displayName": "Environment variables"
+            },
             "modules": {
               "displayName": "Kernels and Extensions",
               "dependency": {
@@ -555,6 +559,20 @@ function getFrontendConfig() {
                   }
                 }
               },
+            },
+            "envvariables": {
+              "center": {
+                "envvariables": {
+                  "input": {
+                    "type": "envvariablesentry",
+                    "options": {
+                      "show": true,
+                      "collect": true,
+                      "group": "envvariables"
+                    }
+                  }
+                }
+              }
             },
             "modules": {
               "center": {
