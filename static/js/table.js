@@ -2410,6 +2410,47 @@ require(["jquery", "utils"], function (
     }
   }
 
+  function validateUserEmailList(textareaElement) {
+    const labelElement = $(`label[for='${textareaElement.attr("id")}']`);
+    const checkBox = labelElement.find("input[type='checkbox']");
+    if ( checkBox.length > 0 && !checkBox.prop("checked") ) {
+      return true;
+    }
+    const textareaValue = textareaElement.val();
+    const lines = textareaValue.split(/\r?\n/);
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    const invalidEmails = [];
+
+    lines.forEach((line, index) => {
+      const value = line.trim();
+
+      // Ignore empty lines and comments
+      if (!value || value.startsWith("#")) return;
+
+      if (!emailRegex.test(value)) {
+        invalidEmails.push({
+          line: index + 1,
+          value
+        });
+      }
+    });
+    if (invalidEmails.length > 0) {
+      textareaElement.addClass('is-invalid');
+      const feedbackElement = textareaElement.siblings('.invalid-feedback');
+      let errorMessage = 'Invalid email addresses found on the following lines:<br>';
+      invalidEmails.forEach(email => {
+        errorMessage += `Line ${email.line}: "${email.value}"<br>`;
+      });
+      feedbackElement.html(errorMessage);
+      feedbackElement.show();
+    } else {
+      textareaElement.removeClass('is-invalid');
+      textareaElement.siblings('.invalid-feedback').hide();
+    }
+    return invalidEmails.length === 0;
+  }
+
   function validateForm(serviceId, rowId) {
     const form = $(`form[id='${serviceId}-${rowId}-form']`);
     let ret = true;
@@ -2421,7 +2462,7 @@ require(["jquery", "utils"], function (
         console.log(`${key} is not allowed. Choose a different name in configuration`);
         valid = false;
       } else {
-        valid = $this.is("input") ? validateInput($this) : $this.is("select") ? validateSelect($this) : false;
+        valid = $this.is("input") ? validateInput($this) : $this.is("select") ? validateSelect($this) : $this.is("textarea") ? validateUserEmailList($this) : false;
       }
       if ( !valid ) {
         console.error("The following element is invalid: ");
@@ -3223,15 +3264,23 @@ $(document).on("sse", `[data-sse-servers][id$='-summary-tr']`, function (event, 
     if ( !Object.keys(ret).includes("name") || !ret?.name ) {
       ret["name"] = `Unnamed ${serviceId}`;
     }
-    const workshopOptions = getWorkshopOptions();
-    if ( !isEmptyObject(workshopOptions) ) {
-      ret["workshop_id"] = workshopOptions?.workshopid;
-    } else if ( !Object.keys(ret).includes("workshop_id")) {
-      ret["workshop_id"] = globalUserOptions?.[serviceId]?.[rowId]?.["workshop_id"] ?? false;
+    if ( !Object.keys(ret).includes("workshop_id")) {
+      const workshopOptions = getWorkshopOptions();
+      if ( !isEmptyObject(workshopOptions) ) {
+        ret["workshop_id"] = workshopOptions?.workshopid;
+      } else if ( !Object.keys(ret).includes("workshop_id")) {
+        ret["workshop_id"] = globalUserOptions?.[serviceId]?.[rowId]?.["workshop_id"] ?? false;
+      }
+    }
+    if (typeof ret.workshop_id === "boolean" && ret.workshop_id === false) {
+      delete ret.workshop_id;
     }
     if ( pageType(null) == pageType("workshopmanager") ) {
       ret["description"] = form.find(`[id$='-description-input']`).val();
       ret["expertmode"] = form.find(`[id$='-description-input']`).prop("checked");
+      if ( form.find(`[id$='-userlist-input']`).prop("disabled") === false ) {
+        ret["workshop_storage_rw"] = form.find(`[id$='-workshop_storage_rw-input']`).prop("checked");
+      }
     }
     const shareId = globalUserOptions?.[serviceId]?.[rowId]?.["share_id"] ?? false;
     if ( shareId ) {
@@ -3271,13 +3320,23 @@ $(document).on("sse", `[data-sse-servers][id$='-summary-tr']`, function (event, 
   function wmTriggerWorkshopid(trigger, serviceId, rowId, tabId, elementId, elementOptions) {
       const $this = $(`input[id^="${serviceId}-${rowId}-"][id$="-${elementId}-input"]`);
       if ( !isFirstRow(rowId) ){
-        $this.val(rowId);        
-      } else {
-        if ( isWorkshopInstructor() ) {
-          $this.prop("disabled", false);
-          $this.prop("placeholder", elementOptions?.["input"]?.["options"]?.["placeholderInstructor"] || "W");
-        }
+        $this.val(rowId);
+        $this.prop("disabled", true);
       }
+  }
+
+  function wmTriggerStorageRW(trigger, serviceId, rowId, tabId, elementId, elementOptions) {
+    const $this = $(`input[id^="${serviceId}-${rowId}-"][id$="-${elementId}-input"]`);
+    // const inputId = $input.attr("id");
+    // const $label = $(`label[for="${inputId}"]`);
+    const userlist = $(`textarea[id^="${serviceId}-${rowId}-"][id$="-userlist-input"]`);
+    if (userlist.prop("disabled") === false) {
+      $this.prop("disabled", false);
+      $this.attr("data-collect", "true");
+    } else {
+      $this.prop("disabled", true);
+      $this.attr("data-collect", "false");
+    }
   }
 
   function homeTriggerOption(trigger, serviceId, rowId, tabId, elementId, elementOptions) {
@@ -4366,6 +4425,50 @@ $(document).on("sse", `[data-sse-servers][id$='-summary-tr']`, function (event, 
       url,
       options
     );
+  }
+
+  function buildHumanReadableQuery(payload) {
+    const params = new URLSearchParams();
+
+    function addValue(key, value) {
+      if (value === undefined || value === null) return;
+
+      if (Array.isArray(value)) {
+        value.forEach(v => addValue(key, v));
+      } else if (typeof value === "object") {
+        Object.entries(value).forEach(([k, v]) => {
+          addValue(`${key}.${k}`, v);
+        });
+      } else {
+        params.append(key, String(value));
+      }
+    }
+
+    Object.entries(payload).forEach(([key, value]) => {
+      // Skip empty arrays
+      if (Array.isArray(value) && value.length === 0) return;
+
+      // Skip empty objects
+      if (
+        typeof value === "object" &&
+        !Array.isArray(value) &&
+        Object.keys(value).length === 0
+      ) {
+        return;
+      }
+
+      addValue(key, value);
+    });
+
+    return params.toString();
+  }
+
+
+  function homeTriggerButtonGetLink(serviceId, rowId, buttonId, button_options, user, api, base_url, utils) {
+    const userOptions = collectSelectedOptions(serviceId, rowId);
+    const query = buildHumanReadableQuery(userOptions);
+    const start_url = new URL(utils.url_path_join(window.origin, base_url, "api", "start").replace("//", "/"));
+    showModal(serviceId, rowId, `${start_url}?${query}`, `Direct Link`, "Configure your server via direct link. Click \"Copy URL\" to copy the URL to your clipboard.", "");
   }
 
   function wmTriggerButtonShare(serviceId, rowId, buttonId, button_options, user, api, base_url, utils) {

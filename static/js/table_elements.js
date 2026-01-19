@@ -26,6 +26,7 @@ function tcCreateButton(serviceId, rowId, button, buttonOptions = {}) {
   const svgKeyMap = {
     share: "share",
     rtc: "rtc",
+    getlink: "link",
     reset: "reset",
     delete: "delete",
     save: "save",
@@ -43,6 +44,7 @@ function tcCreateButton(serviceId, rowId, button, buttonOptions = {}) {
   const defaultTexts = {
     share: "Share",
     rtc: "RTC",
+    getlink: "",
     reset: "Reset",
     delete: "Delete",
     save: "Save",
@@ -60,6 +62,7 @@ function tcCreateButton(serviceId, rowId, button, buttonOptions = {}) {
   const buttonClasses = {
     share: "",
     rtc: buttonOptions.show === false ? "d-none" : "",
+    getlink: "",
     reset: "btn-danger",
     delete: "btn-danger",
     save: "btn-success",
@@ -538,6 +541,79 @@ function tcCreateTextInput(idPrefix, serviceId, rowId, tabId, elementId, element
     inputCol.appendChild(input);
   }
 
+  inputCol.appendChild(invalidDiv);
+  wrapper.appendChild(inputCol);
+
+  return wrapper.outerHTML.trim();
+}
+
+function tcCreateTextLink(idPrefix, serviceId, rowId, tabId, elementId, elementOptions) {
+  const wrapper = document.createElement("div");
+  wrapper.id = `${idPrefix}-${elementId}-input-div`;
+  wrapper.classList.add("row", "mb-1");
+
+  Object.entries(
+    tcElementParameters(serviceId, rowId, tabId, elementId, elementOptions, true, true)
+  ).forEach(([k, v]) => wrapper.setAttribute(k, v));
+
+  const label = tcCreateLabel(idPrefix, serviceId, rowId, tabId, elementId, elementOptions);
+  wrapper.appendChild(htmlToElement(label));
+
+  const colWidth = 12 - parseInt(elementOptions.label?.width || "4");
+  const inputCol = document.createElement("div");
+  inputCol.classList.add(`col-${colWidth}`, "d-flex", "align-items-center");
+
+  const link = document.createElement("a");
+  link.classList.add("form-link"); // optional custom class
+  link.href = elementOptions?.input?.options?.href || "#";
+  link.innerText = elementOptions?.input?.options?.text || elementId;
+  link.id = `${idPrefix}-${elementId}-link`;
+
+  // Optional: open mail client safely
+  link.rel = "noopener noreferrer";
+
+  Object.entries(
+    tcElementParameters(serviceId, rowId, tabId, elementId, elementOptions, false, true)
+  ).forEach(([k, v]) => link.setAttribute(k, v));
+
+  inputCol.appendChild(link);
+  wrapper.appendChild(inputCol);
+
+  return wrapper.outerHTML.trim();
+}
+
+
+function tcCreateTextAreaInput(idPrefix, serviceId, rowId, tabId, elementId, elementOptions) {
+  const wrapper = document.createElement("div");
+  wrapper.id = `${idPrefix}-${elementId}-input-div`;
+  wrapper.classList.add("row", "mb-1");
+
+  Object.entries(tcElementParameters(serviceId, rowId, tabId, elementId, elementOptions, true, true))
+    .forEach(([k, v]) => wrapper.setAttribute(k, v));
+
+  const label = tcCreateLabel(idPrefix, serviceId, rowId, tabId, elementId, elementOptions);
+  wrapper.appendChild(htmlToElement(label));
+
+  const colWidth = 12 - parseInt(elementOptions.label?.width || "4");
+  const inputCol = document.createElement("div");
+  inputCol.classList.add(`col-${colWidth}`, "d-flex", "flex-column", "justify-content-center");
+
+  const input = document.createElement("textarea");
+  input.classList.add("form-control");
+
+  Object.entries(tcElementParameters(serviceId, rowId, tabId, elementId, elementOptions, false, true))
+    .forEach(([k, v]) => input.setAttribute(k, v));
+
+  input.name = elementOptions?.input?.options?.name || elementId;
+  input.id = `${idPrefix}-${elementId}-input`;
+  input.rows = elementOptions?.input?.options?.rows || 4;
+
+  const invalidDiv = document.createElement("div");
+  invalidDiv.classList.add("invalid-feedback");
+  invalidDiv.innerText = elementOptions?.input?.options?.warning || "";
+
+
+  inputCol.appendChild(input);
   inputCol.appendChild(invalidDiv);
   wrapper.appendChild(inputCol);
 
@@ -1355,6 +1431,12 @@ function tcCreateElement(
   switch (type) {
     case "text":
       element += tcCreateTextInput(idPrefix, serviceId, rowId, tabId, elementId, elementOptions);
+      break;
+    case "textarea":
+      element += tcCreateTextAreaInput(idPrefix, serviceId, rowId, tabId, elementId, elementOptions);
+      break;
+    case "textlink":
+      element += tcCreateTextLink(idPrefix, serviceId, rowId, tabId, elementId, elementOptions);
       break;
     case "storageentry":
       element += tcCreateStorageEntryInput(idPrefix, serviceId, rowId, tabId, elementId, elementOptions);
@@ -2696,6 +2778,7 @@ const tcElementFactory = {
   multiple_checkboxes: tcCreateMultipleCheckboxes,
   selecthelper: tcCreateSelectHelper,
   text: tcCreateTextInput,
+  textarea: tcCreateTextAreaInput,
   storageentry: tcCreateStorageEntryInput,
   storagegrow: tcCreateStorageEntryInput,
   number: tcCreateNumberInput,
