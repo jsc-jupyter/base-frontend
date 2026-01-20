@@ -425,6 +425,8 @@
                   "options": {
                     "show": true,
                     "group": "envvariables",
+                    "collect": false,
+                    "collectstatic": true,
                     "title": "Format: JUPYTER_CUSTOM_<NAME>=<value>. NAME must be uppercase letters, digits, or underscores; value must not contain newlines or control characters.",
                     "placeholder": "JUPYTER_CUSTOM_VAR_1=ABC",
                     "enabled": false
@@ -435,8 +437,7 @@
                   "value": "Environment variables",
                   "options": {
                     "default": false
-                  },
-                  "triggerOnChange": "textGrowLabelChange"
+                  }
                 },
               },
               "communities": {

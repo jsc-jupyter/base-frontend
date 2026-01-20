@@ -747,13 +747,6 @@ function tcCreateStorageEntryInput(idPrefix, serviceId, rowId, tabId, elementId,
   return container.outerHTML.trim();
 }
 
-
-function textGrowLabelChange(trigger, serviceId, rowId, tabId, elementId, elementOptions) {
-  const labelInput = $(`[id^="${serviceId}-${rowId}-${tabId}"][id$="-${elementId}-input-cb"]`);
-  const inputFields = $(`[id^="${serviceId}-${rowId}-${tabId}"][id$="-${elementId}-input"]`);
-  inputFields.attr("data-collect", labelInput.prop("checked") ? "true" : "false");
-}
-
 function tcCreateTextGrowerInput(idPrefix, serviceId, rowId, tabId, elementId, elementOptions = {}) {
   const container = document.createElement("div");
   container.id = `${idPrefix}-${elementId}-input-div`;

@@ -1169,8 +1169,8 @@ require(["jquery", "utils"], function (
           data-group="${group}"
           data-livecheck="both"
           data-splitequal="true"
-          data-collect="true"
-          data-collect-static
+          data-collect="false"
+          data-collect-static="true"
           name="${name}"
           type="${type}"
           placeholder="${placeholder}"
@@ -1249,7 +1249,7 @@ require(["jquery", "utils"], function (
             data-row="${rowId}"
             data-tab="${tabId}"
             data-type="text"
-            data-collect="true"
+            data-collect="false"
             data-enabled="true"
             data-group="envvariables"
             data-livecheck="name"
@@ -1268,7 +1268,7 @@ require(["jquery", "utils"], function (
             data-row="${rowId}"
             data-tab="${tabId}"
             data-type="text"
-            data-collect="true"
+            data-collect="false"
             data-enabled="true"
             data-group="envvariables"
             data-livecheck="value"
@@ -2778,32 +2778,11 @@ $(document).on("sse", `[data-sse-servers][id$='-summary-tr']`, function (event, 
     // Fill envvariables Tab
     const envvariablesTabId = "envvariables";
 
-    const envvariablesDict = {};
-
-    // Loop through entries
-    for (const [key, value] of Object.entries(user_options.envvariables || {})) {
-      // Skip keys that don't match the pattern <number> or <number>-value
-      const match = key.match(/^(\d+)(-value)?$/);
-      if (match) {
-        const index = match[1];
-        const isValue = !!match[2];
-        if (!envvariablesDict[index]) envvariablesDict[index] = {};
-        if (isValue) {
-          envvariablesDict[index].value = value;
-        } else {
-          envvariablesDict[index].name = value;
-        }
-      }
-    }
-    const orderedEnvVariables = Object.keys(envvariablesDict)
-      .sort((a, b) => a - b)
-      .map(key => envvariablesDict[key]);
-
     // Loop through envvariables
     globalEnvVarsCounter[`${serviceId}-${rowId}`] = 0;
     $(`#${serviceId}-${rowId}-${envvariablesTabId}-table tbody`).empty();
-    for (const env of orderedEnvVariables) {
-      const newRowHtml = createEnvVariablesRow(serviceId, rowId, envvariablesTabId, env.name, env.value);
+    for (const [key, value] of Object.entries(user_options?.envvariables ?? {})) {
+      const newRowHtml = createEnvVariablesRow(serviceId, rowId, envvariablesTabId, key, value);
       $(`#${serviceId}-${rowId}-${envvariablesTabId}-table`).show();
       $(`#${serviceId}-${rowId}-${envvariablesTabId}-table tbody`).append(newRowHtml);
     }
@@ -2875,8 +2854,8 @@ $(document).on("sse", `[data-sse-servers][id$='-summary-tr']`, function (event, 
         inputElement.trigger("change");
       } else if (dataType == "textgrower" ) {
         const firstElement = $(`[id^='${serviceId}-${rowId}-'][id$='-1-${dataGroup}-input']`);
-        for ( let i = 1; i <= Object.keys(newValue).length / 2; i++ ) {
-          if ( i > 1 ) {
+        Object.entries(newValue).forEach(([key, value], index) => {
+          if ( index > 0 ) {
             const tabId = firstElement.attr("data-tab");
             const elementId = firstElement.attr("data-element");
             const dataType = firstElement.attr("data-type");
@@ -2884,7 +2863,7 @@ $(document).on("sse", `[data-sse-servers][id$='-summary-tr']`, function (event, 
             const type = firstElement.attr("type");
             const newInputGroup = `
               <div class="input-group" style="display: flex; align-items: center; margin-bottom: 10px;">
-                <input id="${serviceId}-${rowId}-${tabId}-${i}-${elementId}-input"
+                <input id="${serviceId}-${rowId}-${tabId}-${index+1}-${elementId}-input"
                   class="form-control"
                   data-service="${serviceId}"
                   data-row="${rowId}"
@@ -2894,22 +2873,20 @@ $(document).on("sse", `[data-sse-servers][id$='-summary-tr']`, function (event, 
                   data-group="${group}"
                   data-livecheck="both"
                   data-splitequal="true"
-                  data-collect="true"
-                  data-collect-static
-                  name="${i}"
+                  data-collect="false"
+                  data-collect-static="true"
+                  name="${index+1}"
                   type="${type}"
                 />
-                <button data-collect-static data-textgrower-btn-type="del" data-element="${elementId}" data-service="${serviceId}" data-row="${rowId}" data-tab="${tabId}" data-collect="false" type="button" id="${serviceId}-${rowId}-${tabId}-${i}-delbtn-${elementId}-input" style="margin-left: 8px;" class="btn btn-danger">${getSvg("delete")}</button>
-                <button data-collect-static data-textgrower-btn-type="add" data-element="${elementId}" data-service="${serviceId}" data-row="${rowId}" data-tab="${tabId}" data-collect="false" type="button" id="${serviceId}-${rowId}-${tabId}-${i}-addbtn-${elementId}-input" style="margin-left: 8px;" class="btn btn-primary">${getSvg("plus")}</button>
+                <button data-collect-static data-textgrower-btn-type="del" data-element="${elementId}" data-service="${serviceId}" data-row="${rowId}" data-tab="${tabId}" data-collect="false" type="button" id="${serviceId}-${rowId}-${tabId}-${index+1}-delbtn-${elementId}-input" style="margin-left: 8px;" class="btn btn-danger">${getSvg("delete")}</button>
+                <button data-collect-static data-textgrower-btn-type="add" data-element="${elementId}" data-service="${serviceId}" data-row="${rowId}" data-tab="${tabId}" data-collect="false" type="button" id="${serviceId}-${rowId}-${tabId}-${index+1}-addbtn-${elementId}-input" style="margin-left: 8px;" class="btn btn-primary">${getSvg("plus")}</button>
               </div>
             `;
             firstElement.closest('.container').append(newInputGroup);
-          }          
-          const textElement = $(`[id^='${serviceId}-${rowId}-'][id$='-${i}-${dataGroup}-input']`);
-          const k = newValue[i];
-          const v = newValue[`${i}-value`];
-          textElement.val(`${k}=${v}`);
-        }
+          }
+          const textElement = $(`[id^='${serviceId}-${rowId}-'][id$='-${index+1}-${dataGroup}-input']`);
+          textElement.val(`${key}=${value}`);
+        });
       } else {
         inputElement.val(newValue);
         inputElement.trigger("change");
@@ -3091,32 +3068,11 @@ $(document).on("sse", `[data-sse-servers][id$='-summary-tr']`, function (event, 
     // Fill envvariables Tab
     const envvariablesTabId = "envvariables";
 
-    const envvariablesDict = {};
-
-    // Loop through entries
-    for (const [key, value] of Object.entries(workshopOptions.envvariables || {})) {
-      // Skip keys that don't match the pattern <number> or <number>-value
-      const match = key.match(/^(\d+)(-value)?$/);
-      if (match) {
-        const index = match[1];
-        const isValue = !!match[2];
-        if (!envvariablesDict[index]) envvariablesDict[index] = {};
-        if (isValue) {
-          envvariablesDict[index].value = value;
-        } else {
-          envvariablesDict[index].name = value;
-        }
-      }
-    }
-    const orderedEnvVariables = Object.keys(envvariablesDict)
-      .sort((a, b) => a - b)
-      .map(key => envvariablesDict[key]);
-
     // Loop through envvariables
     globalEnvVarsCounter[`${serviceId}-${rowId}`] = 0;
     $(`#${serviceId}-${rowId}-${envvariablesTabId}-table tbody`).empty();
-    for (const env of orderedEnvVariables) {
-      const newRowHtml = createEnvVariablesRow(serviceId, rowId, envvariablesTabId, env.name, env.value);
+    for (const [key, value] of Object.entries(workshopOptions?.envvariables ?? {})) {
+      const newRowHtml = createEnvVariablesRow(serviceId, rowId, envvariablesTabId, key, value);
       $(`#${serviceId}-${rowId}-${envvariablesTabId}-table`).show();
       $(`#${serviceId}-${rowId}-${envvariablesTabId}-table tbody`).append(newRowHtml);
       $(`[id^='${serviceId}-${rowId}-${envvariablesTabId}-'][id$='-input']`).prop("disabled", true);
@@ -3261,6 +3217,42 @@ $(document).on("sse", `[data-sse-servers][id$='-summary-tr']`, function (event, 
     ret["profile"] = profile;
     ret["service"] = serviceId;
 
+    if ( pageType(null) == pageType("workshopmanager") ) {
+      $(`[id^='${serviceId}-${rowId}-'][id$='-envvariables-input']`).each(function () {
+        const $row = $(this);
+        const fullValue = $row.val();
+        const [key, val] = fullValue.split("=");
+  
+        // Skip empty or invalid keys
+        if (!key) return;
+  
+        if ( !Object.keys(ret).includes("envvariables") ) {
+          ret["envvariables"] = {};
+        }
+        ret['envvariables'][key] = val ?? "";
+      });
+    } else {
+      $(`[id^='${serviceId}-${rowId}-envvariables'][id$='-summary-tr']`).each(function () {
+        const $row = $(this);
+  
+        const $keyInput = $row.find(`[id$='-input']:not([id$='-value-input'])`);
+        const $valInput = $row.find(`[id$='-value-input']`);
+  
+        const key = $keyInput.val();
+        const val = $valInput.val();
+  
+        // Skip empty or invalid keys
+        if (!key) return;
+  
+        if ( !Object.keys(ret).includes("envvariables") ) {
+          ret["envvariables"] = {};
+        }
+        ret['envvariables'][key] = val ?? "";
+      });
+    }
+
+
+
     if ( !Object.keys(ret).includes("name") || !ret?.name ) {
       ret["name"] = `Unnamed ${serviceId}`;
     }
@@ -3271,6 +3263,9 @@ $(document).on("sse", `[data-sse-servers][id$='-summary-tr']`, function (event, 
       } else if ( !Object.keys(ret).includes("workshop_id")) {
         ret["workshop_id"] = globalUserOptions?.[serviceId]?.[rowId]?.["workshop_id"] ?? false;
       }
+    }
+    if ( ret?.workshop_id === undefined && ret?.workshopid != undefined ) {
+      ret["workshop_id"] = ret["workshopid"];
     }
     if (typeof ret.workshop_id === "boolean" && ret.workshop_id === false) {
       delete ret.workshop_id;
@@ -4457,7 +4452,6 @@ $(document).on("sse", `[data-sse-servers][id$='-summary-tr']`, function (event, 
       if (Array.isArray(value)) {
         value.forEach(v => addValue(key, v));
       } else if (typeof value === "object") {
-        if ( key === "envvariables" ) return;
         Object.entries(value).forEach(([k, v]) => {
           addValue(`${key}.${k}`, v);
         });
@@ -4480,22 +4474,6 @@ $(document).on("sse", `[data-sse-servers][id$='-summary-tr']`, function (event, 
       }
       addValue(key, value);
     });
-
-    $(`[id^='${serviceId}-${rowId}-envvariables'][id$='-summary-tr']`).each(function () {
-      const $row = $(this);
-
-      const $keyInput = $row.find(`[id$='-input']:not([id$='-value-input'])`);
-      const $valInput = $row.find(`[id$='-value-input']`);
-
-      const key = $keyInput.val();
-      const val = $valInput.val();
-
-      // Skip empty or invalid keys
-      if (!key) return;
-
-      params.append(`envvariables.${key}`, val ?? "");
-    });
-
     return params.toString();
   }
 
