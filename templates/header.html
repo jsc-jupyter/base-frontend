@@ -66,9 +66,9 @@
   <div class="d-flex">
     {%- if user %}
     <li class="nav-item"><a id="{{prefix}}start-nav-item" class="nav-link text-decoration-none" href="{{ base_url }}home">JupyterLab</a></li>
-    {%- if auth_state and "geant:dfn.de:fz-juelich.de:jsc:jupyter:workshop_instructors" in auth_state.get("groups", []) %}
+    {# {%- if auth_state and "geant:dfn.de:fz-juelich.de:jsc:jupyter:workshop_instructors" in auth_state.get("groups", []) %} #}
     <li class="nav-item"><a id="{{prefix}}workshop-manage-nav-item" class="nav-link text-decoration-none" href="{{ base_url }}workshopmanager">Manage Workshops</a></li>
-    {%- endif -%}
+    {# {%- endif -%} #}
     {%- if user.admin %}
     <li class="nav-item"><a id="{{prefix}}admin-nav-item" class="nav-link text-decoration-none" href="{{ base_url }}admin">Admin</a></li>
     {%- endif -%}

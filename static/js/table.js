@@ -4354,6 +4354,7 @@ $(document).on("sse", `[data-sse-servers][id$='-summary-tr']`, function (event, 
     }
     let userOptions = collectSelectedOptions(serviceId, rowId, allCheckboxes=true);
     let workshopData = collectWorkshopOptions(serviceId, rowId);
+    const workshopIDElement = $(`input[id^='${serviceId}-${rowId}-'][id$='-workshopid-input']`);
 
     options["data"] = JSON.stringify({
       ...userOptions,
@@ -4365,7 +4366,27 @@ $(document).on("sse", `[data-sse-servers][id$='-summary-tr']`, function (event, 
         $('#rowid-reload').val(resp);
         showModal(serviceId, rowId, url, "Share Workshop", "Share your workshop via URL", url);
       }
+      workshopIDElement.removeClass('is-invalid');
+      workshopIDElement.siblings('.invalid-feedback').hide();
     };
+    options["error"] = function (jqXHR, textStatus, errorThrown) {
+      console.log(jqXHR.responseJSON);
+      if (jqXHR.status == 400) {
+        const resp = jqXHR.responseJSON;
+        workshopIDElement.addClass('is-invalid');
+        const feedbackElement = workshopIDElement.siblings('.invalid-feedback');
+        let error_message = "Could not create workshop:<br><ul>";
+        for (const [key, value] of Object.entries(resp)) {
+          error_message += `<li><strong>${key}:</strong> ${value}</li>`;
+        }
+        error_message += "</ul>";
+        feedbackElement.show();
+        feedbackElement.html(error_message);
+        return;
+      }
+      showToast("Request to Server failed. Try refreshing website");
+      console.error("API Request failed:", textStatus, errorThrown);
+    }
     options["type"] = "POST";
 
     api.api_request(

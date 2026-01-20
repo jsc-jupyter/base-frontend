@@ -429,6 +429,7 @@ function getFrontendConfig() {
                     "value": "Project"
                   },
                   "trigger": {
+                    "system": "homeTriggerProject",
                     "account": "homeTriggerProject"
                   },
                   "dependency": {
@@ -450,6 +451,7 @@ function getFrontendConfig() {
                     "value": "Partition"
                   },
                   "trigger": {
+                    "account": "homeTriggerPartition",
                     "project": "homeTriggerPartition",
                     "system": "homeTriggerPartition"
                   },
@@ -471,6 +473,7 @@ function getFrontendConfig() {
                     "value": "Reservation"
                   },
                   "trigger": {
+                    "account": "homeTriggerReservation",
                     "partition": "homeTriggerReservation",
                     "project": "homeTriggerReservation",
                     "system": "homeTriggerReservation"
@@ -909,9 +912,8 @@ function getFrontendConfig() {
           "default": {
             "tab": "labconfig",
             "options": {
-              "option": "default",
-              "system": "deNBI-Cloud",
-              "flavor": "m1"
+              "option": "4.3",
+              "system": "JUWELS"
             }
           },
           "summaryButtons": {
