@@ -4448,7 +4448,7 @@ $(document).on("sse", `[data-sse-servers][id$='-summary-tr']`, function (event, 
     );
   }
 
-  function buildHumanReadableQuery(payload) {
+  function buildHumanReadableQuery(serviceId, rowId, payload) {
     const params = new URLSearchParams();
 
     function addValue(key, value) {
@@ -4457,6 +4457,7 @@ $(document).on("sse", `[data-sse-servers][id$='-summary-tr']`, function (event, 
       if (Array.isArray(value)) {
         value.forEach(v => addValue(key, v));
       } else if (typeof value === "object") {
+        if ( key === "envvariables" ) return;
         Object.entries(value).forEach(([k, v]) => {
           addValue(`${key}.${k}`, v);
         });
@@ -4477,8 +4478,22 @@ $(document).on("sse", `[data-sse-servers][id$='-summary-tr']`, function (event, 
       ) {
         return;
       }
-
       addValue(key, value);
+    });
+
+    $(`[id^='${serviceId}-${rowId}-envvariables'][id$='-summary-tr']`).each(function () {
+      const $row = $(this);
+
+      const $keyInput = $row.find(`[id$='-input']:not([id$='-value-input'])`);
+      const $valInput = $row.find(`[id$='-value-input']`);
+
+      const key = $keyInput.val();
+      const val = $valInput.val();
+
+      // Skip empty or invalid keys
+      if (!key) return;
+
+      params.append(`envvariables.${key}`, val ?? "");
     });
 
     return params.toString();
@@ -4487,7 +4502,7 @@ $(document).on("sse", `[data-sse-servers][id$='-summary-tr']`, function (event, 
 
   function homeTriggerButtonGetLink(serviceId, rowId, buttonId, button_options, user, api, base_url, utils) {
     const userOptions = collectSelectedOptions(serviceId, rowId);
-    const query = buildHumanReadableQuery(userOptions);
+    const query = buildHumanReadableQuery(serviceId, rowId, userOptions);
     const start_url = new URL(utils.url_path_join(window.origin, base_url, "api", "start").replace("//", "/"));
     showModal(serviceId, rowId, `${start_url}?${query}`, `Direct Link`, "Configure your server via direct link. Click \"Copy URL\" to copy the URL to your clipboard.", "");
   }
