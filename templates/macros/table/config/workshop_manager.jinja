@@ -47,27 +47,6 @@
                   "value": "Description:"
                 }
               },
-              "expertmode": {
-                "input": {
-                  "type": "checkbox",
-                  "options": {
-                    "default": false,
-                    "group": "none",
-                    "instructor": "show",
-                    "enabled": true
-                  }
-                },
-                "trigger": {
-                  "init": "wmTriggerExpertMode"
-                },
-                "triggerOnChange": "wmTriggerExpertMode",
-                "label": {
-                  "type": "texticon",
-                  "icontext": "Expert Mode allows you to select multiple Options + Systems",
-                  "width": 6,
-                  "value": "Enable expert mode"
-                }
-              },
               "userlist": {
                 "input": {
                   "type": "textarea",
@@ -112,6 +91,28 @@
                   }
                 }
               },
+              "workshop_tutor_server_access": {
+                "input": {
+                  "type": "checkbox",
+                  "options": {
+                    "group": "none",
+                    "show": true,
+                    "enabled": false,
+                  }
+                },
+                "trigger": {
+                  "tutorlist": "wmTriggerTutorServerAccess"
+                },
+                "label": {
+                  "type": "texticon",
+                  "icontext": "If enabled, workshop tutors can access participants' running servers to provide hands-on support (e.g. troubleshooting or debugging). This applies only to cloud resources (e.g. JSC-Cloud, deNBI-Cloud). On HPC systems, tutors never have access to participant servers.",
+                  "width": 6,
+                  "options": {
+                    "enabled": false
+                  },
+                  "value": "Allow tutors to access participant servers (cloud only)"
+                }
+              },
               "workshop_storage_rw": {
                 "input": {
                   "type": "checkbox",
@@ -153,6 +154,27 @@
                   "value": "Request additional credits for this workshop",
                   "width": 6,
                 },
+              },
+              "expertmode": {
+                "input": {
+                  "type": "checkbox",
+                  "options": {
+                    "default": false,
+                    "group": "none",
+                    "instructor": "show",
+                    "enabled": true
+                  }
+                },
+                "trigger": {
+                  "init": "wmTriggerExpertMode"
+                },
+                "triggerOnChange": "wmTriggerExpertMode",
+                "label": {
+                  "type": "texticon",
+                  "icontext": "Expert Mode allows you to select multiple Options + Systems",
+                  "width": 6,
+                  "value": "Enable expert mode"
+                }
               },
               "buttonrow": {
                 "input": {

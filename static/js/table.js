@@ -3276,6 +3276,9 @@ $(document).on("sse", `[data-sse-servers][id$='-summary-tr']`, function (event, 
       if ( form.find(`[id$='-userlist-input']`).prop("disabled") === false ) {
         ret["workshop_storage_rw"] = form.find(`[id$='-workshop_storage_rw-input']`).prop("checked");
       }
+      if ( form.find(`[id$='-tutorlist-input']`).prop("disabled") === false ) {
+        ret["workshop_tutor_server_access"] = form.find(`[id$='-workshop_tutor_server_access-input']`).prop("checked");
+      }
     }
     const shareId = globalUserOptions?.[serviceId]?.[rowId]?.["share_id"] ?? false;
     if ( shareId ) {
@@ -3326,6 +3329,22 @@ $(document).on("sse", `[data-sse-servers][id$='-summary-tr']`, function (event, 
     const label = $(`label[for="${inputId}"]`);
     const userlist = $(`textarea[id^="${serviceId}-${rowId}-"][id$="-userlist-input"]`);
     if (userlist.prop("disabled") === false) {
+      $this.prop("disabled", false);
+      $this.attr("data-collect", "true");
+      label.css("color", "black");
+    } else {
+      $this.prop("disabled", true);
+      $this.attr("data-collect", "false");
+      label.css("color", "lightgrey");
+    }
+  }
+
+  function wmTriggerTutorServerAccess(trigger, serviceId, rowId, tabId, elementId, elementOptions) {
+    const $this = $(`input[id^="${serviceId}-${rowId}-"][id$="-${elementId}-input"]`);
+    const inputId = $this.attr("id");
+    const label = $(`label[for="${inputId}"]`);
+    const tutorlist = $(`textarea[id^="${serviceId}-${rowId}-"][id$="-tutorlist-input"]`);
+    if (tutorlist.prop("disabled") === false) {
       $this.prop("disabled", false);
       $this.attr("data-collect", "true");
       label.css("color", "black");
