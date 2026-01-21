@@ -80,7 +80,7 @@
       </div>
     {%- endfor %}
 
-    {% if user.orm_user.shared_with_me and user.orm_user.shared_with_me|length > 0 and pagetype == vars.pagetype_home %}
+    {% if user.orm_user.shared_with_me and user.orm_user.shared_with_me|length > 0 and pagetype in [vars.pagetype_home, vars.pagetype_workshop] %}
       <div id="sharedservers-table-div" class="table-responsive-md">
         <p>Servers shared with you are listed here. (Refresh page to update list)</p>
         <table id="sharedservers-table" class="table table-bordered table-striped table-hover table-light align-middle">

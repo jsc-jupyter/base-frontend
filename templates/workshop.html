@@ -12,8 +12,35 @@
 {%- from "macros/table/table.jinja" import tables with context %}
 <div id="workshopnotusable"></div>
 
+{% macro description() %}
+  {%- if full_tutor_list %}
+    <p>
+      On <strong>cloud resources</strong>, workshop 
+      <span style="font-weight: bold;">tutors have access to your server</span> 
+      to support the workshop, for example by helping with technical issues, debugging notebooks, 
+      or assisting during hands-on sessions.
+      <br>
+      <strong>Important:</strong> On HPC systems, tutors <em>never</em> have access to your servers.
+    </p>
+
+    <details style="display: inline-block; margin-top: 10px; margin-bottom: 20px; padding: 10px;">
+      <summary style="padding-right: 1.5em; color: white; cursor: pointer; list-style: none">
+        Show workshop tutors (click to expand):
+      </summary>
+      <ul>
+        {%- for tutor in full_tutor_list %}
+          <li>{{ tutor }}</li>
+        {%- endfor -%}
+      </ul>
+    </details>
+  {%- endif %}
+{% endmacro %}
+
+
+
 {{ tables(
-  config.frontend_config
+  config.frontend_config,
+  description
 ) }}
 {%- endblock -%}
 

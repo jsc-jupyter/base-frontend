@@ -200,6 +200,10 @@ function tcCreateLabel(idPrefix, serviceId, rowId, tabId, elementId, elementOpti
   const labelOptions = label.options || {};
   const width = label.width || "4";
   const tooltipIcon = getSvg("info");
+  let color = "inherit";
+  if (labelOptions.enabled === false) {
+    color = "lightgrey";
+  }
 
   let innerHTML = "";
 
@@ -309,7 +313,7 @@ function tcCreateLabel(idPrefix, serviceId, rowId, tabId, elementId, elementOpti
   const labelFor = labelType === "header" ? '' : `for="${idPrefix}-${elementId}-input"`;
   const html = `
     <div class="col-${width} col-form-label d-flex align-items-start justify-content-between">
-      <label ${labelFor} class="d-flex align-items-center w-100">
+      <label ${labelFor} class="d-flex align-items-center w-100" style="color: ${color};">
         ${innerHTML}
       </label>
     </div>
@@ -575,6 +579,14 @@ function tcCreateTextLink(idPrefix, serviceId, rowId, tabId, elementId, elementO
   Object.entries(
     tcElementParameters(serviceId, rowId, tabId, elementId, elementOptions, false, true)
   ).forEach(([k, v]) => link.setAttribute(k, v));
+
+  if (elementOptions?.input?.options?.enabled === false) {
+    link.classList.add("disabled");
+    link.style.pointerEvents = "none";
+    link.style.opacity = "0.5";
+    link.setAttribute("aria-disabled", "true");
+    link.addEventListener("click", e => e.preventDefault());
+  }
 
   inputCol.appendChild(link);
   wrapper.appendChild(inputCol);

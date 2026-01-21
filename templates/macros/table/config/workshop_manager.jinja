@@ -14,8 +14,7 @@
                   "options": {
                     "collect": true,
                     "show": true,
-                    "placeholder": "Choose an unique ID for your workshop",
-                    "placeholderInstructor": "Choose a descriptive ID",
+                    "placeholder": "Choose a unique workshop ID",
                     "pattern": "[a-z][a-z0-9_\\-]*",
                     "warning": "Allowed chars: a-z 0-9 _ - . Must start with a lowercase letter ([a-z][a-z0-9_-]*)",
                     "group": "default"
@@ -76,16 +75,40 @@
                     "group": "default",
                     "show": true,
                     "enabled": false,
-                    "placeholder": "user1@email.com\n# # inactiveuser@email.com (ignored)\nuser2@email.com"
+                    "placeholder": "user1@email.com\n# inactiveuser@email.com (ignored)\nuser2@email.com"
                   }
                 },
                 "label": {
                   "type": "texticoncheckbox",
-                  "icontext": "Limits access to selected users. Only restricted workshops can provide additional credits and shared storage.",
+                  "icontext": "Only users listed can access this workshop. Restricted workshops can offer shared storage, tutoring, and additional credits.",
                   "width": 6,
-                  "value": "Restrict access to specific users",
+                  "value": "Restrict workshop access to specific users",
                   "options": {
                     "default": false
+                  }
+                }
+              },
+              "tutorlist": {
+                "input": {
+                  "type": "textarea",
+                  "options": {
+                    "group": "default",
+                    "show": true,
+                    "enabled": false,
+                    "placeholder": "tutor1@email.com\n# inactivetutor@email.com (ignored)\ntutor2@email.com"
+                  }
+                },
+                "trigger": {
+                  "userlist": "wmTriggerTutorList"
+                },
+                "label": {
+                  "type": "texticoncheckbox",
+                  "icontext": "Tutors can access all running Jupyter servers in this workshop and always have read and write access to the shared storage.",
+                  "width": 6,
+                  "value": "Add workshop tutors",
+                  "options": {
+                    "default": false,
+                    "enabled": false
                   }
                 }
               },
@@ -103,8 +126,11 @@
                 },
                 "label": {
                   "type": "texticon",
-                  "icontext": "If enabled, workshop participants will have read and write access to the shared storage. If disabled, access is read-only. Shared storage is currently available on JSC-Cloud and deNBI-Cloud only.",
+                  "icontext": "If enabled, participants have read and write access to the shared workshop storage. If disabled, access is read-only. Shared storage is currently available on JSC-Cloud and deNBI-Cloud.",
                   "width": 6,
+                  "options": {
+                    "enabled": false
+                  },
                   "value": "Allow participants to write to shared storage"
                 }
               },
@@ -114,14 +140,19 @@
                   "options": {
                     "href": "mailto:ds-support@fz-juelich.de?subject=Jupyter%20%E2%80%93%20Additional%20Credits%20Request%20(Workshop)&body=Dear%20Jupyter%20Support%20Team,%0D%0A%0D%0AI%20would%20like%20to%20request%20additional%20credits%20for%20the%20following%20workshop:%0D%0A%0D%0AWorkshop%20ID:%0D%0AWorkshop%20title:%0D%0AWorkshop%20Date:%0D%0ACloud%20system%20(e.g.%20JSC-Cloud,%20deNBI-Cloud):%0D%0AExpected%20number%20of%20participants:%0D%0AExpected%20resources%20per%20user%20(CPU,%20RAM):%0D%0A%0D%0AAdditional%20remarks:%0D%0A%0D%0ABest%20regards",
                     "text": "Request additional credits for this workshop",
-                    "show": true
+                    "show": true,
+                    "enabled": false
                   }
                 },
                 "label": {
                   "type": "texticon",
+                  "options": {
+                    "enabled": false
+                  },
                   "icontext": "Use this if you expect higher resource usage. A pre-filled email will be created for you.",
-                  "value": "Request additional credits for this workshop"
-                }
+                  "value": "Request additional credits for this workshop",
+                  "width": 6,
+                },
               },
               "buttonrow": {
                 "input": {

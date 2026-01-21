@@ -3322,15 +3322,64 @@ $(document).on("sse", `[data-sse-servers][id$='-summary-tr']`, function (event, 
 
   function wmTriggerStorageRW(trigger, serviceId, rowId, tabId, elementId, elementOptions) {
     const $this = $(`input[id^="${serviceId}-${rowId}-"][id$="-${elementId}-input"]`);
-    // const inputId = $input.attr("id");
-    // const $label = $(`label[for="${inputId}"]`);
+    const inputId = $this.attr("id");
+    const label = $(`label[for="${inputId}"]`);
     const userlist = $(`textarea[id^="${serviceId}-${rowId}-"][id$="-userlist-input"]`);
     if (userlist.prop("disabled") === false) {
       $this.prop("disabled", false);
       $this.attr("data-collect", "true");
+      label.css("color", "black");
     } else {
       $this.prop("disabled", true);
       $this.attr("data-collect", "false");
+      label.css("color", "lightgrey");
+    }
+  }
+
+  function wmTriggerTutorList(trigger, serviceId, rowId, tabId, elementId, elementOptions) {
+    const $this = $(`[id^="${serviceId}-${rowId}-"][id$="-${elementId}-input"]`);
+    const inputId = $this.attr("id");
+    const label = $(`label[for="${inputId}"]`);
+    const creditsRequestLink = $(`#${serviceId}-${rowId}-${tabId}-creditrequest-link`);
+    const creditsRequestLabel = $(`label[for="${serviceId}-${rowId}-${tabId}-creditrequest-input"]`);
+    const labelCB = $(`[id^="${serviceId}-${rowId}-"][id$="-${elementId}-input-cb"]`);
+    const userlist = $(`textarea[id^="${serviceId}-${rowId}-"][id$="-userlist-input"]`);
+    if (userlist.prop("disabled") === false) {
+      labelCB.prop("disabled", false);
+      label.css("color", "black");
+      creditsRequestLabel.css("color", "black");
+      creditsRequestLink
+        .removeClass("disabled")
+        .css("pointer-events", "auto")
+        .css("opacity", "1")
+        .attr("aria-disabled", "false")
+        .off("click");
+    } else {
+      $this.prop("disabled", true);
+      $this.attr("data-collect", "false");
+      labelCB.prop("disabled", true);
+      labelCB.prop("checked", false);
+      label.css("color", "lightgrey");
+      creditsRequestLabel.css("color", "lightgrey");
+      creditsRequestLink
+        .addClass("disabled")
+        .css("pointer-events", "none")
+        .css("opacity", "0.5")
+        .attr("aria-disabled", "true")
+        .on("click", e => e.preventDefault());
+    }
+  }
+
+  function wmTriggerCreditsRequest(trigger, serviceId, rowId, tabId, elementId, elementOptions) {
+    const label = $(`label[for="${serviceId}-${rowId}-${tabId}-${elementId}-input"]`);
+    console.log(label);
+    console.log(`label[for="${serviceId}-${rowId}-${tabId}-${elementId}-input"]`);
+    c
+    const userlist = $(`textarea[id^="${serviceId}-${rowId}-"][id$="-userlist-input"]`);
+    if (userlist.prop("disabled") === false) {
+      label.css("color", "black");
+    } else {
+      label.css("color", "lightgrey");
     }
   }
 
