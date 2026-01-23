@@ -76,11 +76,6 @@
                   "init": "wTriggerOption"
                 }
               },
-              "hr1": {
-                "input": {
-                  "type": "hr"
-                }
-              },
               "system": {
                 "input": {
                   "type": "select",
@@ -97,6 +92,11 @@
                 "trigger": {
                   "init": "wTriggerSystem",
                   "option": "wTriggerSystem"
+                }
+              },
+              "hr1": {
+                "input": {
+                  "type": "hr"
                 }
               },
               "repo2dockerdirectlink": {
@@ -566,7 +566,8 @@
                   "type": "envvariablesentry",
                   "options": {
                     "show": true,
-                    "collect": true,
+                    "collect": false,
+                    "collectstatic": true,
                     "group": "envvariables"
                   }
                 }
@@ -589,8 +590,8 @@
                 },
                 "triggerSuffix": "checkboxes-div",
                 "trigger": {
-                  "option": "homeTriggerModules",
-                  "system": "homeTriggerModules"
+                  "option": "wTriggerModules",
+                  "system": "wTriggerModules"
                 },
                 "dependency": {
                   "option": [
@@ -617,7 +618,8 @@
                 },
                 "triggerSuffix": "checkboxes-div",
                 "trigger": {
-                  "option": "wTriggerModules"
+                  "option": "wTriggerModules",
+                  "system": "wTriggerModules"
                 },
                 "dependency": {
                   "option": [
@@ -639,7 +641,8 @@
                 },
                 "triggerSuffix": "checkboxes-div",
                 "trigger": {
-                  "option": "wTriggerModules"
+                  "option": "wTriggerModules",
+                  "system": "wTriggerModules"
                 },
                 "dependency": {
                   "option": [
@@ -661,7 +664,8 @@
                 },
                 "triggerSuffix": "checkboxes-div",
                 "trigger": {
-                  "option": "wTriggerModules"
+                  "option": "wTriggerModules",
+                  "system": "wTriggerModules"
                 },
                 "dependency": {
                   "option": [
@@ -804,7 +808,7 @@
         "default": {
           "tab": "labconfig",
           "options": {
-            "option": "4.2",
+            "option": "4.3",
             "system": "JUWELS"
           }
         },

@@ -119,6 +119,7 @@
   }
 
   function getSpawner(rowId) {    
+    let spawnerMap = {};
       {%- if spawner.user_options and spawner.name %}
         {%- if user.spawners.get(spawner.name) and user.spawners.get(spawner.name).user_options.get("option") %}
           {%- set s = user.spawners.get(spawner.name) %}
@@ -133,7 +134,7 @@
         {%- elif s.active and last_event is mapping %}
           {%- set progress = last_event.get("progress", 0) %}
         {%- endif %}
-        const spawnerMap = {
+        spawnerMap = {
           decrypted_user_options: {{ frontendCollection.get("decrypted_user_options").get(s.name, s.user_options) | tojson }},
           user_options: {{ s.user_options | tojson }},
           active: {{ s.active | tojson }},
@@ -144,7 +145,7 @@
           progress: {{ progress }}
         };
       {%- endif %}
-    return spawnerMap || {};
+    return spawnerMap;
   }
   function pageType(name) {
     if ( name === "home" ) {

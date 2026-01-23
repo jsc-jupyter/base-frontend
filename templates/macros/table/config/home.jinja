@@ -84,11 +84,6 @@
                   "init": "homeTriggerOption"
                 }
               },
-              "hr1": {
-                "input": {
-                  "type": "hr"
-                }
-              },
               "system": {
                 "input": {
                   "type": "select",
@@ -111,29 +106,10 @@
                 },
                 "triggerOnChange": "homeTriggerSystemChanged"
               },
-              "rtc": {
+              "hr1": {
                 "input": {
-                  "type": "checkbox",
-                  "options": {
-                    "enabled": true,
-                    "default": false
-                  },
-                },
-                "label": {
-                  "type": "texticonclick",
-                  "icontext": "Real-Time Collaboration disables any access/coupling to HPC systems. <a href='https://jupyterlab-realtime-collaboration.readthedocs.io/' target='_blank'>more</a>",
-                  "value": "Real-Time Collaboration"
-                },
-                "dependency": {
-                  "option": [
-                    "lmod"
-                  ],
-                  "system": [
-                    "jsccloud",
-                    "denbicloud"
-                  ]
-                },
-                "triggerOnChange": "homeTriggerRTCChanged"
+                  "type": "hr"
+                }
               },
               "repo2dockerdirectlink": {
                 "input": {
@@ -229,6 +205,7 @@
                   "options": {
                     "group": "repo2docker",
                     "enabled": true,
+                    "value": "HEAD",
                     "placeholder": "HEAD",
                     "patternDisabled": "^([a-zA-Z0-9._-]+|([a-f0-9]{7,40})|([a-zA-Z0-9._-]+\\/[a-zA-Z0-9._-]+)|([a-zA-Z0-9._-]+@~\\d+)|@~\\d+)$"
                   }
@@ -547,7 +524,8 @@
                     "jsccloud",
                     "mpcdf",
                     "denbi",
-                    "tudstaging",
+                    "tudcloudstaging",
+                    "tudhpcstaging",
                     "gwdgstaging"
                   ]
                 }
@@ -561,7 +539,8 @@
                     "jsccloud",
                     "mpcdf",
                     "denbi",
-                    "tudstaging"
+                    "tudcloudstaging",
+                    "tudhpcstaging"
                   ]
                 },            
                 "triggerSuffix": "input-div"
@@ -579,7 +558,8 @@
                     "jsccloud",
                     "mpcdf",
                     "denbi",
-                    "tudstaging"
+                    "tudcloudstaging",
+                    "tudhpcstaging"
                   ]
                 }
               }
@@ -616,12 +596,12 @@
           },
           "envvariables": {
             "center": {
-              "envvariables1": {
+              "envvariables": {
                 "input": {
                   "type": "envvariablesentry",
                   "options": {
                     "show": true,
-                    "collect": true,
+                    "collect": false,
                     "group": "envvariables"
                   }
                 }
@@ -859,6 +839,7 @@
                     "buttons": [
                       "share",
                       "rtc",
+                      "getlink",
                       "save",
                       "reset",
                       "delete",
@@ -867,17 +848,18 @@
                     "share": {
                       "text": "Share",
                       "trigger": "homeTriggerButtonShare",
-                      "show": false
+                      "show": true
                     },
                     "rtc": {
                       "text": "RTC",
                       "trigger": "homeTriggerButtonRTC",
                       "show": false
                     },
-                    "rtc": {
-                      "text": "RTC",
-                      "trigger": "homeTriggerButtonRTC",
-                      "show": false
+                    "getlink": {
+                      "text": "URL",
+                      "trigger": "homeTriggerButtonGetLink",
+                      "defaultRow": true,
+                      "firstRow": false
                     },
                     "startgreen": {
                       "text": "Start",
@@ -923,4 +905,3 @@
     }
   }
 }%}
-

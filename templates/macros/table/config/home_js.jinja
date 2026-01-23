@@ -85,11 +85,6 @@ function getFrontendConfig() {
                     "init": "homeTriggerOption"
                   }
                 },
-                "hr1": {
-                  "input": {
-                    "type": "hr"
-                  }
-                },
                 "system": {
                   "input": {
                     "type": "select",
@@ -112,55 +107,10 @@ function getFrontendConfig() {
                   },
                   "triggerOnChange": "homeTriggerSystemChanged"
                 },
-
-                "localstoragepath": {
+                "hr1": {
                   "input": {
-                    "type": "text",
-                    "options": {
-                      "group": "storage",
-                      "enabled": true,
-                      "placeholder": "/home/jovyan/work",
-                      "value": "/home/jovyan/work",
-                      "pattern": "^\\/(?:[^\\/\\0]+\\/)*[^\\/\\0]*$"
-                    }
-                  },
-                  "label": {
-                    "type": "textcheckbox",
-                    "value": "Mount user data",
-                    "options": {
-                      "default": false
-                    }
-                  },
-                  "dependency": {
-                    "option": [
-                      "custom",
-                      "repo2docker"
-                    ]
+                    "type": "hr"
                   }
-                },
-                "rtc": {
-                  "input": {
-                    "type": "checkbox",
-                    "options": {
-                      "enabled": true,
-                      "default": false
-                    },
-                  },
-                  "label": {
-                    "type": "texticonclick",
-                    "icontext": "Real-Time Collaboration disables any access/coupling to HPC systems. <a href='https://jupyterlab-realtime-collaboration.readthedocs.io/' target='_blank'>more</a>",
-                    "value": "Real-Time Collaboration"
-                  },
-                  "dependency": {
-                    "option": [
-                      "lmod"
-                    ],
-                    "system": [
-                      "jsccloud",
-                      "denbicloud"
-                    ]
-                  },
-                  "triggerOnChange": "homeTriggerRTCChanged"
                 },
                 "repo2dockerdirectlink": {
                   "input": {
@@ -256,7 +206,6 @@ function getFrontendConfig() {
                     "options": {
                       "group": "repo2docker",
                       "enabled": true,
-                      "value": "HEAD",
                       "placeholder": "HEAD",
                       "patternDisabled": "^([a-zA-Z0-9._-]+|([a-f0-9]{7,40})|([a-zA-Z0-9._-]+\\/[a-zA-Z0-9._-]+)|([a-zA-Z0-9._-]+@~\\d+)|@~\\d+)$"
                     }
@@ -421,6 +370,31 @@ function getFrontendConfig() {
                     ]
                   }
                 },
+                "localstoragepath": {
+                  "input": {
+                    "type": "text",
+                    "options": {
+                      "group": "storage",
+                      "enabled": true,
+                      "placeholder": "/home/jovyan/work",
+                      "value": "/home/jovyan/work",
+                      "pattern": "^\\/(?:[^\\/\\0]+\\/)*[^\\/\\0]*$"
+                    }
+                  },
+                  "label": {
+                    "type": "textcheckbox",
+                    "value": "Mount user data",
+                    "options": {
+                      "default": false
+                    }
+                  },
+                  "dependency": {
+                    "option": [
+                      "custom",
+                      "repo2docker"
+                    ]
+                  }
+                },
                 "account": {
                   "input": {
                     "type": "select",
@@ -455,8 +429,8 @@ function getFrontendConfig() {
                     "value": "Project"
                   },
                   "trigger": {
-                    "account": "homeTriggerProject",
                     "system": "homeTriggerProject",
+                    "account": "homeTriggerProject"
                   },
                   "dependency": {
                     "system": [
@@ -499,8 +473,8 @@ function getFrontendConfig() {
                     "value": "Reservation"
                   },
                   "trigger": {
-                    "partition": "homeTriggerReservation",
                     "account": "homeTriggerReservation",
+                    "partition": "homeTriggerReservation",
                     "project": "homeTriggerReservation",
                     "system": "homeTriggerReservation"
                   },
@@ -531,7 +505,6 @@ function getFrontendConfig() {
                     ]
                   }
                 },
-
                 "flavor": {
                   "input": {
                     "type": "select",
@@ -551,7 +524,8 @@ function getFrontendConfig() {
                       "jsccloud",
                       "mpcdf",
                       "denbi",
-                      "tudstaging",
+                      "tudcloudstaging",
+                      "tudhpcstaging",
                       "gwdgstaging"
                     ]
                   }
@@ -565,7 +539,8 @@ function getFrontendConfig() {
                       "jsccloud",
                       "mpcdf",
                       "denbi",
-                      "tudstaging"
+                      "tudcloudstaging",
+                      "tudhpcstaging"
                     ]
                   },            
                   "triggerSuffix": "input-div"
@@ -583,7 +558,8 @@ function getFrontendConfig() {
                       "jsccloud",
                       "mpcdf",
                       "denbi",
-                      "tudstaging"
+                      "tudcloudstaging",
+                      "tudhpcstaging"
                     ]
                   }
                 }
@@ -625,7 +601,7 @@ function getFrontendConfig() {
                     "type": "envvariablesentry",
                     "options": {
                       "show": true,
-                      "collect": true,
+                      "collect": false,
                       "group": "envvariables"
                     }
                   }
@@ -863,6 +839,7 @@ function getFrontendConfig() {
                       "buttons": [
                         "share",
                         "rtc",
+                        "getlink",
                         "save",
                         "reset",
                         "delete",
@@ -871,12 +848,17 @@ function getFrontendConfig() {
                       "share": {
                         "text": "Share",
                         "trigger": "homeTriggerButtonShare",
-                        "show": false
+                        "show": true
                       },
                       "rtc": {
                         "text": "RTC",
                         "trigger": "homeTriggerButtonRTC",
-                        "show": false,
+                        "show": false
+                      },
+                      "getlink": {
+                        "text": "URL",
+                        "trigger": "homeTriggerButtonGetLink",
+                        "defaultRow": true,
                         "firstRow": false
                       },
                       "startgreen": {
@@ -924,5 +906,3 @@ function getFrontendConfig() {
     }
   }
 }
-
-

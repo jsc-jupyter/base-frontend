@@ -77,11 +77,6 @@ function getFrontendConfig() {
                     "init": "wTriggerOption"
                   }
                 },
-                "hr1": {
-                  "input": {
-                    "type": "hr"
-                  }
-                },
                 "system": {
                   "input": {
                     "type": "select",
@@ -98,6 +93,11 @@ function getFrontendConfig() {
                   "trigger": {
                     "init": "wTriggerSystem",
                     "option": "wTriggerSystem"
+                  }
+                },
+                "hr1": {
+                  "input": {
+                    "type": "hr"
                   }
                 },
                 "repo2dockerdirectlink": {
@@ -567,7 +567,8 @@ function getFrontendConfig() {
                     "type": "envvariablesentry",
                     "options": {
                       "show": true,
-                      "collect": true,
+                      "collect": false,
+                      "collectstatic": true,
                       "group": "envvariables"
                     }
                   }
@@ -590,8 +591,8 @@ function getFrontendConfig() {
                   },
                   "triggerSuffix": "checkboxes-div",
                   "trigger": {
-                    "option": "homeTriggerModules",
-                    "system": "homeTriggerModules"
+                    "option": "wTriggerModules",
+                    "system": "wTriggerModules"
                   },
                   "dependency": {
                     "option": [
@@ -618,7 +619,8 @@ function getFrontendConfig() {
                   },
                   "triggerSuffix": "checkboxes-div",
                   "trigger": {
-                    "option": "wTriggerModules"
+                    "option": "wTriggerModules",
+                    "system": "wTriggerModules"
                   },
                   "dependency": {
                     "option": [
@@ -640,7 +642,8 @@ function getFrontendConfig() {
                   },
                   "triggerSuffix": "checkboxes-div",
                   "trigger": {
-                    "option": "wTriggerModules"
+                    "option": "wTriggerModules",
+                    "system": "wTriggerModules"
                   },
                   "dependency": {
                     "option": [
@@ -662,7 +665,8 @@ function getFrontendConfig() {
                   },
                   "triggerSuffix": "checkboxes-div",
                   "trigger": {
-                    "option": "wTriggerModules"
+                    "option": "wTriggerModules",
+                    "system": "wTriggerModules"
                   },
                   "dependency": {
                     "option": [
@@ -805,7 +809,7 @@ function getFrontendConfig() {
           "default": {
             "tab": "labconfig",
             "options": {
-              "option": "4.2",
+              "option": "4.3",
               "system": "JUWELS"
             }
           },
