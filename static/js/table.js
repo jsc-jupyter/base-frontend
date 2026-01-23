@@ -3270,7 +3270,6 @@ $(document).on("sse", `[data-sse-servers][id$='-summary-tr']`, function (event, 
     if (typeof ret.workshop_id === "boolean" && ret.workshop_id === false) {
       delete ret.workshop_id;
     }
-    {
     if ( pageType(null) == pageType("workshop") ) {
       ret["workshop_tutor_server_access"] = getWorkshopOptions()?.workshop_tutor_server_access ?? false;
     }
