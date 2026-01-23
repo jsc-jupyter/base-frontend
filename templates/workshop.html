@@ -13,7 +13,7 @@
 <div id="workshopnotusable"></div>
 
 {% macro description() %}
-  {%- if full_tutor_list %}
+  {%- if tutor_access and full_tutor_list %}
     <p>
       On <strong>cloud resources</strong>, workshop 
       <span style="font-weight: bold;">tutors have access to your server</span> 
