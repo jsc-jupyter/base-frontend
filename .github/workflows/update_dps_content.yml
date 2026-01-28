@@ -46,6 +46,7 @@ jobs:
             echo "Generation failed, restoring old file"
             mv templates/generator/dps_content.html.bak templates/generator/dps_content.html
           )
+          tree
 
       - name: Commit and push if changed
         run: |
