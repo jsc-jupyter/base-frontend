@@ -35,21 +35,21 @@ jobs:
       - name: Generate DPS content (safe)
         run: |
           tree
-          cp dps/dps_content.html dps/dps_content.html.bak || true
+          cp templates/generator/dps_content.html templates/generator/dps_content.html.bak || true
 
-          python generator/main.py \
+          python generator/src/main.py \
             --doc_type dps \
             --data_type html \
-            --config dps/dps_content.json \
-            --out dps/dps_content.html \
+            --config templates/generator/dps_content.json \
+            --out templates/generator/dps_content.html \
           || (
             echo "Generation failed, restoring old file"
-            mv dps/dps_content.html.bak dps/dps_content.html
+            mv templates/generator/dps_content.html.bak templates/generator/dps_content.html
           )
 
       - name: Commit and push if changed
         run: |
-          if git diff --quiet dps/dps_content.html; then
+          if git diff --quiet templates/generator/dps_content.html; then
             echo "No changes"
             exit 0
           fi
@@ -57,6 +57,6 @@ jobs:
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
 
-          git add dps/dps_content.html
+          git add templates/generator/dps_content.html
           git commit -m "Update DPS content (test, auto-generated)"
           git push origin test
