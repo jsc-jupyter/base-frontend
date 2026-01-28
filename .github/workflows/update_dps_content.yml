@@ -57,4 +57,4 @@ jobs:
 
           git add templates/generator/dps_content.html
           git commit -m "Update DPS content (test, auto-generated)"
-          git push origin test
+          git push https://${GITHUB_ACTOR}:${{ secrets.GITHUB_TOKEN }}@github.com/jsc-jupyter/base-frontend.git test
