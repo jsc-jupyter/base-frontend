@@ -1,0 +1,9 @@
+{
+  "service_name": "Jupyter-JSC",
+  "dps_service_description": "Instance for Jupyter application provided by the Juelich Supercomputing Centre (JSC).",
+  "dps_version": "1.1",
+  "contact_html": "common/contact.html",
+  "contact_plain": "common/contact.txt",
+  "dps_last_review": "28.01.2026",
+  "html_closing": ""
+}
