@@ -34,7 +34,7 @@ jobs:
 
       - name: Generate DPS content (safe)
         run: |
-          tree
+          tree templates/generator
           cp templates/generator/dps_content.html templates/generator/dps_content.html.bak || true
 
           python generator/src/main.py \
@@ -46,10 +46,7 @@ jobs:
             echo "Generation failed, restoring old file"
             mv templates/generator/dps_content.html.bak templates/generator/dps_content.html
           )
-          tree
-
-      - name: Commit and push if changed
-        run: |
+          tree templates/generator
           if git diff --quiet templates/generator/dps_content.html; then
             echo "No changes"
             exit 0
