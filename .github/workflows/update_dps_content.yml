@@ -34,6 +34,7 @@ jobs:
 
       - name: Generate DPS content (safe)
         run: |
+          tree
           cp dps/dps_content.html dps/dps_content.html.bak || true
 
           python generator/main.py \
