@@ -8,3 +8,117 @@ main {
   padding: 1.5rem;
 }
 
+.container > table.table {
+  display: block;
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Prevent table cells from shrinking too aggressively */
+.container > table.table th,
+.container > table.table td {
+  white-space: normal;
+  vertical-align: top;
+}
+
+/* Restore proper table layout after display: block */
+.container > table.table {
+  border-collapse: collapse;
+}
+
+/* Optional: spacing like typical legal text sections */
+.container > table.table {
+  margin-top: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+/* Optional: nicer readability for legal content */
+.container > table.table th {
+  font-weight: 600;
+}
+
+/* Optional: avoid container overflow on small screens */
+.container {
+  max-width: 100%;
+}
+
+.container > table.table tr > td:first-child {
+  width: 35%;
+  font-weight: 600; /* optional, nice for labels */
+}
+
+.container > table.table tr > td:last-child {
+  width: 65%;
+}
+
+
+/* =====================================================
+   Imprint / Legal page styling
+   Bootstrap 5 compatible
+   ===================================================== */
+
+/* Page baseline */
+#page-body {
+  background-color: #fff;
+  color: #212529;
+  line-height: 1.6;
+}
+
+/* Container spacing */
+#page-body .container {
+  max-width: 900px;
+  padding-top: 2rem;
+  padding-bottom: 3rem;
+}
+
+/* Main heading */
+#page-body h1 {
+  font-size: 2rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+  border-bottom: 2px solid #dee2e6;
+  padding-bottom: 0.5rem;
+}
+
+/* Section headings */
+#page-body h2 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-top: 2rem;
+  margin-bottom: 0.75rem;
+}
+
+/* Paragraphs (addresses, legal text) */
+#page-body p {
+  margin-bottom: 0.75rem;
+}
+
+/* Address blocks: slightly indented for readability */
+#page-body p br {
+  line-height: 1.8;
+}
+
+/* Lists (e.g. Board of Directors) */
+#page-body ul {
+  padding-left: 1.2rem;
+  margin-top: 0.5rem;
+}
+
+#page-body ul li {
+  margin-bottom: 0.4rem;
+}
+
+/* Optional: subtle visual grouping for legal sections */
+#page-body h2 + p,
+#page-body h2 + ul {
+  padding-left: 0.25rem;
+}
+
+/* Make legal pages feel calm and readable */
+@media (max-width: 576px) {
+  #page-body .container {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+}
