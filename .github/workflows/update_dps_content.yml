@@ -10,11 +10,15 @@ jobs:
     runs-on: ubuntu-latest
     environment: generator
 
+    strategy:
+      matrix:
+        branch: [staging, production]
+
     steps:
-      - name: Checkout staging branch
+      - name: Checkout ${{ matrix.branch }}
         uses: actions/checkout@v4
         with:
-          ref: staging
+          ref: ${{ matrix.branch }}
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -34,27 +38,35 @@ jobs:
 
       - name: Generate DPS content (safe)
         run: |
-          tree templates/generator
           cp templates/generator/dps_content.html templates/generator/dps_content.html.bak || true
+          cp templates/generator/imprint_content.html templates/generator/imprint_content.html.bak || true
 
           python generator/src/main.py \
             --doc_type dps \
             --data_type html \
-            --config templates/generator/dps_content.json \
+            --config templates/generator/config.json \
             --out templates/generator/dps_content.html \
           || (
             echo "Generation failed, restoring old file"
             mv templates/generator/dps_content.html.bak templates/generator/dps_content.html
           )
-          tree templates/generator
-          if [ -z "$(git status --porcelain templates/generator/dps_content.html)" ]; then
-            echo "No changes"
+          python generator/src/main.py \
+            --doc_type imprint \
+            --data_type html \
+            --config templates/generator/config.json \
+            --out templates/generator/imprint_content.html \
+          || (
+            echo "Generation failed, restoring old file"
+            mv templates/generator/imprint_content.html.bak templates/generator/imprint_content.html
+          )
+          if [ -z "$(git status --porcelain templates/generator/dps_content.html)" ] && [ -z "$(git status --porcelain templates/generator/imprint_content.html)" ]; then
+            echo "No changes for ${{ matrix.branch }}"
             exit 0
           fi
 
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
 
-          git add templates/generator/dps_content.html
-          git commit -m "Update DPS content (staging, auto-generated)"
-          git push https://${GITHUB_ACTOR}:${{ secrets.GITHUB_TOKEN }}@github.com/jsc-jupyter/base-frontend.git staging
+          git add templates/generator/dps_content.html templates/generator/imprint_content.html
+          git commit -m "Update DPS content (${{ matrix.branch }}, auto-generated)"
+          git push https://${GITHUB_ACTOR}:${{ secrets.GITHUB_TOKEN }}@github.com/jsc-jupyter/base-frontend.git ${{ matrix.branch }}
