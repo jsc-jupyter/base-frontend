@@ -47,7 +47,7 @@ jobs:
             mv templates/generator/dps_content.html.bak templates/generator/dps_content.html
           )
           tree templates/generator
-          if git diff --quiet templates/generator/dps_content.html; then
+          if [ -z "$(git status --porcelain templates/generator/dps_content.html)" ]; then
             echo "No changes"
             exit 0
           fi
