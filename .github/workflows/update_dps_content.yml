@@ -1,0 +1,72 @@
+name: Update DPS Content (staging)
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 3 * * 0"
+
+jobs:
+  update-dps:
+    runs-on: ubuntu-latest
+    environment: generator
+
+    strategy:
+      matrix:
+        branch: [staging, production]
+
+    steps:
+      - name: Checkout ${{ matrix.branch }}
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ matrix.branch }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Clone generator from GitLab
+        env:
+          GITLAB_TOKEN: ${{ secrets.LEGAL_GENERATOR_ACCESS_TOKEN }}
+          GITLAB_USER: ${{ secrets.LEGAL_GENERATOR_ACCESS_USERNAME }}
+        run: |
+          git clone --single-branch --branch main https://${GITLAB_USER}:${GITLAB_TOKEN}@gitlab.jsc.fz-juelich.de/fsd/common/legal-documents-generator.git generator
+
+      - name: Install generator dependencies
+        run: |
+          pip install -r generator/requirements.txt
+
+      - name: Generate DPS content (safe)
+        run: |
+          cp templates/generator/dps_content.html templates/generator/dps_content.html.bak || true
+          cp templates/generator/imprint_content.html templates/generator/imprint_content.html.bak || true
+
+          python generator/src/main.py \
+            --doc_type dps \
+            --data_type html \
+            --config templates/generator/config.json \
+            --out templates/generator/dps_content.html \
+          || (
+            echo "Generation failed, restoring old file"
+            mv templates/generator/dps_content.html.bak templates/generator/dps_content.html
+          )
+          python generator/src/main.py \
+            --doc_type imprint \
+            --data_type html \
+            --config templates/generator/config.json \
+            --out templates/generator/imprint_content.html \
+          || (
+            echo "Generation failed, restoring old file"
+            mv templates/generator/imprint_content.html.bak templates/generator/imprint_content.html
+          )
+          if [ -z "$(git status --porcelain templates/generator/dps_content.html)" ] && [ -z "$(git status --porcelain templates/generator/imprint_content.html)" ]; then
+            echo "No changes for ${{ matrix.branch }}"
+            exit 0
+          fi
+
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+
+          git add templates/generator/dps_content.html templates/generator/imprint_content.html
+          git commit -m "Update DPS content (${{ matrix.branch }}, auto-generated)"
+          git push https://${GITHUB_ACTOR}:${{ secrets.GITHUB_TOKEN }}@github.com/jsc-jupyter/base-frontend.git ${{ matrix.branch }}
