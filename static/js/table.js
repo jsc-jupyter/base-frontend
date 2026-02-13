@@ -2756,7 +2756,7 @@ $(document).on("sse", `[data-sse-servers][id$='-summary-tr']`, function (event, 
       templateInput.trigger("change");
       
       $collapseRow.find('[name="path"]').val(row.path || '');
-      $collapseRow.find('[name="readonly"]').prop("checked", row.readonly === true);
+      $collapseRow.find('[name="readonly"]').prop("checked", row.readonly === true || row.readonly === "readonly");
 
       // Set attributes inside the template-specific container
       const $templateContainer = $collapseRow.find(`div[data-storage-template="${row.template}"]`);
@@ -3148,8 +3148,8 @@ $(document).on("sse", `[data-sse-servers][id$='-summary-tr']`, function (event, 
           addValue = false;
         } else {
           if ( $this.is("input[type='checkbox']") ){
-            // value = $this.prop('checked');
-            value = $this.attr("name");
+            value = $this.prop('checked');
+            // value = $this.attr("name");
             if ( allCheckboxes && !parent ) {
               addValue = true;
             } else if ( parent && $this.prop('checked') ) {
