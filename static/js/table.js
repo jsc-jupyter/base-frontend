@@ -3148,8 +3148,11 @@ $(document).on("sse", `[data-sse-servers][id$='-summary-tr']`, function (event, 
           addValue = false;
         } else {
           if ( $this.is("input[type='checkbox']") ){
-            value = $this.prop('checked');
-            // value = $this.attr("name");
+            if ( dataGroupValue === "modules" ) {
+              value = $this.attr("name");
+            } else {
+              value = $this.prop('checked');
+            }
             if ( allCheckboxes && !parent ) {
               addValue = true;
             } else if ( parent && $this.prop('checked') ) {
