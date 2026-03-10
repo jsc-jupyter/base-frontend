@@ -2486,7 +2486,7 @@ require(["jquery", "utils"], function (
 
 
 let sseTimeout = null;
-const SSE_TIMEOUT_MS = 40_000;
+const SSE_TIMEOUT_MS = 80_000;
 
 function resetSSEWatchdog() {
   if (sseTimeout) {
