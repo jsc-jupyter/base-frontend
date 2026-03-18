@@ -2454,6 +2454,12 @@ require(["jquery", "utils"], function (
       if ( !valid ) {
         console.error("The following element is invalid: ");
         console.log($this);
+        // If row is collapsed expand it so user can see the wrong/missing input
+        const collapse = $(`.collapse[id^='${serviceId}-${rowId}-collapse']`);
+        if (!collapse.hasClass("show")) {
+          const summaryRow = document.getElementById(`${serviceId}-${rowId}-summary-tr`);
+          summaryRow.click();
+        }
         // If the user is looking at a different tab, we should highlight the button in the navbar
         const buttonDiv = $(`#${serviceId}-${rowId}-tab-button-div`);
         const activeTab = buttonDiv.find('.active').attr('name');
