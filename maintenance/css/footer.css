@@ -1,0 +1,67 @@
+/* footer {
+  box-shadow: 0 0 1rem rgba(0, 0, 0, 0.15);
+} */
+
+/* Top 
+Footer */
+
+#footer-top {
+  /* background-color: #023d6b; */
+  background-color: #EEE;
+}
+
+.ampel-img {
+  height: 40px;
+}
+
+#footer-top a {
+  /* color: #fff; */
+  color: #023d6b;
+  font-weight: bold;
+}
+
+#footer-top a:hover {
+  /* color: #fff; */
+  color: #002036;
+}
+
+
+/* Bottom 
+Footer */
+
+#footer-bottom {
+  background-color: #002036;
+}
+
+#footer-bottom a {
+  color: white;
+  font-size: 14px;
+}
+
+#helmholtz-logo {
+  width: 220px;
+}
+
+/* Tooltip
+*/
+
+/* .tooltip-inner {
+  background-color: #002036;
+  border-radius: 0;
+}
+
+.tooltip .tooltip-arrow::before {
+  border-top-color: #002036;
+} */
+
+.tooltip-inner {
+  background-color: #eee;
+  border-radius: 0;
+  color: #002036;
+  min-height: 42px;
+  max-width: unset;
+}
+
+.tooltip .tooltip-arrow::before {
+  border-top-color: transparent;
+}

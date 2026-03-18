@@ -1,0 +1,90 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+  <meta charset="utf-8">
+
+  <title>Jupyter Webservice</title>
+  <meta http-equiv="X-UA-Compatible" content="chrome=1">
+  <meta property="og:image" content="../images/mini_website.jpg">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:site_name" content="jupyter">
+  <meta property="og:title" content="jupyter">
+  <meta property="og:type" content="website">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <link rel="icon" href="./images/favicon.svg" type="jpg/png" />
+
+  <link rel="stylesheet" href="./css/bootstrap.min.css" type="text/css" />
+  <link rel="stylesheet" href="./css/base.css" type="text/css" />
+  <link rel="stylesheet" href="./css/header.css" type="text/css" />
+  <link rel="stylesheet" href="./css/footer.css" type="text/css" />
+
+  <!-- <script src="../components/jquery/dist/jquery.min.js" type="text/javascript" charset="utf-8"></script>
+  <script src="../components/bootstrap-5.0/dist/js/bootstrap.bundle.min.js" type="text/javascript" charset="utf-8"></script> -->
+</head>
+
+<body>
+  <!-- Container div enabling the body section to flex-grow -->
+  <div class="d-flex flex-column h-100">
+    <!-- HEADER -->
+    <div>
+      <header class="overflow-auto">
+        <nav class="navbar navbar-light bg-white flex-column fixed-top shadow p-0">
+          <div class="container-fluid">
+            <a class="navbar-brand" href="https://www.fz-juelich.de/jsc" target="_blank">
+              <img id="jsc-logo" class="p-3" width="335px"
+                src="./images/jsc.png" alt='JSC'
+                title="https://www.fz-juelich.de/jsc" />
+            </a>
+            <ul class="nav flex-grow-1 align-self-end">
+            </ul>
+            <a class="navbar-brand ps-3 me-4" href="/">
+              <img id="jupyter-logo" src="./images/jupyterjsc.png"
+                height="60px" alt="Jupyter-JSC" title="jupyter-jsc.fz-juelich.de">
+            </a>
+          </div>
+        </nav>
+      </header>
+    </div>
+
+    <div class="container-fluid flex-grow-1 p-0">
+      <div class="d-flex flex-column h-100">
+        <!-- MAIN -->
+        <main class="d-flex h-100 justify-content-center align-items-center">
+          <div class="px-4 py-5 my-5 text-center">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16" class="bi bi-tools" width="72" height="72">
+              <path d="M1 0 0 1l2.2 3.081a1 1 0 0 0 .815.419h.07a1 1 0 0 1 .708.293l2.675 2.675-2.617 2.654A3.003 3.003 0 0 0 0 13a3 3 0 1 0 5.878-.851l2.654-2.617.968.968-.305.914a1 1 0 0 0 .242 1.023l3.27 3.27a.997.997 0 0 0 1.414 0l1.586-1.586a.997.997 0 0 0 0-1.414l-3.27-3.27a1 1 0 0 0-1.023-.242L10.5 9.5l-.96-.96 2.68-2.643A3.005 3.005 0 0 0 16 3c0-.269-.035-.53-.102-.777l-2.14 2.141L12 4l-.364-1.757L13.777.102a3 3 0 0 0-3.675 3.68L7.462 6.46 4.793 3.793a1 1 0 0 1-.293-.707v-.071a1 1 0 0 0-.419-.814L1 0Zm9.646 10.646a.5.5 0 0 1 .708 0l2.914 2.915a.5.5 0 0 1-.707.707l-2.915-2.914a.5.5 0 0 1 0-.708ZM3 11l.471.242.529.026.287.445.445.287.026.529L5 13l-.242.471-.026.529-.445.287-.287.445-.529.026L3 15l-.471-.242L2 14.732l-.287-.445L1.268 14l-.026-.529L1 13l.242-.471.026-.529.445-.287.287-.445.529-.026L3 11Z"></path>
+            </svg>
+            <h1 class="display-5 fw-bold text-uppercase mt-3">Sorry, we're down for maintenance</h1>
+            <div class="col-lg-6 mx-auto">
+              <p class="lead mb-4">
+                Jupyter services are undergoing maintenance and will be back soon. Please check our status page for updates.
+              </p>
+              <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
+                <a role="button" class="btn btn-light btn-lg px-4 gap-3" href="https://status.jsc.fz-juelich.de/services/40">JSC Service Status</a>
+                <!-- <button type="button" class="btn btn-outline-secondary btn-lg px-4">Secondary</button> -->
+              </div>
+            </div>
+          </div>
+        </main>
+
+        <!-- FOOTER -->
+        <footer class="navbar p-0 mt-auto">
+          <div id="footer-bottom" class="container-fluid justify-content-between">
+            <div class="d-flex flex-wrap flex-grow-1 align-items-center text-center ms-4" style="min-height: 60px;">
+              <a target="_blank" href="https://www.fz-juelich.de">&copy; Forschungszentrum Jülich</a>
+            </div>
+            <div class="d-flex flex-grow-1 flex-lg-grow-0 justify-content-center justify-content-lg-end">
+              <a href="https://www.helmholtz.de/en/" target="_blank">
+                <img id="helmholtz-logo" class="m-4"
+                  src="./images/helmholtz.png"/>
+              </a>
+            </div>
+          </div>
+        </footer>
+      </div>
+    </div>  
+  </div> <!-- End of container div -->
+</body>
+
+</html>

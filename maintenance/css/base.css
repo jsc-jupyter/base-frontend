@@ -1,0 +1,110 @@
+html,
+body {
+  background-color: #023d6b;
+  /* background: #fefefe; */
+  font-family: "Weissenhof_Grotesk", Arial, Helvetica, sans-serif;
+  height: 100%;
+}
+
+main {
+  color: #fff;
+  /* margin-top: 90px; */
+}
+
+.bg-primary {
+  background: #023d6b !important;
+  color: #fff; 
+}
+
+.bg-secondary {
+  background: #eee !important;
+  color: #000;
+}
+
+.bg-info {
+  background: #adbde3 !important;
+  /* color: #023d6b; */
+}
+
+/* Links and nav links */
+
+a {
+  text-decoration: none;
+  color: #023d6b;
+}
+
+a:hover {
+  text-decoration: underline;
+  text-decoration-skip-ink: none;
+  color: #002036;
+}
+
+a.nav-link {
+  color: #023d6b;
+}
+
+a.nav-link:hover {
+  color: #002036;
+}
+
+
+/* Buttons */
+
+.btn-primary {
+  background-color: #023d6b;
+  border-color: #023d6b;
+}
+
+.btn-primary:hover,
+.btn-primary:focus,
+.btn-primary:active {
+  background-color: #225f8d;
+  border-color: #225f8d;
+}
+
+.btn-outline-primary {
+  border-color: #023d6b;
+  color: #023d6b;
+}
+
+.btn-outline-primary:hover,
+.btn-outline-primary:focus,
+.btn-outline-primary:active {
+  background-color: #023d6b;
+  border-color: #023d6b;
+  color: #fff;
+}
+
+
+/* Progress bar */
+
+.progress-bar {
+  background-color: #023d6b;
+}
+
+
+/* Visually disabled select dropdowns */
+
+.form-select.disabled {
+  pointer-events: none;
+  background-color: #e9ecef;
+  background-image: none;
+}
+
+
+/* Log divs */
+
+.log-div:not(:last-child) {
+  padding-bottom: 0.5rem;
+}
+
+
+/* JQuery confirm boxes */
+
+.jconfirm-box .checkbox {
+  margin-top: 10px;
+}
+
+input[type='checkbox'] {
+  margin-right: 0.5rem;
+}
