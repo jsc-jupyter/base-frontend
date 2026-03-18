@@ -845,19 +845,6 @@ require(["jquery", "utils"], function (
     }
   });
 
-  $(document).on('click', '.data-mount-passwd-btn', function () {
-    const $this = $(this);
-    const input = $this.closest('.input-group').find('input[type="password"], input[type="text"]');
-
-    if (input.attr('type') === 'password') {
-      input.attr('type', 'text');
-      $this.find('i').removeClass('fa-eye').addClass('fa-eye-slash');
-    } else {
-      input.attr('type', 'password');
-      $this.find('i').removeClass('fa-eye-slash').addClass('fa-eye');
-    }
-  });
-
   $(document).on('change', '.data-mount-template-input', function () {
     const $this = $(this);
     const selectedText = $this.find('option:selected').text();
