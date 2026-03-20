@@ -5753,9 +5753,8 @@ document.addEventListener('DOMContentLoaded', async function () {
     }
 
     for (const [serviceId, serviceOptions] of Object.entries(getFrontendConfig().services.options)) {
-      const firstRowID = getFirstRowId();
       if (["home", "workshopmanager"].includes(page)) {
-        await f(serviceId, serviceOptions, firstRowID, {}, 0);
+        await f(serviceId, serviceOptions, getFirstRowId(), {}, 0);
         await new Promise(r => setTimeout(r, 0));
       }
 
@@ -5769,7 +5768,7 @@ document.addEventListener('DOMContentLoaded', async function () {
       // If there are no rows and it's the home or workshopmanager
       // Toggle click of empty row to expand it
       if (["home", "workshopmanager"].includes(page) && rows.length === 0 ) {
-        document.getElementById(`${serviceId}-${firstRowID}-summary-tr`).click();
+        document.getElementById(`${serviceId}-${getFirstRowId()}-summary-tr`).click();
       }
     }
   });
