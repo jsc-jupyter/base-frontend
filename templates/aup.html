@@ -1,0 +1,72 @@
+{% extends "page.html" %}
+{% block main %}
+<div id="aup-container" class="container">
+  <div class="row">
+    <div class="col-md-10 offset-md-1">
+      <div class="auth-form-header">
+        {% if aup_content.title %}
+          <h1>{{ aup_content.title }}</h1>
+        {% endif %}
+      </div>
+      <div class="auth-form-body m-auto">
+        <div class="aup-content">
+          {% if aup_content.subtitle %}
+            <h2>{{ aup_content.subtitle }}</h2>
+          {% endif %}
+          {% for text in  aup_content.introduction %}
+            <p>{{ text }}</p>
+          {% endfor %}
+          <ol>
+            {% for rule in aup_content.rules %}
+              <li>{{ rule }}</li>
+            {% endfor %}
+          </ol>
+          <ol>
+            {% for rule in aup_content.extraRules %}
+              <li>{{ rule }}</li>
+            {% endfor %}
+          </ol>
+          {% for text in  aup_content.conclusion %}
+            <p>{{ text }}</p>
+          {% endfor %}
+        </div>
+        <form action="{{ base_url }}api/aup/{{ aup_version }}" method="post" role="form">
+          {% if xsrf_token %}
+          <input type="hidden" name="_xsrf" value="{{ xsrf_token }}" />
+          {% endif %}
+          {% if token %}
+          <input type="hidden" name="token" value="{{ token }}" />
+          {% endif %}
+          {% if next_url %}
+          <input type="hidden" name="next_url" value="{{ next_url }}" />
+          {% endif %}
+          <div class="form-check mb-3">
+            <input class="form-check-input"
+                   type="checkbox"
+                   id="accepted"
+                   name="accepted"
+                   value="true"
+                   required />
+            <label class="form-check-label" for="accepted">
+              I have read and accepted the Acceptable Use Policy
+            </label>
+          </div>
+          <button type="submit" class="btn btn-jupyter form-control">
+            Submit
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock main %}
+{% block script %}
+<script>
+  $('form').submit((e) => {
+    var form = $(e.target);
+    form.find('button[type="submit"]').attr('disabled', true);
+  });
+</script>
+{% endblock script %}
+
+
