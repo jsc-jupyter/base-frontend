@@ -597,7 +597,7 @@ require(["jquery", "utils"], function (
               ...unicoreReservations[system].filter(reservation => {
                 const partitionMatches = (reservation.PartitionName === "" || reservation.PartitionName === partition || partition === "_all_");
                 const usersMatch = (reservation.Users === "" || reservation.Users.split(",").includes(account) || account === "_all_");
-                const accountsMatch = (reservation.Accounts === "" || reservation.Accounts === project || project === "_all_");
+                const accountsMatch = (reservation.Accounts === "" || reservation.Accounts.split(",").includes(project) || project === "_all_");
                 return partitionMatches && usersMatch && accountsMatch;
               })
             );
