@@ -25,8 +25,7 @@
         {% endif %}
 
         <div class="tab-content">
-          {% if aup_version %}
-            {% for version, data in aup_content.items() %}
+          {% for version, data in aup_content.items() %}
             {% set content = data.content if data.content else {} %}
             <div class="tab-pane fade {% if loop.index0 == 0 %}show active{% endif %}"
                  id="aup-{{ version | replace('.', '-') }}"
@@ -59,8 +58,9 @@
                   <p>{{ text | safe }}</p>
                 {% endfor %}
               </div>
+              <p>Version: {{ content.version }}<br>Date: {{ content.date }}</p>
               {% if version == aup_version %}
-              <form action="{{ base_url }}api/aup/{{ version }}" method="post" role="form">
+              <form id="aup-form" data-version="{{ version }}" role="form">
                 {% if xsrf_token %}
                 <input type="hidden" name="_xsrf" value="{{ xsrf_token }}" />
                 {% endif %}
@@ -70,7 +70,7 @@
                 {% if next_url %}
                 <input type="hidden" name="next_url" value="{{ next_url }}" />
                 {% endif %}
-                <div class="form-check mb-3">
+                <div class="form-check mb-3" style="justify-self: center;">
                   <input class="form-check-input"
                          type="checkbox"
                          id="accepted-{{ version | replace('.', '-') }}"
@@ -81,50 +81,13 @@
                     I have read and accepted the Acceptable Use Policy
                   </label>
                 </div>
-                <button type="submit" class="btn btn-jupyter form-control">
+                <button type="submit" class="btn btn-jupyter btn-success form-control">
                   Submit
                 </button>
               </form>
               {% endif %}
             </div>
             {% endfor %}
-            {% else %}
-            {% for version, data in aup_content.items() %}
-            {% set content = data.content if data.content else {} %}
-            <div class="tab-pane fade {% if loop.index0 == 0 %}show active{% endif %}"
-                 id="aup-{{ version | replace('.', '-') }}"
-                 role="tabpanel">
-              <div class="auth-form-header">
-                {% if content.title %}
-                  <h1>{{ content.title }}</h1>
-                {% else %}
-                  <h1>Acceptable Use Policy</h1>
-                {% endif %}
-              </div>
-              <div class="aup-content">
-                {% if content.subtitle %}
-                  <h2>{{ content.subtitle | safe }}</h2>
-                {% endif %}
-                {% for text in content.introduction %}
-                  <p>{{ text | safe }}</p>
-                {% endfor %}
-                <ol>
-                  {% for rule in content.rules %}
-                    <li>{{ rule | safe }}</li>
-                  {% endfor %}
-                </ol>
-                <ol>
-                  {% for rule in content.extraRules %}
-                    <li>{{ rule | safe }}</li>
-                  {% endfor %}
-                </ol>
-                {% for text in content.conclusion %}
-                  <p>{{ text | safe }}</p>
-                {% endfor %}
-              </div>
-            </div>
-            {% endfor %}
-          {% endif %}
         </div>
       </div>
     </div>
@@ -134,8 +97,40 @@
 {% block script %}
 <script>
   $('form').submit((e) => {
+    e.preventDefault();
     var form = $(e.target);
-    form.find('button[type="submit"]').attr('disabled', true);
+    var version = form.data('version');
+    var button = form.find('button[type="submit"]');
+    var next_url = form.find('input[name="next_url"]').val();
+    if ( next_url.charAt(0) === '/' ) {
+      next_url = next_url.substring(1);
+    }
+    next_url = '{{ base_url }}' + next_url;
+    button.attr('disabled', true);
+    var url = '{{ base_url }}api/aup/' + version;
+    if ( window.jhdata.xsrf_token ) {
+      url += `?_xsrf=${window.jhdata.xsrf_token}`;
+    }
+    
+    $.ajax({
+      url: url,
+      type: 'POST',
+      contentType: 'application/json',
+      data: JSON.stringify({
+        accepted: true,
+        _xsrf: '${window.jhdata.xsrf_token}',
+        token: form.find('input[name="token"]').val(),
+        next_url: next_url,
+      }),
+      success: function() {
+        window.location.href = next_url;
+      },
+      error: function(xhr) {
+        button.attr('disabled', false);
+        alert('Failed to submit. Please try again or contact support.');
+      }
+    });
   });
 </script>
 {% endblock script %}
+
