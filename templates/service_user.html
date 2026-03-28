@@ -1,0 +1,280 @@
+{% extends "page.html" %}
+
+{%- block stylesheet -%}
+  <link rel="stylesheet" href='{{static_url("css/home.css")}}' type="text/css"/>
+  
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm/css/xterm.css" />
+  <script src="https://cdn.jsdelivr.net/npm/xterm/lib/xterm.js"></script>
+{%- endblock -%}
+{% block main %}
+{%- import "macros/svgs.jinja" as svg -%}
+
+
+
+<div id="toastContainer" class="position-fixed top-0 end-0 p-3"></div>
+<div id="global-content-div" class="container-fluid p-4" data-sse-reservations>
+  <div id="{{ service_id }}-table-div" class="table-responsive-md">
+    {%- if service_display_info %}
+      <h2>{{ service_display_info }}</h2>
+      <p>You're using a limited service environment. <a style="font-weight: bold; color: white" href="{{ base_url }}/login" target="_blank">Log in</a> to access all features.</p>
+    {%- endif %}
+    <table id="jupyterlab-table" class="table table-bordered table-striped table-hover table-light align-middle">
+      <thead class="table-secondary">
+        <tr>
+          <th scope="col" style="width: 1%;"></th>
+          <th scope="col" class="text-center">Status</th>
+          <th scope="col" class="text-center" style="width: 10%;">Action</th>
+        </tr>
+        <tr id="service-user-summary" class="summary-tr existing-spawner-tr">
+          <td class="details-td" bs-target="#service-user-collapse" style="align-content: center;">
+            <div class="d-flex accordion-icon mx-4"></div> {# collapsed #}
+          </td>
+          <th scope="row" class="status-td" style="align-content: center">
+            <div class="d-flex justify-content-center">
+              <div id="service-progress-bar-parent" style="min-width: 80%;">
+                <div class="d-flex flex-column">
+                  <div class="d-flex justify-content-center progress" style="background-color: rgb(211, 228, 244); height: 20px; min-width: 100px; position: relative;">
+                    <div id="service-progress-bar" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 5%; margin-right: auto;">
+                    </div>
+                    <span id="service-progress-text" style="position: absolute; width: 100px; text-align: center; line-height: 20px; color: black;">
+                      5%
+                    </span>
+                  </div>
+                  <span id="service-progress-info-text" class="progress-info-text text-center text-muted" style="font-size: smaller;">
+                    Starting...
+                  </span>
+                </div>
+              </div>
+            </div>
+          </th>
+          <th scope="row" class="url-td text-center" style="white-space: nowrap; align-content: center">
+            <button type="button" id="service-open-btn-header" disabled class="btn btn-success" data-element="open" style="margin-right: 3px;">
+              {{ svg.open_svg | safe }} Open
+            </button>
+            <button type="button" id="service-retry-btn-header" class="btn btn-primary" data-element="retry" style="margin-right: 3px; display: none;">
+              {{ svg.retry_svg | safe }} Retry
+            </button>
+          </th>
+        </tr>
+        <tr class="collapsible-tr" id="service-collapse">
+          <td colspan="100%" class="p-0">
+            <div id="service-collapse-content" class="collapse show">
+              <div class="d-flex align-item-starts m-3">
+                <div id="service-tabContent-div" class="tab-content w-100">
+                  <form id="service-form">
+                    <div class="tab-pane fade show" id="service-logs-div">
+                      <div class="row">
+                        <div class="col-12">
+                          <div id="service-logcontainer-input" class="card card-body text-black row g-0">
+                          </div>
+                        </div>
+                      </div>
+                    </div>        
+                  </form>
+                </div>
+              </div>
+            </div>
+          </td>
+        </tr>
+      </thead>
+    </table>
+  </div>
+</div>
+{% endblock main %}
+
+{% block script %}
+<script>
+
+  $(document).on("click", ".summary-tr", function (event) {
+    if (![event.target, event.target.parentElement, event.target.parentElement?.parentElement]
+      .some(el => el?.tagName === "BUTTON")) {
+      const $this = $(this);
+      let accordionIcon = $(this).find(".accordion-icon");
+      let collapse = $(`#service-collapse-content`);
+      if ( collapse.length > 0 ) {
+        let shown = collapse.hasClass("show");
+        if (shown) accordionIcon.addClass("collapsed");
+        else accordionIcon.removeClass("collapsed");
+        new bootstrap.Collapse(collapse);
+      }
+    }
+  });
+
+  function progressBarUpdate(status, progress) {
+    const progressBarParentElement = $(`#service-progress-bar-parent`);
+    const progressBarElement = $(`#service-progress-bar`);
+    const progressTextElement = $(`#service-progress-text`);
+    const progressTextInfoElement = $(`#service-progress-info-text`);
+
+    let background = "";
+    let color = "black";
+    if ( progress >= 50 ) {
+      color = "white";
+    }
+    if ( status == "connecting" ) {
+      background = "bg-success";
+    } else if ( status == "running" ) {
+      background = "bg-success";
+    } else if ( status == "stopped" ) {
+      background = "bg-danger";
+    } else if ( status == "cancelling" ) {
+      background = "bg-danger";
+    } else if ( status == "stopping" ) {
+      background = "bg-danger";
+    }
+
+    progressBarElement.width(`${progress}%`).removeClass("bg-success bg-danger bg-primary").addClass(background).html("");
+    progressTextElement.css('color', color);
+    if ( progress == 100 || progress == 0 ) {
+      progressTextElement.html("");
+    } else {
+      progressTextElement.html(`${progress}%`);
+    }
+    progressTextInfoElement.html(status);
+  }
+
+  function appendLogMessage(htmlMsg, progress) {
+    const logInputElement = $(`#service-logcontainer-input`);
+    const childCount = logInputElement.children().length || 0;
+
+    let exists = false;
+    logInputElement.children().each(function (i, e) {
+      let logMsg = $(e).html();
+      if (htmlMsg == logMsg) exists = true;
+    })
+    if (!exists) {
+      logInputElement.append($(`<div id="service-logcontainer-element${childCount}" class="log-div">`).html(htmlMsg));
+      let element = $(`#service-logcontainer-element${childCount}`);        
+      if ( progress === 100 && element.find("details") ) {
+        element.find("details").attr("open", true);
+      }
+      progressBarUpdate("starting", progress);      
+    }
+  }
+
+  async function checkAndOpenUrl(retries = 50, delay = 500) {
+    // wait for 3 successful responses
+    let failed = false;
+    let successCounter = 0;
+    let _url = "{{ server_url }}?token={{ token }}";
+    for (let attempt = 1; attempt <= retries; attempt++) {
+      try {
+        const response = await fetch(_url, {
+          method: 'GET',
+          mode: 'no-cors',
+          redirect: 'follow',
+          credentials: 'include',
+        });
+        if (response.ok || response.status == 405) {
+          successCounter += 1;
+          if ( successCounter > 3 ) {
+            await new Promise(resolve => setTimeout(resolve, 10*delay));
+            window.location.href = _url;
+            $(`#service-open-btn-header`).prop("disabled", false).show();
+            $(`#service-retry-btn-header`).hide();
+            progressBarUpdate("running", 100);
+            return;
+          }
+        } else if ( response.status == 424 ) {
+          failed = true;
+          progressBarUpdate("stopped", 100);
+          $(`#service-open-btn-header`).hide();
+          $(`#service-retry-btn-header`).prop("disabled", false).show();
+          return;
+        }
+      } catch (error) {
+        console.error(`Attempt ${attempt}: Network error or invalid URL -`, error);
+      }
+
+      if (attempt < retries) {
+        // Wait for the specified delay before retrying
+        await new Promise(resolve => setTimeout(resolve, delay));
+      } else if ( !failed ) {
+        progressBarUpdate("running", 100);
+        $(`#service-open-btn-header`).hide();
+        $(`#service-retry-btn-header`).prop("disabled", false).show();
+        appendLogMessage("Service is running but cannot be reached. Please retry.");
+        console.error("Maximum retries reached. Unable to access the website.");
+      }
+    }
+  }
+
+  $("#service-retry-btn-header").click(function() {
+    window.location.reload();
+  });
+  let pollInterval = null;
+
+  async function pollEvents() {
+    try {
+      const res = await fetch("{{ events_url }}", {
+        headers: {
+          Authorization: "token {{ token }}"
+        }
+      });
+
+      if (!res.ok) {
+        console.error("HTTP error:", res.status, res.statusText);
+        return;
+      }
+
+      const contentType = res.headers.get("content-type") || "";
+
+      if (!contentType.includes("application/json")) {
+        console.warn("Not JSON, skipping...");
+        return;
+      }
+
+      const data = await res.json();
+      console.log("Event:", data);
+
+      // Extract fields
+      const ready = data.ready ?? false;
+      const failed = data.failed ?? false;
+
+      for (const event of data.events ?? []) {
+        let progress = event.progress ?? 0;
+        if ( progress > 0 ) {
+          let htmlMsg = "";
+          if (event.html_message !== undefined) {
+            htmlMsg = event.html_message;
+          } else if (event.message !== undefined) {
+            htmlMsg = event.message;
+          }
+
+          if (!htmlMsg && failed) {
+            htmlMsg = "Server stopped";
+          }
+
+          try {
+            htmlMsg = htmlMsg.replace(/&nbsp;/g, " ");
+          } catch (e) {
+            console.log("Could not process message", e);
+            return;
+          }
+          appendLogMessage(htmlMsg, progress);
+        }
+      }
+
+      // State handling
+      if (ready) {
+        progressBarUpdate("connecting", 99);
+        clearInterval(pollInterval);
+        checkAndOpenUrl();
+      } else if (failed) {
+        clearInterval(pollInterval);
+        progressBarUpdate("stopped", 100);
+        $("#service-open-btn-header").hide();
+        $("#service-retry-btn-header").prop("disabled", false).show();
+      } 
+
+    } catch (err) {
+      console.error("Request failed:", err);
+    }
+  }
+  // Start polling every 2 seconds
+  pollInterval = setInterval(pollEvents, 2000);
+</script>
+{% endblock script %}
+
+
+
