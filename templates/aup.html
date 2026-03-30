@@ -59,7 +59,7 @@
                 {% endfor %}
               </div>
               <p>Version: {{ content.version }}<br>Date: {{ content.date }}</p>
-              {% if version == aup_version %}
+              {% if version == aup_name %}
               <form id="aup-form" data-version="{{ version }}" role="form">
                 {% if xsrf_token %}
                 <input type="hidden" name="_xsrf" value="{{ xsrf_token }}" />

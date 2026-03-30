@@ -16,8 +16,8 @@
   <div id="{{ service_id }}-table-div" class="table-responsive-md">
     {%- if service_display_info %}
       <h2>{{ service_display_info }}</h2>
-      <p>You're using a limited service environment. <a style="font-weight: bold; color: white" href="{{ base_url }}/login" target="_blank">Log in</a> to access all features.</p>
-    {%- endif %}
+      {%- endif %}
+    <p>You're using a limited service environment. <a style="font-weight: bold; color: white" href="{{ base_url }}/login" target="_blank">Log in</a> to access all features.</p>
     <table id="jupyterlab-table" class="table table-bordered table-striped table-hover table-light align-middle">
       <thead class="table-secondary">
         <tr>
@@ -229,7 +229,7 @@
 
       // Extract fields
       const ready = data.ready ?? false;
-      const failed = data.failed ?? false;
+      let failed = data.failed ?? false;
 
       for (const event of data.events ?? []) {
         let progress = event.progress ?? 0;
@@ -252,6 +252,10 @@
             return;
           }
           appendLogMessage(htmlMsg, progress);
+          if ( event.failed ?? false ) {
+            failed = true;
+            break;
+          }
         }
       }
 

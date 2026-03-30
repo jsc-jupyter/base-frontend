@@ -1,0 +1,5 @@
+{% macro aup_check(aup_name, next_url) %}
+    {%- if aup_name %}
+        <meta http-equiv="refresh" content="0; url=https://{{frontendCollection.get('hostname')}}{{ base_url }}aup/{{ aup_name }}?next_url={{ next_url }}" />
+    {%- endif %}
+{%- endmacro -%}
