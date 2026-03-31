@@ -19,7 +19,7 @@ require(["jquery", "utils"], function (
     // const originalIcon = $this.find(".copy-icon").html();
     const shareId = globalUserOptions[serviceId][rowId].share_id;
     let tooltipInstance = bootstrap.Tooltip.getInstance($this);
-    let url = utils.url_path_join(window.origin, "share", shareId).replace("//", "/");
+    let url = new URL(`share/${shareId}`, window.origin).toString();
 
     navigator.clipboard.writeText(url).then(() => {
       $this.html(getSvg("check"));
@@ -41,7 +41,7 @@ require(["jquery", "utils"], function (
     // const originalIcon = $this.find(".copy-icon").html();
     const workshopId = globalUserOptions[serviceId][rowId].workshop_id;
     let tooltipInstance = bootstrap.Tooltip.getInstance($this);
-    let url = utils.url_path_join(window.origin, "workshops", workshopId).replace("//", "/");
+    let url = new URL(`workshops/${workshopId}`, window.origin).toString();
 
     navigator.clipboard.writeText(url).then(() => {
       $this.html(getSvg("check"));
@@ -4421,7 +4421,7 @@ $(document).on("sse", `[data-sse-servers][id$='-summary-tr']`, function (event, 
     });
     options["success"] = function (resp) {
       if ( show_modal ) {
-        let url = new URL(utils.url_path_join(window.origin, "workshops", resp).replace("//", "/"));
+        let url = new URL(`workshops/${resp}`, window.origin).toString();
         $('#rowid-reload').val(resp);
         showModal(serviceId, rowId, url, "Share Workshop", "Share your workshop via URL", url);
       }
