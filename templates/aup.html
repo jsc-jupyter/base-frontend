@@ -1,0 +1,143 @@
+{% extends "page.html" %}
+{%- block stylesheet -%}
+  <link rel="stylesheet" href='{{static_url("css/legal.css")}}' type="text/css" />
+{%- endblock -%}
+
+{% block main %}
+<div id="aup-container" class="container">
+  <div class="row">
+    <div class="col-md-10 offset-md-1">
+      <div class="auth-form-body m-auto">
+        {% set versions = aup_content.keys() | list %}
+        {% if versions | length > 1 %}
+        <ul class="nav nav-tabs mb-3" role="tablist">
+          {% for version in versions %}
+          <li class="nav-item">
+            <button class="nav-link {% if loop.index0 == 0 %}active{% endif %}"
+                    data-bs-toggle="tab"
+                    data-bs-target="#aup-{{ version | replace('.', '-') }}"
+                    type="button">
+              {{ aup_content[version].content.displayName if aup_content[version].content.displayName else version }}
+            </button>
+          </li>
+          {% endfor %}
+        </ul>
+        {% endif %}
+
+        <div class="tab-content">
+          {% for version, data in aup_content.items() %}
+            {% set content = data.content if data.content else {} %}
+            <div class="tab-pane fade {% if loop.index0 == 0 %}show active{% endif %}"
+                 id="aup-{{ version | replace('.', '-') }}"
+                 role="tabpanel">
+              <div class="auth-form-header">
+                {% if content.title %}
+                  <h1>{{ content.title }}</h1>
+                {% else %}
+                  <h1>Acceptable Use Policy</h1>
+                {% endif %}
+              </div>
+              <div class="aup-content">
+                {% if content.subtitle %}
+                  <h2>{{ content.subtitle | safe }}</h2>
+                {% endif %}
+                {% for text in content.introduction %}
+                  <p>{{ text | safe }}</p>
+                {% endfor %}
+                <ol>
+                  {% for rule in content.rules %}
+                    <li>{{ rule | safe }}</li>
+                  {% endfor %}
+                </ol>
+                <ol>
+                  {% for rule in content.extraRules %}
+                    <li>{{ rule | safe }}</li>
+                  {% endfor %}
+                </ol>
+                {% for text in content.conclusion %}
+                  <p>{{ text | safe }}</p>
+                {% endfor %}
+              </div>
+              <p>Version: {{ content.version }}<br>Date: {{ content.date }}</p>
+              {% if version == aup_name %}
+              <form id="aup-form" data-version="{{ version }}" role="form">
+                {% if xsrf_token %}
+                <input type="hidden" name="_xsrf" value="{{ xsrf_token }}" />
+                {% endif %}
+                {% if token %}
+                <input type="hidden" name="token" value="{{ token }}" />
+                {% endif %}
+                {% if next_url %}
+                <input type="hidden" name="next_url" value="{{ next_url }}" />
+                {% endif %}
+                <div class="form-check mb-3" style="justify-self: center;">
+                  <input class="form-check-input"
+                         type="checkbox"
+                         id="accepted-{{ version | replace('.', '-') }}"
+                         name="accepted"
+                         value="true"
+                         required />
+                  <label class="form-check-label" for="accepted-{{ version | replace('.', '-') }}">
+                    I have read and accepted the Acceptable Use Policy
+                  </label>
+                </div>
+                <button type="submit" class="btn btn-jupyter btn-success form-control">
+                  Submit
+                </button>
+              </form>
+              {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock main %}
+{% block script %}
+<script>
+  $('form').submit((e) => {
+    e.preventDefault();
+    var form = $(e.target);
+    var version = form.data('version');
+    var button = form.find('button[type="submit"]');
+    var next_url = form.find('input[name="next_url"]').val();
+    if ( next_url.charAt(0) === '/' ) {
+      next_url = next_url.substring(1);
+    }
+    next_url = '{{ base_url }}' + next_url;
+    
+    var token = form.find('input[name="token"]').val();
+    var url = '{{ base_url }}api/aup/' + version;
+    if (token) {
+      next_url += `?token=${token}`;
+      url += `?token=${token}`;
+    } else if ( window.jhdata.xsrf_token ) {
+      url += `?_xsrf=${window.jhdata.xsrf_token}`;
+    }
+
+    button.attr('disabled', true);
+    
+    $.ajax({
+      url: url,
+      type: 'POST',
+      contentType: 'application/json',
+      data: JSON.stringify({
+        accepted: true,
+        _xsrf: `${window.jhdata.xsrf_token}`,
+        next_url: next_url,
+      }),
+      success: function() {
+        window.location.href = next_url;
+      },
+      error: function(xhr) {
+        button.attr('disabled', false);
+        alert('Failed to submit. Please try again or contact support.');
+      }
+    });
+  });
+</script>
+{% endblock script %}
+
+
+
