@@ -845,19 +845,6 @@ require(["jquery", "utils"], function (
     }
   });
 
-  $(document).on('click', '.data-mount-passwd-btn', function () {
-    const $this = $(this);
-    const input = $this.closest('.input-group').find('input[type="password"], input[type="text"]');
-
-    if (input.attr('type') === 'password') {
-      input.attr('type', 'text');
-      $this.find('i').removeClass('fa-eye').addClass('fa-eye-slash');
-    } else {
-      input.attr('type', 'password');
-      $this.find('i').removeClass('fa-eye-slash').addClass('fa-eye');
-    }
-  });
-
   $(document).on('change', '.data-mount-template-input', function () {
     const $this = $(this);
     const selectedText = $this.find('option:selected').text();
@@ -2467,6 +2454,12 @@ require(["jquery", "utils"], function (
       if ( !valid ) {
         console.error("The following element is invalid: ");
         console.log($this);
+        // If row is collapsed expand it so user can see the wrong/missing input
+        const collapse = $(`.collapse[id^='${serviceId}-${rowId}-collapse']`);
+        if (!collapse.hasClass("show")) {
+          const summaryRow = document.getElementById(`${serviceId}-${rowId}-summary-tr`);
+          summaryRow.click();
+        }
         // If the user is looking at a different tab, we should highlight the button in the navbar
         const buttonDiv = $(`#${serviceId}-${rowId}-tab-button-div`);
         const activeTab = buttonDiv.find('.active').attr('name');
@@ -5770,6 +5763,12 @@ document.addEventListener('DOMContentLoaded', async function () {
         const [rowId, rowOptions] = rows[index];
         await f(serviceId, serviceOptions, rowId, rowOptions, index + 1);
         await new Promise(r => setTimeout(r, 0)); 
+      }
+      
+      // If there are no rows and it's the home or workshopmanager
+      // Toggle click of empty row to expand it
+      if (["home", "workshopmanager"].includes(page) && rows.length === 0 ) {
+        document.getElementById(`${serviceId}-${getFirstRowId()}-summary-tr`).click();
       }
     }
   });

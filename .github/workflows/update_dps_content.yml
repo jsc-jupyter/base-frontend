@@ -1,4 +1,4 @@
-name: Update DPS Content (staging)
+name: Update DPS Content
 
 on:
   workflow_dispatch:

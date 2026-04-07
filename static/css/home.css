@@ -122,6 +122,10 @@ tr thdddd {
   text-decoration: none;
 }
 
+/* Ignore events of svgs on buttons so event can be captured by the button */
+button svg {
+  pointer-events: none !important;
+}
 
 /* Pre, mainly for reservation info */
 pre {

@@ -5,6 +5,9 @@
 {%- endblock -%}
 
 {%- block main -%}
+{%- from "check_aup.html" import aup_check with context -%}
+{{ aup_check(frontendCollection.get("aup_name"), "home") }}
+
 {%- import "macros/table/config/workshop.jinja" as config %}
 {%- import "macros/table/variables.jinja" as vars with context %}
 {%- set pagetype = vars.pagetype_workshop %}
