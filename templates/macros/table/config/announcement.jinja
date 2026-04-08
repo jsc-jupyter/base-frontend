@@ -1,13 +1,12 @@
 {%- import "macros/svgs.jinja" as svg -%}
 
-{%- set show_announcement = false %}
+{%- set show_announcement = true %}
 {%- macro announcement() %}
 <div class="alert bg-info alert-dismissible fade show" style="color: #023d6b;" role="alert">
   <h4 class="alert-heading">       
     {{ svg.announcement_svg | safe }}
-    <span class="align-middle">This is the announcement title</span>
+    <span class="align-middle">JUSUF / DEEP timeouts</span>
   </h4>
-  This is my announcement text.
-  <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+  We are currently experiencing timeout issues when starting or stopping Jupyter servers on JUSUF and DEEP. Our team is actively working on resolving the problem.
 </div>
 {%- endmacro %}
