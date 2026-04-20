@@ -1,14 +1,13 @@
 {%- import "macros/svgs.jinja" as svg -%}
 
-{%- set show_announcement = false %}
+{%- set show_announcement = true %}
 {%- macro announcement() %}
 <div class="alert bg-info alert-dismissible fade show" style="color: #023d6b;" role="alert">
   <h4 class="alert-heading">       
     {{ svg.announcement_svg | safe }}
-    <span class="align-middle">Scheduled Downtime - Apr 07, 2026, 08:30 to Apr 07, 2026, 11:00</span>
+    <span class="align-middle">Issue with container registry affecting Repo2Docker</span>
   </h4>
-  On April 7, 2026, Jupyter services will undergo scheduled maintenance from 08:30 to 11:00.
-  During this time, updates will be applied to the service. As a result, all running JupyterLab sessions will be stopped.
-  We apologize for any inconvenience and appreciate your understanding. More information: <a href="https://status.jsc.fz-juelich.de/services/40#incident-1279" target="_blank" rel="noopener noreferrer">here</a>.
+  We are currently experiencing an issue with the container registry, which may cause some Binder launches or builds to fail.
+  Previously built images should still work as expected.
 </div>
 {%- endmacro %}
