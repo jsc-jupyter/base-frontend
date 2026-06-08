@@ -455,7 +455,7 @@ function getFrontendConfig() {
                     "type": "text",
                     "options": {
                       "group": "storage",
-                      "enabled": false,
+                      "enabled": true,
                       "placeholder": "/home/jovyan/work",
                       "value": "/home/jovyan/work",
                       "pattern": "^\\/(?:[^\\/\\0]+\\/)*[^\\/\\0]*$"
@@ -470,7 +470,8 @@ function getFrontendConfig() {
                   },
                   "dependency": {
                     "option": [
-                      "custom"
+                      "custom",
+                      "repo2docker"
                     ]
                   }
                 },
