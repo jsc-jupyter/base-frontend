@@ -182,13 +182,28 @@ function getFrontendConfig() {
                     "type": "buttons",
                     "options": {
                       "buttons": [
+                        "reset",
                         "delete",
+                        "share",
                         "save"
                       ],
+                      "share": {
+                        "text": "Share",
+                        "trigger": "wmTriggerButtonShare",
+                        "firstRow": false,
+                        "alignRight": true
+                      },
                       "save": {
                         "trigger": "wmTriggerButtonSave",
                         "firstRow": false,
-                        "alignRight": true
+                        "alignRight": false
+                      },
+                      "reset": {
+                        "firstRow": false,
+                        "trigger": "wmTriggerButtonReset",
+                        "options": {
+                          "fillingOrder": ["option", "system", "account", "project", "partition", "flavor", "privaterepo"]
+                        }
                       },
                       "delete": {
                         "firstRow": false,
