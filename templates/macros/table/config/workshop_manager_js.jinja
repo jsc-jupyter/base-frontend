@@ -449,6 +449,31 @@ function getFrontendConfig() {
                     ]
                   }
                 },
+                "localstoragepath": {
+                  "input": {
+                    "type": "text",
+                    "options": {
+                      "group": "storage",
+                      "enabled": true,
+                      "placeholder": "/home/jovyan/work",
+                      "value": "/home/jovyan/work",
+                      "pattern": "^\\/(?:[^\\/\\0]+\\/)*[^\\/\\0]*$"
+                    }
+                  },
+                  "label": {
+                    "type": "textcheckbox",
+                    "value": "Mount user data",
+                    "options": {
+                      "default": false
+                    }
+                  },
+                  "dependency": {
+                    "option": [
+                      "custom",
+                      "repo2docker"
+                    ]
+                  }
+                },
                 "envvariables": {
                   "input": {
                     "type": "textgrower",
@@ -575,31 +600,6 @@ function getFrontendConfig() {
                   "dependency": {
                     "option": [
                       "lmod"
-                    ]
-                  }
-                },
-                "localstoragepath": {
-                  "input": {
-                    "type": "text",
-                    "options": {
-                      "group": "storage",
-                      "enabled": true,
-                      "placeholder": "/home/jovyan/work",
-                      "value": "/home/jovyan/work",
-                      "pattern": "^\\/(?:[^\\/\\0]+\\/)*[^\\/\\0]*$"
-                    }
-                  },
-                  "label": {
-                    "type": "textcheckbox",
-                    "value": "Mount user data",
-                    "options": {
-                      "default": false
-                    }
-                  },
-                  "dependency": {
-                    "option": [
-                      "custom",
-                      "repo2docker"
                     ]
                   }
                 },
