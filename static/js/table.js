@@ -4107,6 +4107,18 @@ $(document).on("sse", `[data-sse-servers][id$='-summary-tr']`, function (event, 
     }
   }
 
+  function homeTriggerRepoPathTypeInit(trigger, serviceId, rowId, tabId, elementId, elementOptions) {
+    if ( pageType(null) == pageType("workshop") ) {
+      const workshopValues = getWorkshopOptions();
+      const repoTypeInput = getInputElement(serviceId, rowId, "repopathtype");
+      const group = repoTypeInput.attr('data-group');
+      const workshopRepoType = workshopValues?.[group]?.repopathtype || false;
+      if ( workshopRepoType ) {
+        repoTypeInput.val(workshopRepoType);
+        repoTypeInput.prop("disabled", true);
+      }
+    }
+  }
 
   function homeTriggerRepoPathType(trigger, serviceId, rowId, tabId, elementId, elementOptions) {
     const repoPathChecked = val(getLabelCBElement(serviceId, rowId, "repopath"));
@@ -4182,7 +4194,16 @@ $(document).on("sse", `[data-sse-servers][id$='-summary-tr']`, function (event, 
   }
 
   function homeTriggerRepoTypeChanged(trigger, serviceId, rowId, tabId, elementId, elementOptions) {
-    // not needed right now 
+    if ( pageType(null) == pageType("workshop") ) {
+      const workshopValues = getWorkshopOptions();
+      const repoTypeInput = getInputElement(serviceId, rowId, "repotype");
+      const group = repoTypeInput.attr('data-group');
+      const workshopRepoType = workshopValues?.[group]?.repotype || false;
+      if ( workshopRepoType ) {
+        repoTypeInput.val(workshopRepoType);
+        repoTypeInput.prop("disabled", true);
+      }
+    }
   }
 
   function wmTriggerExpertMode(trigger, serviceId, rowId, tabId, elementId, elementOptions) {
@@ -5681,7 +5702,7 @@ document.addEventListener('DOMContentLoaded', async function () {
       $(`#${serviceId}-loading-tr`).hide();
       await new Promise(r => setTimeout(r, 0));
       await triggerInitUntilValuesSet(serviceId, rowId, index===0);
-      
+
       await new Promise(r => setTimeout(r, 0));
       
 
