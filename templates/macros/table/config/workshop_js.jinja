@@ -253,7 +253,8 @@ function getFrontendConfig() {
                     "value": "Notebook Type"
                   },
                   "trigger": {
-                    "repopath": "homeTriggerRepoPathType"
+                    "repopath": "homeTriggerRepoPathType",
+                    "init": "homeTriggerRepoPathTypeInit"
                   },
                   "dependency": {
                     "option": [
@@ -363,7 +364,7 @@ function getFrontendConfig() {
                     "type": "text",
                     "options": {
                       "group": "storage",
-                      "enabled": true,
+                      "enabled": false,
                       "placeholder": "/home/jovyan/work",
                       "value": "/home/jovyan/work",
                       "pattern": "^\\/(?:[^\\/\\0]+\\/)*[^\\/\\0]*$"
@@ -373,7 +374,7 @@ function getFrontendConfig() {
                     "type": "textcheckbox",
                     "value": "Mount user data",
                     "options": {
-                      "default": true
+                      "default": false
                     }
                   },
                   "dependency": {
