@@ -116,6 +116,8 @@ function tcCreateModal(serviceId, rowId) {
   const modalId = `${serviceId}-${rowId}-modal`;
   const copyBtnId = `${serviceId}-${rowId}-modal-copy-btn`;
 
+  const jupyteraimodalId = `${serviceId}-${rowId}-jupyterai-modal`;
+
   const html = `
     <div class="modal fade" id="${modalId}" role="dialog" tabindex="-1">
       <div class="modal-dialog modal-dialog-centered">
@@ -144,6 +146,92 @@ function tcCreateModal(serviceId, rowId) {
               title="Copy to clipboard"
             >
               Copy URL
+            </button>
+          </div>
+
+        </div>
+      </div>
+    </div>
+    <div class="modal fade" id="${jupyteraimodalId}" role="dialog" tabindex="-1">
+      <div class="modal-dialog modal-dialog-centered" style="max-width: 840px;">
+        <div class="modal-content">
+
+          <div class="modal-header d-flex align-items-center justify-content-center">
+            <svg xmlns="http://www.w3.org/2000/svg"
+                width="25"
+                height="25"
+                viewBox="0 0 24 24"
+                style="fill: darkorange;">
+              <path d="M13 14H11V9H13M13 18H11V16H13M1 21H23L12 2L1 21Z"/>
+            </svg>
+
+            <h4 class="modal-title mx-2 mb-0" style="color: black;">
+              Jupyter AI Disclaimer
+            </h4>
+
+            <svg xmlns="http://www.w3.org/2000/svg"
+                width="25"
+                height="25"
+                viewBox="0 0 24 24"
+                style="fill: darkorange;">
+              <path d="M13 14H11V9H13M13 18H11V16H13M1 21H23L12 2L1 21Z"/>
+            </svg>
+          </div>
+
+          <div class="modal-body">
+
+            <p style="color: black">
+              I understand that enabling this extension will cause AI agents
+              (<a href="https://opencode.ai" target="_blank">OpenCode</a>,
+              <a href="https://goose-docs.ai" target="_blank">goose</a>)
+              and MCP servers
+              (<a href="https://github.com/jupyter-ai-contrib/jupyter-server-mcp" target="_blank">Jupyter-Server-MCP</a>)
+              to run in parallel with my JupyterLab within the same container.
+            </p>
+
+            <p style="color: red">
+              <strong>Any actions performed by the AI Agents are unpredictable and may be harmful.</strong>
+            </p>
+
+            <!-- Instruction block -->
+            <div style="margin-top: 12px; margin-bottom: 12px;">
+              <p style="color: black; margin-bottom: 8px;">
+                To interact with an AI agent, you must explicitly address it using <strong>@mention</strong>.
+                Without an @mention, no agent will respond. See <a href="https://jupyter-ai.readthedocs.io/en/latest/users/index.html#user-guide" target="_blank">documentation</a> for more information.
+              </p>
+
+              <p style="color: black; margin-bottom: 10px;">
+                Example: <code>@OpenCode Hello there.</code>
+              </p>
+
+              <!-- Screenshot -->
+              <div style="text-align: center;">
+                <img
+                  src="/hub/static/images/jupyterAI.png"
+                  alt="@OpenCode usage example"
+                  style="
+                    max-width: 75%;
+                    border: 1px solid #ddd;
+                    border-radius: 6px;
+                    margin-top: 8px;
+                  "
+                />
+              </div>
+            </div>
+
+          </div>
+
+          <div class="modal-footer">
+            <button
+              type="button"
+              data-service="jupyterlab"
+              data-row="${rowId}"
+              id="${jupyteraimodalId}-close-btn"
+              class="btn btn-outline-primary"
+              data-bs-toggle="tooltip"
+              data-bs-placement="top"
+            >
+              I understand
             </button>
           </div>
 

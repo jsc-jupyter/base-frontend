@@ -1107,6 +1107,25 @@ require(["jquery", "utils"], function (
     $(`#${serviceId}-${rowId}-modal .modal-body p`).html(`${text1}`);
     $(`#${serviceId}-${rowId}-modal`).modal('show');
   }
+ 
+  window.showJupyterAIModal = function (serviceId, rowId) {
+    $(`#${serviceId}-${rowId}-jupyterai-modal`).modal('show');
+  }
+
+  $(document).on("click", `input[id$='-modules-extensions-jupyterai-input']`, function() {
+    const $this = $(this);
+    const isChecked = $this.prop("checked");
+    const serviceId = $this.data("service");
+    const rowId = $this.data("row");
+    if (isChecked) {
+      showJupyterAIModal("jupyterlab", rowId);
+    }
+  });
+
+  $(document).on("click", `[id$='-jupyterai-modal-close-btn']`, function() {
+    const jupyteraimodalId = $(this).attr("id").split("-close-btn")[0];
+    $(`#${jupyteraimodalId}`).modal("hide");
+  });
 
   $(document).on("click", `button[id$='-view-password']`, function (event) {
     const $this = $(this);
