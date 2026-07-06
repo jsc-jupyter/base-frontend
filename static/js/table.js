@@ -2193,7 +2193,7 @@ require(["jquery", "utils"], function (
         const elementName = element.attr("data-element");
         const defaultValues = workshopValues?.defaultvalues ?? {};
         const workshopId = workshopValues?.workshopid ?? "noworkshopid";
-        const allowedSystems = workshopValues?.system || false;
+        let allowedSystems = workshopValues?.system || false;
         
         if ( !description ) {
           if ( Object.keys(defaultValues).includes(elementName) ) {
@@ -2338,22 +2338,44 @@ require(["jquery", "utils"], function (
             </details>
           `
         
-        
-        var genericHtml = `
-          <div style="width: 80%; margin: auto; margin-top: 20px; margin-bottom: 20px; padding: 20px; border: 1px solid #ccc; border-radius: 10px; background-color: #f9f9f9;">
-            <h2 style="text-align: center; color: #333;">Workshop "${workshopValues.workshopid}" not available for you.</h2>
-            <h4 style="text-align: center; color: #333;">Reason: ${description}</h4>
-            <p style="text-align: center; color: #666; font-weight: bold;">Your account is not yet ready to access this workshop. Please complete the steps below to proceed. Contact your workshop instructor or support, if this does not help</p>
-            
-            <div style="margin-top: 20px;">
-                ${stepLogin}
-                ${stepProject}
-                ${stepSystem}
-                ${stepPartition}
+        let systemAvailable = true;
+        let genericHtml = "";
+        if ( allowedSystems ) {
+          if ( !Array.isArray(allowedSystems) ){
+            allowedSystems = [allowedSystems];
+          }
+          systemAvailable = false;
+          for ( system of allowedSystems ) {
+            if ( ! system in globalMaintenanceSystems ) {
+              systemAvailable = true;
+            }
+          }
+        }
+
+        if ( !systemAvailable ) {
+          genericHtml = `
+            <div style="width: 80%; margin: auto; margin-top: 20px; margin-bottom: 20px; padding: 20px; border: 1px solid #ccc; border-radius: 10px; background-color: #f9f9f9;">
+            <h2 style="text-align: center; color: #333;">Workshop "${workshopValues.workshopid}" not available. System ${allowedSystems} is currently unavailable.</h2>
+              <h4 style="text-align: center; color: #333;">Check JSC-Status Page for more information: <a href="https://status.jsc.fz-juelich.de" target="_blank">JSC Status Page</a></h4>
             </div>
-            <p style="text-align: center; color: darkorange;">It may take up to 60 minutes for the systems to fully process account updates. Any start attempts during this time might fail.</p>
-        </div>
-        `
+          `
+        } else {
+          genericHtml = `
+            <div style="width: 80%; margin: auto; margin-top: 20px; margin-bottom: 20px; padding: 20px; border: 1px solid #ccc; border-radius: 10px; background-color: #f9f9f9;">
+            <h2 style="text-align: center; color: #333;">Workshop "${workshopValues.workshopid}" not available for you.</h2>
+              <h4 style="text-align: center; color: #333;">Reason: ${description}</h4>
+              <p style="text-align: center; color: #666; font-weight: bold;">Your account is not yet ready to access this workshop. Please complete the steps below to proceed. Contact your workshop instructor or support, if this does not help</p>
+              
+              <div style="margin-top: 20px;">
+                  ${stepLogin}
+                  ${stepProject}
+                  ${stepSystem}
+                  ${stepPartition}
+                  </div>
+                  <p style="text-align: center; color: darkorange;">It may take up to 60 minutes for the systems to fully process account updates. Any start attempts during this time might fail.</p>
+            </div>
+          `
+        }
         helpDiv.append(genericHtml);
         $(`#global-content-div`).hide();
       }
