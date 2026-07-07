@@ -2340,7 +2340,8 @@ require(["jquery", "utils"], function (
         if ( !systemAvailable && systemInMaintenance ) {
           genericHtml = `
             <div style="width: 80%; margin: auto; margin-top: 20px; margin-bottom: 20px; padding: 20px; border: 1px solid #ccc; border-radius: 10px; background-color: #f9f9f9;">
-            <h2 style="text-align: center; color: #333;">Workshop "${workshopValues.workshopid}" not available. System ${allowedSystems} is currently unavailable.</h2>
+              <h2 style="text-align: center; color: #333;">Workshop "${workshopValues.workshopid}" not available. System ${allowedSystems} is currently unavailable.</h2>
+              <br>
               <h4 style="text-align: center; color: #333;">Check JSC-Status Page for more information: <a href="https://status.jsc.fz-juelich.de" target="_blank">JSC Status Page</a></h4>
             </div>
           `
