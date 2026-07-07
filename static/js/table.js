@@ -2321,6 +2321,7 @@ require(["jquery", "utils"], function (
         
         
         let systemAvailable = true;
+        let systemInMaintenance = false;
         let genericHtml = "";
         if ( allowedSystems ) {
           if ( !Array.isArray(allowedSystems) ){
@@ -2328,13 +2329,15 @@ require(["jquery", "utils"], function (
           }
           systemAvailable = false;
           for ( system of allowedSystems ) {
-            if ( ! system in globalMaintenanceSystems ) {
+            if ( system in globalMaintenanceSystems ) {
+              systemInMaintenance = true;
+            } else {
               systemAvailable = true;
             }
           }
         }
 
-        if ( !systemAvailable ) {
+        if ( !systemAvailable && systemInMaintenance ) {
           genericHtml = `
             <div style="width: 80%; margin: auto; margin-top: 20px; margin-bottom: 20px; padding: 20px; border: 1px solid #ccc; border-radius: 10px; background-color: #f9f9f9;">
             <h2 style="text-align: center; color: #333;">Workshop "${workshopValues.workshopid}" not available. System ${allowedSystems} is currently unavailable.</h2>
