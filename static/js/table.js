@@ -2329,7 +2329,7 @@ require(["jquery", "utils"], function (
           }
           systemAvailable = false;
           for ( system of allowedSystems ) {
-            if ( system in globalMaintenanceSystems ) {
+            if ( globalMaintenanceSystems.includes(system) ) {
               systemInMaintenance = true;
             } else {
               systemAvailable = true;
