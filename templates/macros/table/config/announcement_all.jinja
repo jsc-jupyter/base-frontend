@@ -1,12 +1,13 @@
 {%- import "macros/svgs.jinja" as svg -%}
 
-{%- set show_announcement = false %}
+{%- set show_announcement = true %}
 {%- macro announcement() %}
 <div class="alert bg-info alert-dismissible fade show" style="color: #023d6b;" role="alert">
   <h4 class="alert-heading">       
     {{ svg.announcement_svg | safe }}
-    <span class="align-middle">Temporary service interruption during infrastructure maintenance</span>
+    <span class="align-middle">Temporary service interruption during infrastructure network issues</span>
   </h4>
-  During maintenance of the underlying cloud infrastructure on 28.05.2026, an unexpected networking issue caused a temporary interruption of our services. Connectivity was restored by the infrastructure provider during the afternoon, and our service was fully available again around 4:45 PM. We apologize for the inconvenience and thank you for your patience.
+  JupyterLabs cannot currently be started due to network issues of the underlying cloud infrastructure. <a href="https://status.jsc.fz-juelich.de/services/44#incident-1381">More information.</a>
+  We apologize for the inconvenience and thank you for your patience.
 </div>
 {%- endmacro %}
