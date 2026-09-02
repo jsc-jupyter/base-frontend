@@ -119,7 +119,16 @@ require(["jquery", "utils"], function (
     });
   }
 
+  function _getDockerSystems() {
+    return Object.keys(systemConfig).filter(system => {
+      const backendService = systemConfig[system].backendService;
+      // Check if the backend service type is "kube"
+      return backendServicesConfig[backendService]?.type === "docker";
+    });
+  }
+
   const kubeSystems = _getKubeSystems();
+  const dockerSystems = _getDockerSystems();
 
   function _getKubeFlavorSystems() {
     return Object.keys(systemConfig).filter(system => {
@@ -692,7 +701,7 @@ require(["jquery", "utils"], function (
     }
     function _getAllSystems() {
       // Combine both lists and remove duplicates using a Set
-      let allSystems = [...new Set([...unicoreSystems, ...kubeSystems])];
+      let allSystems = [...new Set([...unicoreSystems, ...kubeSystems, ...dockerSystems])];
 
 
       if (pageType(null) == pageType("workshop")) {
