@@ -86,6 +86,9 @@ require(["jquery", "utils"], function (
       const health = incident?.health ?? 0;
       if ( health >= incidentsThresholdInteractive ) {
         const _system = incidentsmapping?.[system] ?? system;
+        // Added for now. Remove later (15.09)
+        // Only some parts of jupiter currently do not work, but the system is still usable. So we don't want to block the user from using jupiter.
+        if ( _system == "JUPITER") return;
         if ( !globalMaintenanceSystems.includes(_system) ) globalMaintenanceSystems.push(_system);
       }
     });
