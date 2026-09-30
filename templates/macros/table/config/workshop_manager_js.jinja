@@ -465,6 +465,27 @@ function getFrontendConfig() {
                     ]
                   }
                 },
+                "default_url": {
+                  "input": {
+                    "type": "text",
+                    "options": {
+                      "enabled": false,
+                      "placeholder": "Path to a notebook file (optional)"
+                    }
+                  },
+                  "label": {
+                    "type": "textcheckbox",
+                    "value": "Open notebook or path (optional)",
+                    "options": {
+                      "default": false
+                    }
+                  },
+                  "dependency": {
+                    "option": [
+                      "custom"
+                    ]
+                  }
+                },
                 "localstoragepath": {
                   "input": {
                     "type": "text",
