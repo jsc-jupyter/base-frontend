@@ -1,0 +1,230 @@
+{% extends "page.html" %}
+{%- block stylesheet -%}
+  <link rel="stylesheet" href='{{static_url("css/legal.css")}}' type="text/css" />
+{%- endblock -%}
+
+{% block main %}
+<div id="survey-container" class="container">
+  <div class="row">
+    <div class="col-md-10 offset-md-1">
+      <div class="auth-form-body m-auto">
+        <div class="tab-content">
+          {% for survey_name, data in survey_content.items() %}
+            {% set content = data.content if data.content else {} %}
+            <div class="tab-pane fade {% if loop.index0 == 0 %}show active{% endif %}"
+                 id="survey-{{ name | replace('.', '-') }}"
+                 role="tabpanel">
+              <div class="auth-form-header">
+                {% if content.title %}
+                  <h1>{{ content.title }}</h1>
+                {% else %}
+                  <h1>Acceptable Use Policy</h1>
+                {% endif %}
+              </div>
+              <div class="survey-content">
+                {% if content.subtitle %}
+                  <h2>{{ content.subtitle | safe }}</h2>
+                {% endif %}
+                {% for text in content.introduction %}
+                  <p>{{ text | safe }}</p>
+                {% endfor %}
+                <ol>
+                  {% for rule in content.rules %}
+                    <li>{{ rule | safe }}</li>
+                  {% endfor %}
+                </ol>
+                {% for text in content.conclusion %}
+                  <p>{{ text | safe }}</p>
+                {% endfor %}
+              </div>
+              <p>Version: {{ content.version }}<br>Date: {{ content.date }}</p>
+              <form id="survey-form" data-name="{{ survey_name }}" role="form">
+                {% if xsrf_token %}
+                <input type="hidden" name="_xsrf" value="{{ xsrf_token }}" />
+                {% endif %}
+                {% if token %}
+                <input type="hidden" name="token" value="{{ token }}" />
+                {% endif %}
+                {% if next_url %}
+                <input type="hidden" name="next_url" value="{{ next_url }}" />
+                {% endif %}
+                
+
+                {% for field in content.fields or [] %}
+                <div class="mb-4">
+
+                  {% set field_id = 'survey-' ~ survey_name | replace('.', '-') ~ '-' ~ field.name %}
+
+                  <label for="{{ field_id }}" class="form-label">
+                    <strong>{{ field.label }}</strong>
+                    {% if field.required %}
+                    <span aria-hidden="true" title="This field is required">*</span>
+                    {% endif %}
+                  </label>
+
+                  {% if field.description %}
+                  <div class="form-text mb-2">
+                    {{ field.description }}
+                  </div>
+                  {% endif %}
+
+                  {% if field.type == 'select' %}
+
+                  <select id="{{ field_id }}"
+                          name="{{ field.name }}"
+                          class="form-select {% if field.searchable %}js-searchable-select{% endif %}"
+                          {% if field.required %}required{% endif %}
+                          {% if field.searchable %}
+                          data-placeholder="{{ field.placeholder or 'Select ...' }}"
+                          {% endif %}>
+
+                    <option value="">
+                      {{ field.placeholder or 'Please select...' }}
+                    </option>
+
+                    {% for option in field.options or [] %}
+                    <option value="{{ option.value }}">
+                      {{ option.label }}
+                    </option>
+                    {% endfor %}
+
+                  </select>
+
+                  {% elif field.type == 'textarea' %}
+
+                  <textarea id="{{ field_id }}"
+                            name="{{ field.name }}"
+                            class="form-control"
+                            rows="{{ field.rows or 4 }}"
+                            {% if field.required %}required{% endif %}
+                            placeholder="{{ field.placeholder or '' }}"></textarea>
+
+                  {% elif field.type == 'text' %}
+
+                  <input id="{{ field_id }}"
+                        type="text"
+                        name="{{ field.name }}"
+                        class="form-control"
+                        placeholder="{{ field.placeholder or '' }}"
+                        {% if field.required %}required{% endif %}>
+
+                  {% endif %}
+
+                </div>
+                {% endfor %}
+
+                <div class="d-flex gap-2">
+                  <button type="submit"
+                          class="btn btn-jupyter btn-success">
+                    Submit
+                  </button>
+
+                  <button type="submit"
+                          name="skip"
+                          value="true"
+                          formnovalidate
+                          class="btn btn-secondary">
+                    {{ data.skip_button_text or 'Ask again tomorrow' }}
+                  </button>
+                </div>
+              </form>
+            </div>
+            {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock main %}
+{% block script %}
+
+<script>
+  $('form').submit((e) => {
+    e.preventDefault();
+    const form = $(e.target);
+    const button = e.originalEvent.submitter;
+    const survey_name = form.data('name');
+    button.disabled = true;
+
+
+    let next_url = form.find('input[name="next_url"]').val() || '';
+    if (next_url.charAt(0) === '/') {
+        next_url = next_url.substring(1);
+    }
+    next_url = '{{ base_url }}' + next_url;
+    const token = form.find('input[name="token"]').val();
+    const url = '{{ base_url }}api/survey/' + survey_name;
+    let requestUrl = url;
+
+    if (token) {
+        next_url += `?token=${encodeURIComponent(token)}`;
+        requestUrl += `?token=${encodeURIComponent(token)}`;
+    } else if (window.jhdata.xsrf_token) {
+        requestUrl += `?_xsrf=${encodeURIComponent(window.jhdata.xsrf_token)}`;
+    }
+
+    if (button && button.name === 'skip') {
+      console.log('Ask again later clicked');
+      $.ajax({
+        url: requestUrl,
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({
+            data: {'skipped': true},
+            _xsrf: `${window.jhdata.xsrf_token}`,
+            next_url: next_url,
+        }),
+        success: function() {
+            window.location.href = next_url;
+        },
+        error: function(xhr) {
+            button.disabled = false;
+            alert('Failed to submit. Please try again or contact support.');
+        }
+    });
+    } else {
+      console.log('Submit clicked');
+
+      // Collect all successful form controls into a key/value object.
+      const entries = {};
+      form.serializeArray().forEach(({ name, value }) => {
+          if (Object.prototype.hasOwnProperty.call(entries, name)) {
+              // Preserve multiple values if a field name occurs more than once.
+              if (!Array.isArray(entries[name])) {
+                  entries[name] = [entries[name]];
+              }
+              entries[name].push(value);
+          } else {
+              entries[name] = value;
+          }
+      });
+
+      // Keep control fields out of the survey responses.
+      delete entries.next_url;
+      delete entries.token;
+      delete entries._xsrf;
+      delete entries.survey_name;
+
+      console.log('Submitting survey data:', entries);
+
+      $.ajax({
+          url: requestUrl,
+          type: 'POST',
+          contentType: 'application/json',
+          data: JSON.stringify({
+              data: entries,
+              _xsrf: `${window.jhdata.xsrf_token}`,
+              next_url: next_url,
+          }),
+          success: function() {
+              window.location.href = next_url;
+          },
+          error: function(xhr) {
+              button.disabled = false;
+              alert('Failed to submit. Please try again or contact support.');
+          }
+      });
+    }
+});
+</script>
+{% endblock script %}
