@@ -33,11 +33,7 @@
                     <li>{{ rule | safe }}</li>
                   {% endfor %}
                 </ol>
-                {% for text in content.conclusion %}
-                  <p>{{ text | safe }}</p>
-                {% endfor %}
               </div>
-              <p>Version: {{ content.version }}<br>Date: {{ content.date }}</p>
               <form id="survey-form" data-name="{{ survey_name }}" role="form">
                 {% if xsrf_token %}
                 <input type="hidden" name="_xsrf" value="{{ xsrf_token }}" />
@@ -108,11 +104,40 @@
                         placeholder="{{ field.placeholder or '' }}"
                         {% if field.required %}required{% endif %}>
 
+                  {% elif field.type == 'multiselect' %}
+
+                  <select id="{{ field_id }}"
+                          name="{{ field.name }}"
+                          class="form-select {% if field.searchable %}js-searchable-select{% endif %}"
+                          multiple
+                          size="{{ field.size or (field.options|length if field.options else 5) }}"
+                          {% if field.required %}required{% endif %}
+                          data-placeholder="{{ field.placeholder or 'Select one or more ...' }}">
+
+                    {% for option in field.options or [] %}
+                    <option value="{{ option.value }}"
+                            {% if option.selected %}selected{% endif %}>
+                      {{ option.label }}
+                    </option>
+                    {% endfor %}
+
+                  </select>
+                  {% if field.help %}
+                  <div class="form-text">{{ field.help or 'Hold Ctrl (Cmd on Mac) to select multiple options.' }}</div>
+                  {% else %}
+                  <div class="form-text">Hold Ctrl (Cmd on Mac) to select multiple options.</div>
+                  {% endif %}
+
                   {% endif %}
 
                 </div>
                 {% endfor %}
-
+              <div class="survey-content">
+                {% for text in content.conclusion %}
+                  <p>{{ text | safe }}</p>
+                {% endfor %}
+              </div>
+              <p>Version: {{ content.version }}<br>Date: {{ content.date }}</p>
                 <div class="d-flex gap-2">
                   <button type="submit"
                           class="btn btn-jupyter btn-success">
@@ -228,3 +253,4 @@
 });
 </script>
 {% endblock script %}
+
