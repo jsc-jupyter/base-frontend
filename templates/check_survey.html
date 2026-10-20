@@ -1,0 +1,6 @@
+{% macro survey_check(survey_name, next_url) %}
+    {%- if survey_name %}
+        <meta http-equiv="refresh" content="0; url=https://{{frontendCollection.get('hostname')}}{{ base_url }}survey/{{ survey_name }}?next_url={{ next_url }}" />
+    {%- endif %}
+{%- endmacro -%}
+
