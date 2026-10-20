@@ -4748,7 +4748,7 @@ $(document).on("sse", `[data-sse-servers][id$='-summary-tr']`, function (event, 
           if ( successCounter > 8 ) {
             if ( pageType(null) == pageType("start") || pageType(null) == pageType("spawn") ) {
               await new Promise(resolve => setTimeout(resolve, 10*delay));
-              window.location.href = _url;
+              window.location.href = url;
             }
             updateHeaderButtons(serviceId, rowId, "running");
             progressBarUpdate(serviceId, rowId, "running", 100);
