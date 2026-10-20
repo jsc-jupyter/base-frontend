@@ -4762,6 +4762,7 @@ $(document).on("sse", `[data-sse-servers][id$='-summary-tr']`, function (event, 
       try {
         const response = await fetch(_url, {
           method: 'GET',
+	  mode: 'no-cors',
           redirect: 'follow',
           credentials: 'include',
         });
