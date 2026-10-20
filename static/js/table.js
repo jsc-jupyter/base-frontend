@@ -4757,12 +4757,11 @@ $(document).on("sse", `[data-sse-servers][id$='-summary-tr']`, function (event, 
     // wait for 3 successful responses
     let failed = false;
     let successCounter = 0;
-    let _url = api ? `${url}/api` : url;
+    let _url = api ? `${url}/api/status` : url;
     for (let attempt = 1; attempt <= retries; attempt++) {
       try {
         const response = await fetch(_url, {
           method: 'GET',
-          mode: 'no-cors',
           redirect: 'follow',
           credentials: 'include',
         });
@@ -4771,7 +4770,7 @@ $(document).on("sse", `[data-sse-servers][id$='-summary-tr']`, function (event, 
           if ( successCounter > 8 ) {
             if ( pageType(null) == pageType("start") || pageType(null) == pageType("spawn") ) {
               await new Promise(resolve => setTimeout(resolve, 10*delay));
-              window.location.href = _url;
+              window.location.href = url;
             }
             updateHeaderButtons(serviceId, rowId, "running");
             progressBarUpdate(serviceId, rowId, "running", 100);
