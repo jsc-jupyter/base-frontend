@@ -4757,7 +4757,7 @@ $(document).on("sse", `[data-sse-servers][id$='-summary-tr']`, function (event, 
     // wait for 3 successful responses
     let failed = false;
     let successCounter = 0;
-    let _url = api ? `${url}/api/status` : url;
+    let _url = new URL((api ? `${url.replace(/\/$/, '')}/api/status` : url.replace(/\/$/, '')), window.location.origin).href;
     for (let attempt = 1; attempt <= retries; attempt++) {
       try {
         const response = await fetch(_url, {
