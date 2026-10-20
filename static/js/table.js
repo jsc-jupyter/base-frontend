@@ -4766,7 +4766,7 @@ $(document).on("sse", `[data-sse-servers][id$='-summary-tr']`, function (event, 
           redirect: 'follow',
           credentials: 'include',
         });
-        if (response.ok || response.status == 405) {
+        if (response.ok || response.status == 405 || response.status == 403) {
           successCounter += 1;
           if ( successCounter > 8 ) {
             if ( pageType(null) == pageType("start") || pageType(null) == pageType("spawn") ) {
