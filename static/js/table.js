@@ -2570,7 +2570,7 @@ $(document).on("sse", `[data-sse-progress][id$='-summary-tr']`, function (event,
       if ( pageType(null) == pageType("start") || pageType(null) == pageType("spawn") ) {
           updateHeaderButtons(serviceId, rowId, "waiting");
           const url = data[rowId]?.url ?? "{{ url }}";
-          checkAndOpenUrl(serviceId, rowId, url);
+          checkAndOpenUrl(serviceId, rowId, url, true);
       } else {
           updateHeaderButtons(serviceId, rowId, "running");
           progressBarUpdate(serviceId, rowId, "running", 100);
