@@ -951,7 +951,12 @@ require(["jquery", "utils"], function (
     $this.trigger("change_select");
     dataRow.find(`[data-trigger-${elementId}][id^='${serviceId}-${rowId}-']`).trigger(`trigger_${elementId}`);
 
-    const isDisabled = $this.prop("disabled");
+    let isDisabled;
+    if (pageType(null) == pageType("workshop")) {
+      isDisabled = $this.prop("disabled") && $this.prop("collect") === "false";
+    } else {
+      isDisabled = $this.prop("disabled");
+    }
     let newValues = $this.val();
     logDebug && console.time(`${elementId} logic block`)
     if (!isDisabled && !(!newValues || (Array.isArray(newValues) && newValues.length === 0))) {
