@@ -119,16 +119,7 @@ require(["jquery", "utils"], function (
     });
   }
 
-  function _getDockerSystems() {
-    return Object.keys(systemConfig).filter(system => {
-      const backendService = systemConfig[system].backendService;
-      // Check if the backend service type is "kube"
-      return backendServicesConfig[backendService]?.type === "docker";
-    });
-  }
-
   const kubeSystems = _getKubeSystems();
-  const dockerSystems = _getDockerSystems();
 
   function _getKubeFlavorSystems() {
     return Object.keys(systemConfig).filter(system => {
@@ -701,7 +692,7 @@ require(["jquery", "utils"], function (
     }
     function _getAllSystems() {
       // Combine both lists and remove duplicates using a Set
-      let allSystems = [...new Set([...unicoreSystems, ...kubeSystems, ...dockerSystems])];
+      let allSystems = [...new Set([...unicoreSystems, ...kubeSystems])];
 
 
       if (pageType(null) == pageType("workshop")) {
@@ -1121,25 +1112,6 @@ require(["jquery", "utils"], function (
     $(`#${serviceId}-${rowId}-modal .modal-body p`).html(`${text1}`);
     $(`#${serviceId}-${rowId}-modal`).modal('show');
   }
- 
-  window.showJupyterAIModal = function (serviceId, rowId) {
-    $(`#${serviceId}-${rowId}-jupyterai-modal`).modal('show');
-  }
-
-  $(document).on("click", `input[id$='-modules-extensions-jupyterai-input']`, function() {
-    const $this = $(this);
-    const isChecked = $this.prop("checked");
-    const serviceId = $this.data("service");
-    const rowId = $this.data("row");
-    if (isChecked) {
-      showJupyterAIModal("jupyterlab", rowId);
-    }
-  });
-
-  $(document).on("click", `[id$='-jupyterai-modal-close-btn']`, function() {
-    const jupyteraimodalId = $(this).attr("id").split("-close-btn")[0];
-    $(`#${jupyteraimodalId}`).modal("hide");
-  });
 
   $(document).on("click", `button[id$='-view-password']`, function (event) {
     const $this = $(this);
@@ -2352,7 +2324,9 @@ require(["jquery", "utils"], function (
             </details>
           `
         
+        
         let systemAvailable = true;
+        let systemInMaintenance = false;
         let genericHtml = "";
         if ( allowedSystems ) {
           if ( !Array.isArray(allowedSystems) ){
@@ -2360,16 +2334,19 @@ require(["jquery", "utils"], function (
           }
           systemAvailable = false;
           for ( system of allowedSystems ) {
-            if ( ! system in globalMaintenanceSystems ) {
+            if ( globalMaintenanceSystems.includes(system) ) {
+              systemInMaintenance = true;
+            } else {
               systemAvailable = true;
             }
           }
         }
 
-        if ( !systemAvailable ) {
+        if ( !systemAvailable && systemInMaintenance ) {
           genericHtml = `
             <div style="width: 80%; margin: auto; margin-top: 20px; margin-bottom: 20px; padding: 20px; border: 1px solid #ccc; border-radius: 10px; background-color: #f9f9f9;">
-            <h2 style="text-align: center; color: #333;">Workshop "${workshopValues.workshopid}" not available. System ${allowedSystems} is currently unavailable.</h2>
+              <h2 style="text-align: center; color: #333;">Workshop "${workshopValues.workshopid}" not available. System ${allowedSystems} is currently unavailable.</h2>
+              <br>
               <h4 style="text-align: center; color: #333;">Check JSC-Status Page for more information: <a href="https://status.jsc.fz-juelich.de" target="_blank">JSC Status Page</a></h4>
             </div>
           `
@@ -2575,7 +2552,7 @@ $(document).on("sse", `[data-sse-progress][id$='-summary-tr']`, function (event,
       if ( pageType(null) == pageType("start") || pageType(null) == pageType("spawn") ) {
           updateHeaderButtons(serviceId, rowId, "waiting");
           const url = data[rowId]?.url ?? "{{ url }}";
-          checkAndOpenUrl(serviceId, rowId, url, true);
+          checkAndOpenUrl(serviceId, rowId, url);
       } else {
           updateHeaderButtons(serviceId, rowId, "running");
           progressBarUpdate(serviceId, rowId, "running", 100);
@@ -2662,10 +2639,14 @@ $(document).on("sse", `[data-sse-servers][id$='-summary-tr']`, function (event, 
         } else {
           if ( inputElement.attr("data-element") === "system" && globalMaintenanceSystems.includes(newValue) ) {
             availableDescription = `${key} ${newValue} is currently in maintenace. See footer for more information.`;
+            console.log(`${key} ${newValue} currently not available`);
+          } else if ( inputElement.attr("data-element") === "reservation ) {
+            inputElement.val("None");
+            $(`[id^='${serviceId}-${rowId}-'][id$='-input']`).trigger(`trigger_${key}`);
           } else {
             availableDescription = `${key} ${newValue} currently not available`;
+            console.log(`${key} ${newValue} currently not available`);
           }
-          console.log(`${key} ${newValue} currently not available`);
         }
       } else if (dataType == "number" ) {
         const min = inputElement.attr("min");
@@ -3009,10 +2990,14 @@ $(document).on("sse", `[data-sse-servers][id$='-summary-tr']`, function (event, 
         } else {
           if ( inputElement.attr("data-element") === "system" && globalMaintenanceSystems.includes(newValue) ) {
             availableDescription = `${key} ${newValue} is currently in maintenace. See footer for more information.`;
+            console.log(`${key} ${newValue} currently not available`);
+          } else if ( inputElement.attr("data-element") === "reservation ) {
+            inputElement.val("None");
+            $(`[id^='${serviceId}-${rowId}-'][id$='-input']`).trigger(`trigger_${key}`);
           } else {
             availableDescription = `${key} ${newValue} not available for the current options.`;
+            console.log(`${key} ${newValue} currently not available`);
           }
-          console.log(`${key} ${newValue} currently not available`);
         }
       } else if ( dataType == "number" ) {
         const minAttr = inputElement.attr("min");
@@ -4758,7 +4743,7 @@ $(document).on("sse", `[data-sse-servers][id$='-summary-tr']`, function (event, 
     api.cancel_named_server(user, rowId, options);
   }
 
-  async function checkAndOpenUrl(serviceId, rowId, url, api=false, retries = 50, delay = 500) {
+  async function checkAndOpenUrl(serviceId, rowId, url, api=true, retries = 50, delay = 500) {
     // wait for 3 successful responses
     let failed = false;
     let successCounter = 0;
