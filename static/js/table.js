@@ -2640,7 +2640,7 @@ $(document).on("sse", `[data-sse-servers][id$='-summary-tr']`, function (event, 
           if ( inputElement.attr("data-element") === "system" && globalMaintenanceSystems.includes(newValue) ) {
             availableDescription = `${key} ${newValue} is currently in maintenace. See footer for more information.`;
             console.log(`${key} ${newValue} currently not available`);
-          } else if ( inputElement.attr("data-element") === "reservation ) {
+          } else if ( inputElement.attr("data-element") === "reservation" ) {
             inputElement.val("None");
             $(`[id^='${serviceId}-${rowId}-'][id$='-input']`).trigger(`trigger_${key}`);
           } else {
@@ -2991,7 +2991,7 @@ $(document).on("sse", `[data-sse-servers][id$='-summary-tr']`, function (event, 
           if ( inputElement.attr("data-element") === "system" && globalMaintenanceSystems.includes(newValue) ) {
             availableDescription = `${key} ${newValue} is currently in maintenace. See footer for more information.`;
             console.log(`${key} ${newValue} currently not available`);
-          } else if ( inputElement.attr("data-element") === "reservation ) {
+          } else if ( inputElement.attr("data-element") === "reservation" ) {
             inputElement.val("None");
             $(`[id^='${serviceId}-${rowId}-'][id$='-input']`).trigger(`trigger_${key}`);
           } else {
