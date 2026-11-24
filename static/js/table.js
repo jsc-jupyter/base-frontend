@@ -2639,10 +2639,14 @@ $(document).on("sse", `[data-sse-servers][id$='-summary-tr']`, function (event, 
         } else {
           if ( inputElement.attr("data-element") === "system" && globalMaintenanceSystems.includes(newValue) ) {
             availableDescription = `${key} ${newValue} is currently in maintenace. See footer for more information.`;
+            console.log(`${key} ${newValue} currently not available`);
+          } else if ( inputElement.attr("data-element") === "reservation" ) {
+            inputElement.val("None");
+            $(`[id^='${serviceId}-${rowId}-'][id$='-input']`).trigger(`trigger_${key}`);
           } else {
             availableDescription = `${key} ${newValue} currently not available`;
+            console.log(`${key} ${newValue} currently not available`);
           }
-          console.log(`${key} ${newValue} currently not available`);
         }
       } else if (dataType == "number" ) {
         const min = inputElement.attr("min");
@@ -2986,10 +2990,14 @@ $(document).on("sse", `[data-sse-servers][id$='-summary-tr']`, function (event, 
         } else {
           if ( inputElement.attr("data-element") === "system" && globalMaintenanceSystems.includes(newValue) ) {
             availableDescription = `${key} ${newValue} is currently in maintenace. See footer for more information.`;
+            console.log(`${key} ${newValue} currently not available`);
+          } else if ( inputElement.attr("data-element") === "reservation" ) {
+            inputElement.val("None");
+            $(`[id^='${serviceId}-${rowId}-'][id$='-input']`).trigger(`trigger_${key}`);
           } else {
             availableDescription = `${key} ${newValue} not available for the current options.`;
+            console.log(`${key} ${newValue} currently not available`);
           }
-          console.log(`${key} ${newValue} currently not available`);
         }
       } else if ( dataType == "number" ) {
         const minAttr = inputElement.attr("min");

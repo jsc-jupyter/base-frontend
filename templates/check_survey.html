@@ -1,6 +1,18 @@
-{% macro survey_check(survey_name, next_url) %}
+{% macro survey_check(survey_name, next_url=None) %}
+    {#- next_url is deprecated and ignored; kept for backwards compatibility -#}
     {%- if survey_name %}
-        <meta http-equiv="refresh" content="0; url=https://{{frontendCollection.get('hostname')}}{{ base_url }}survey/{{ survey_name }}?next_url={{ next_url }}" />
+        <script>
+            (function () {
+                var hubPrefix = {{ base_url | tojson }};
+                var path = window.location.pathname;
+                if (path.indexOf(hubPrefix) === 0) {
+                    path = path.substring(hubPrefix.length);
+                }
+                window.location.replace(
+                    "https://{{ frontendCollection.get('hostname') }}{{ base_url }}survey/{{ survey_name }}?next_url="
+                    + encodeURIComponent(path + window.location.search)
+                );
+            })();
+        </script>
     {%- endif %}
 {%- endmacro -%}
-
