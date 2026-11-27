@@ -3039,7 +3039,7 @@ $(document).on("sse", `[data-sse-servers][id$='-summary-tr']`, function (event, 
         labelElement.trigger("change");
       }
 
-      if ( ["text", "number"].includes(dataType) ) {
+      if ( ["text", "number", "checkbox"].includes(dataType) ) {
         inputElement.prop("disabled", true);
         inputElement.attr("data-alwaysdisabled", "true");
         inputElement.trigger("input");
