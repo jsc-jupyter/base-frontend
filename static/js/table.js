@@ -3571,11 +3571,7 @@ $(document).on("sse", `[data-sse-servers][id$='-summary-tr']`, function (event, 
 
     const jupyteraiElement = $(`[id^='${serviceId}-${rowId}-'][id$='-jupyterai-input']`);
     if ( jupyteraiEleemnt.length > 0 ) {
-      if ( jupyteraiElement.prop("checked") == "true" ) {
-        queryArgs.push(`jupyterai=true`);
-      } else {
-        queryArgs.push(`jupyterai=false`);
-      }
+      queryArgs.push(`jupyterai=${jupyteraiElement.prop("checked")}`);
     }
 
 
