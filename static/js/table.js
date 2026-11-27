@@ -3569,6 +3569,11 @@ $(document).on("sse", `[data-sse-servers][id$='-summary-tr']`, function (event, 
       queryArgs.push(`localstoragepath=${localstoragepath}`);
     }
 
+    const jupyteraiElement = $(`[id^='${serviceId}-${rowId}-'][id$='-jupyterai-input']`);
+    if ( jupyteraiElement.prop("checked") == "true" ) {
+      queryArgs.push(`jupyterai=true`);
+    }
+
     let queryString = queryArgs.join("&");
     urlpath = window.origin + `${urlpath}?${queryString}`;
     urlpath = urlpath.replace(/([^:]\/)\/+/g, "$1");
